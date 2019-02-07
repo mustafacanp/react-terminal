@@ -196,6 +196,7 @@ class App extends Component {
     },
     cd: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      if(!this.checkSecondParameter(cmd, "cd")) { this.createNewLine("cd: missing operand", "cout"); return }
       const secondParam = this.secondParameter(cmd).replace("/", "");
 
       if(this.checkThirdParameter(cmd, "cd")) return; // Third Parameter
@@ -218,7 +219,9 @@ class App extends Component {
       }
 
       if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") { // If Folder Exist
-        this.setState(prevState => ({ path: [...prevState.path, secondParam] }));
+        this.setState(prevState => ({
+          path: [...prevState.path, secondParam]
+        }));
         this.setState({ cfs: this.state.cfs.children[secondParam] });
       } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type !== "directory") { // If File Exist
         this.createNewLine(`bash: cd: ${secondParam}: Not a directory`, "cout"); return;
@@ -236,6 +239,7 @@ class App extends Component {
     },
     cat: async () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      if(!this.checkSecondParameter(cmd, "cat")) { this.createNewLine("cat: missing operand", "cout"); return }
       const secondParam = this.secondParameter(cmd).replace("/", "");
 
       let coutString = "";
@@ -244,6 +248,30 @@ class App extends Component {
         coutString = await fetch(file.src).then(res => res.text());
       } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") {
         coutString = `cat: ${secondParam}: Is a directory`;
+      } else {
+        coutString = `cat: ${secondParam}: No such file or directory`;
+      }
+      this.createNewLine(coutString, "cout");
+    },
+    rm: () => {
+      const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      if(!this.checkSecondParameter(cmd, "rm")) { this.createNewLine("rm: missing operand", "cout"); return }
+      const secondParam = this.secondParameter(cmd).replace("/", "");
+
+      let coutString = "";
+      if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "file") {
+        
+        const new_fs = Object.keys(this.state.fs.children)
+          .filter(key => key !== secondParam)
+          .reduce((obj, key) => {
+            obj[key] = this.state.fs.children[key];
+            return obj;
+          }, {});
+        
+        this.setState({ fs: { type: "directory", children: new_fs }});
+        this.setState({ cfs: { type: "directory", children: new_fs }});
+      } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") {
+        coutString = `rm: cannot remove '${secondParam}': Is a directory`;
       } else {
         coutString = `cat: ${secondParam}: No such file or directory`;
       }
