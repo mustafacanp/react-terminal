@@ -196,11 +196,11 @@ class App extends Component {
     },
     cd: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
-      if(!this.checkSecondParameter(cmd, "cd")) { this.createNewLine("cd: missing operand", "cout"); return }
+      if(cmd === "cd" || cmd === "cd ") { this.printCommandLine(); return; }
       const secondParam = this.secondParameter(cmd).replace("/", "");
 
       if(this.checkThirdParameter(cmd, "cd")) return; // Third Parameter
-      if(!secondParam || secondParam === ".") { this.printCommandLine(); return; } // Directory Not Found
+      if(!secondParam || secondParam === ".") { this.printCommandLine(); return; } // cd Current Path
 
       if(secondParam === "..") { // Up folder
         this.printCommandLine();
@@ -239,7 +239,7 @@ class App extends Component {
     },
     cat: async () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
-      if(!this.checkSecondParameter(cmd, "cat")) { this.createNewLine("cat: missing operand", "cout"); return }
+      if(cmd === "cat" || cmd === "cat ") { this.createNewLine("cat: missing operand", "cout"); return }
       const secondParam = this.secondParameter(cmd).replace("/", "");
 
       let coutString = "";
@@ -255,7 +255,7 @@ class App extends Component {
     },
     rm: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
-      if(!this.checkSecondParameter(cmd, "rm")) { this.createNewLine("rm: missing operand", "cout"); return }
+      if(cmd === "rm" || cmd === "rm ") { this.createNewLine("rm: missing operand", "cout"); return }
       const secondParam = this.secondParameter(cmd).replace("/", "");
 
       let coutString = "";
@@ -268,12 +268,19 @@ class App extends Component {
             return obj;
           }, {});
         
+        const new_cfs = Object.keys(this.state.cfs.children)
+          .filter(key => key !== secondParam)
+          .reduce((obj, key) => {
+            obj[key] = this.state.cfs.children[key];
+            return obj;
+          }, {});
+        
         this.setState({ fs: { type: "directory", children: new_fs }});
-        this.setState({ cfs: { type: "directory", children: new_fs }});
+        this.setState({ cfs: { type: "directory", children: new_cfs }});
       } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") {
         coutString = `rm: cannot remove '${secondParam}': Is a directory`;
       } else {
-        coutString = `cat: ${secondParam}: No such file or directory`;
+        coutString = `rm: ${secondParam}: No such file or directory`;
       }
       this.createNewLine(coutString, "cout");
     }
@@ -322,7 +329,7 @@ class App extends Component {
     const param1 = this.firstParameter(cmd);
     const param2 = this.secondParameter(cmd);
 
-    if((param1 === "cd" || param1 === "cat") && param2) {
+    if((param1 === "cd" || param1 === "cat" || param1 === "rm") && param2) {
       const children = Object.keys(this.state.cfs.children);
       const existed_things = children.filter(folder => folder.startsWith(param2));
 
