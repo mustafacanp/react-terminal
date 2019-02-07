@@ -1,68 +1,76 @@
-import React, { Component } from 'react';
-import './Home.css';
-import Line from '../../components/Line';
-import Toolbar from '../../components/Toolbar';
+import React, { Component } from "react";
+import "./Home.css";
+import Line from "../../components/Line";
+import Toolbar from "../../components/Toolbar";
 
 class App extends Component {
 
   constructor() {
     super();
-
+    
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
     this.fs = {
-      type: 'directory',
+      type: "directory",
       children: {
         Desktop: {
-          type: 'directory',
+          type: "directory",
           children: {
             ReactApp: {
-              type: 'directory',
+              type: "directory",
               children: {}
             },
-            'readme.txt': {
-              type: 'file'
+            "readme.txt": {
+              type: "file",
+              src: "/files/readme.txt"
             },
           }
         },
         Documents: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Downloads: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Music: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Pictures: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Public: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Templates: {
-          children: {}
+          type: "directory",
+          children: {},
         },
         Videos: {
-          children: {}
+          type: "directory",
+          children: {},
         },
       }
     };
 
     this.state = {
       settings: {
-        computer_name: 'ubuntu',
-        user_name: 'root',
+        computer_name: "ubuntu",
+        user_name: "root",
       },
       fs: this.fs,
-      cfs: this.fs,
-      // path: ['home', 'user'],
+      cfs: this.fs, // Current fs
+      // path: ["home", "user"],
       path: [],
-      base_path: 'home/user',
-      prompt_text: '',
+      base_path: "home/user",
+      prompt_text: "",
       cursor_from_the_right: 0,
-      cursor_letter: '',
+      cursor_letter: "",
       previousLines: [],
       previousCommands: [],
       current_line_from_last: 0,
@@ -72,7 +80,7 @@ class App extends Component {
 
 
   pwd_text = () => {
-    return '~' + ((this.state.path.join('/') === this.state.base_path) ? '' : '/' + this.state.path.join('/'));
+    return "~" + ((this.state.path.join("/") === this.state.base_path) ? "" : "/" + this.state.path.join("/"));
   }
 
   isDirecroryExist = (dir_name) => {
@@ -80,17 +88,17 @@ class App extends Component {
   }
 
   is_dir = (obj) => {
-    return !!(obj && obj.type === 'directory');
+    return !!(obj && obj.type === "directory");
   }
   is_file = (obj) => {
-    return !!(obj && obj.type === 'file');
+    return !!(obj && obj.type === "file");
   }
 
   componentDidMount() {
-    this._promptInput = document.querySelector('.prompt-input');
-    this._cursor = document.querySelector('.prompt-cursor');
-    this._terminal_body_container = document.querySelector('.terminal-body-container');
-    this._terminal_body = document.querySelector('.terminal-body-container');
+    this._promptInput = document.querySelector(".prompt-input");
+    this._cursor = document.querySelector(".prompt-cursor");
+    this._terminal_body_container = document.querySelector(".terminal-body-container");
+    this._terminal_body = document.querySelector(".terminal-body-container");
 
     this.focusTerminal();
   }
@@ -128,7 +136,7 @@ class App extends Component {
       breakWord: breakWord ? false : true
     };
 
-    if(type==='cout') {
+    if(type==="cout") {
 
       new_command.id = this.state.previousLines.length+2;
 
@@ -138,7 +146,7 @@ class App extends Component {
         id: this.state.previousLines.length+1,
         pwd: this.pwd_text(),
         text: (this.state.prompt_text).trimEnd(),
-        type: 'cin',
+        type: "cin",
         breakWord: breakWord ? false : true
       };
 
@@ -150,17 +158,17 @@ class App extends Component {
         previousLines: [...prevState.previousLines, response_of_command]
       }), () => this.focusTerminal());
 
-    } else if(type==='cin') {
+    } else if(type==="cin") {
 
       this.setState(prevState => ({
         previousLines: [...prevState.previousLines, new_command]
       }));
     }
-    this.setState({prompt_text:''}, () => this.focusTerminal());
+    this.setState({prompt_text:""}, () => this.focusTerminal());
   }
 
   updatePreviousCommands = (new_command_text) => {
-    if(new_command_text !== ''){
+    if(new_command_text !== ""){
       this.setState(prevState => ({
         previousCommands: [...prevState.previousCommands, new_command_text]
       }));
@@ -172,26 +180,28 @@ class App extends Component {
   }
 
   createErrorLine = () => {
-    this.createNewLine(this.firstParameter(this.state.prompt_text)+': command not found', 'cout');
+    this.createNewLine(this.firstParameter(this.state.prompt_text)+": command not found", "cout");
   }
 
   commands = {
     help: () => {
-      const usable_commands = Object.keys(this.commands).join('   ');
-      this.createNewLine(`Usable Commands:   ${usable_commands}`, 'cout');
+      const usable_commands = Object.keys(this.commands).join("   ");
+      this.createNewLine(`Usable Commands:   ${usable_commands}`, "cout");
     },
     ls: () => {
-      const cmd = this.state.prompt_text.replace(/\s+/g, ' ');
-      if(this.checkSecondParameter(cmd, 'ls')) return;
+      const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      if(this.checkSecondParameter(cmd, "ls")) return;
       const folders = Object.keys(this.state.cfs.children).filter(folder => folder);
-      this.createNewLine(folders.join('   '), 'cout', 'break-none');
+      this.createNewLine(folders.join("   "), "cout", "break-none");
     },
     cd: () => {
-      const cmd = this.state.prompt_text.replace(/\s+/g, ' ');
+      const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      const secondParam = this.secondParameter(cmd).replace("/", "");
 
-      if(this.checkThirdParameter(cmd, 'cd')) return;
-      const directory = this.secondParameter(cmd).replace('/', '');
-      if(directory === '..') {
+      if(this.checkThirdParameter(cmd, "cd")) return; // Third Parameter
+      if(!secondParam || secondParam === ".") { this.printCommandLine(); return; } // Directory Not Found
+
+      if(secondParam === "..") { // Up folder
         this.printCommandLine();
         if(this.state.path.length){
           let temp_path = this.state.path;
@@ -207,57 +217,70 @@ class App extends Component {
         return;
       }
 
-      if(!directory || directory === '.') { this.printCommandLine(); return; }
-
-      if(this.state.cfs.children[directory]) {
-        this.setState(prevState => ({ path: [...prevState.path, directory] }));
-        this.setState({ cfs: this.state.cfs.children[directory] });
-      } else {
-        this.createNewLine(`bash: cd: ${directory}: No such file or directory`, 'cout');
-        return;
+      if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") { // If Folder Exist
+        this.setState(prevState => ({ path: [...prevState.path, secondParam] }));
+        this.setState({ cfs: this.state.cfs.children[secondParam] });
+      } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type !== "directory") { // If File Exist
+        this.createNewLine(`bash: cd: ${secondParam}: Not a directory`, "cout"); return;
+      } else { // If Not Exist
+        this.createNewLine(`bash: cd: ${secondParam}: No such file or directory`, "cout"); return;
       }
-
       this.printCommandLine();
     },
     pwd: () => {
-      const cwd = this.pwd_text().replace('~', '/' + this.state.base_path);
-      this.createNewLine(cwd, 'cout');
+      const cwd = this.pwd_text().replace("~", "/" + this.state.base_path);
+      this.createNewLine(cwd, "cout");
     },
     clear: () => {
       this.setState({ previousLines: [] }, this.printCommandLine());
+    },
+    cat: async () => {
+      const cmd = this.state.prompt_text.replace(/\s+/g, " ");
+      const secondParam = this.secondParameter(cmd).replace("/", "");
+
+      let coutString = "";
+      if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "file") {
+        const file = this.state.cfs.children[secondParam];
+        coutString = await fetch(file.src).then(res => res.text());
+      } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") {
+        coutString = `cat: ${secondParam}: Is a directory`;
+      } else {
+        coutString = `cat: ${secondParam}: No such file or directory`;
+      }
+      this.createNewLine(coutString, "cout");
     }
   }
 
   checkSecondParameter = (text, command_name) => {
     if(this.secondParameter(text)){
-      this.createNewLine(`bash: ${command_name}: too many arguments`, 'cout');
+      this.createNewLine(`bash: ${command_name}: too many arguments`, "cout");
       return true;
     }
     return false;
   }
   checkThirdParameter = (text, command_name) => {
     if(this.thirthParameter(text)){
-      this.createNewLine(`bash: ${command_name}: too many arguments`, 'cout');
+      this.createNewLine(`bash: ${command_name}: too many arguments`, "cout");
       return true;
     }
     return false;
   }
 
   printCommandLine = () => {
-    this.createNewLine(this.state.prompt_text, 'cin');
+    this.createNewLine(this.state.prompt_text, "cin");
   }
 
   firstParameter = (str) => {
     str = this.trim(str);
-    return str.split(' ')[0];
+    return str.split(" ")[0];
   }
   secondParameter = (str) => {
     str = this.trim(str);
-    return (str.split(' ') ? str.split(' ')[1] : false);
+    return (str.split(" ") ? str.split(" ")[1] : false);
   }
   thirthParameter = (str) => {
     str = this.trim(str);
-    return (str.split(' ') ? str.split(' ').length>2 : false);
+    return (str.split(" ") ? str.split(" ").length>2 : false);
   }
 
 
@@ -271,7 +294,7 @@ class App extends Component {
     const param1 = this.firstParameter(cmd);
     const param2 = this.secondParameter(cmd);
 
-    if(param1 === "cd" && param2) {
+    if((param1 === "cd" || param1 === "cat") && param2) {
       const children = Object.keys(this.state.cfs.children);
       const existed_things = children.filter(folder => folder.startsWith(param2));
 
@@ -283,7 +306,7 @@ class App extends Component {
       }
 
       if(this.state.tab_pressed) {
-        this.createNewLine(existed_things.join('   '), 'cout', 'break-none');
+        this.createNewLine(existed_things.join("   "), "cout", "break-none");
         this.setState({ prompt_text: this.state.prompt_text });
         return;
       }
@@ -295,19 +318,19 @@ class App extends Component {
     const cmd = this.trim(this.state.prompt_text);
     this.setState({ current_line_from_last:0 });
     let is_it_command = false;
-    let command = '';
+    let command = "";
     Object.keys(this.commands).map((command_name, index) => {
       if(cmd === command_name) {
         is_it_command = true;
         command = cmd;
-      } else if(cmd.startsWith(command_name+' ')) {
+      } else if(cmd.startsWith(command_name+" ")) {
         is_it_command = true;
-        command = cmd.split(' ')[0];
+        command = cmd.split(" ")[0];
       }
       return undefined;
     });
     if(is_it_command) this.commands[command]();
-    else if(this.state.prompt_text === '') this.createNewLine('', 'cin');
+    else if(this.state.prompt_text === "") this.createNewLine("", "cin");
     else this.createErrorLine();
 
     this.updatePreviousCommands(this.state.prompt_text);
@@ -344,7 +367,7 @@ class App extends Component {
   
   
   moveCursor = () => {
-    this._cursor.style.marginLeft = -8*this.state.cursor_from_the_right+'px'; // move cursor
+    this._cursor.style.marginLeft = -8*this.state.cursor_from_the_right+"px"; // move cursor
     this.setState({cursor_letter:this.state.prompt_text[this.state.prompt_text.length-this.state.cursor_from_the_right]}); // set letter to cursor
   }
 
