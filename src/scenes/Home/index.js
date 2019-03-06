@@ -14,60 +14,52 @@ class App extends Component {
     this.fs = {
       type: "directory",
       children: {
-        Desktop: {
+        about: {
+          type: "file",
+          src: "/files/aboutme.txt"
+        },
+        awards: {
+          type: "file",
+          src: "/files/awards.txt"
+        },
+        blog: {
           type: "directory",
           children: {
-            ReactApp: {
-              type: "directory",
-              children: {}
-            },
-            "readme.txt": {
+            last_article: {
               type: "file",
-              src: "/files/readme.txt"
-            },
+              src: "/files/blog/last_article.txt"
+            }
           }
         },
-        Documents: {
-          type: "directory",
-          children: {},
+        contact: {
+          type: "file",
+          src: "/files/contact.txt"
         },
-        Downloads: {
-          type: "directory",
-          children: {},
+        credits: {
+          type: "file",
+          src: "/files/credits.txt"
         },
-        Music: {
-          type: "directory",
-          children: {},
+        github: {
+          type: "file",
+          src: "/files/github.txt"
         },
-        Pictures: {
-          type: "directory",
-          children: {},
-        },
-        Public: {
-          type: "directory",
-          children: {},
-        },
-        Templates: {
-          type: "directory",
-          children: {},
-        },
-        Videos: {
-          type: "directory",
-          children: {},
+        skills: {
+          type: "file",
+          src: "/files/skills.txt"
         },
       }
     };
 
     this.state = {
       settings: {
-        computer_name: "ubuntu",
-        user_name: "root",
+        computer_name: "tchavadar.com",
+        user_name: "guest",
       },
       fs: this.fs,
       cfs: this.fs, // Current fs
       // path: ["home", "user"],
       path: [],
-      base_path: "home/user",
+      base_path: "home/guest",
       prompt_text: "",
       cursor_from_the_right: 0,
       cursor_letter: "",
