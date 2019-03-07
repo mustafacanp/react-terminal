@@ -1,0 +1,1 @@
+| This site is built by Talha Can Havadar, based on React Terminal project of Mustafa Can Palaz(https://github.com/mustafacanp/ReactTerminal).
