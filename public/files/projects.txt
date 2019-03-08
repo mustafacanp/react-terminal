@@ -1,0 +1,25 @@
+| Embedded Systems Projects in ASELSAN - C/C++, Python |2018-.|
+| Base.be & Base Brandings (Development) - Java, Spring, AEM, AngularJS |2017-2018|
+  ==> https://www.base.be/en/private.html
+| MyAudi.be & MyNewAudi.be (Maintenance & Development) - Java, AEM, AngularJS |2016-2017|
+  ==> http://www.mynewaudi.be/content/mynewaudi.html
+| Self Driving Car (Thesis) - Python, C++, Java |2017|
+  ==> https://github.com/talhaHavadar?tab=repositories&q=thesis
+| Ofisbook/Emlakzon.com - Laravel5, PHP |2017|
+  ==> http://ofisbook.herokuapp.com/
+| Spoileral.com API - PHP |2016|
+  ==> http://www.spoileral.com/
+| Izmir Bisim - Android |2016|
+  ==> https://play.google.com/store/apps/details?id=com.scorptech.izmirbisim
+| Superm (Game) - Unity[C#] |2016|
+  ==> https://play.google.com/store/apps/details?id=com.scorptech.superm
+| DEU Yemek(Refectory App.) - Android |2014|
+  ==> https://play.google.com/store/apps/details?id=com.deu.talha.deuyemek
+| Cinecity Web App. - NodeJS, OracleDB |2015|
+  ==> https://github.com/talhaHavadar/CineCityWeb
+| GBJ Atolye - Android |2015|
+  ==> https://play.google.com/store/apps/details?id=com.gbj.atolye
+| Fawori En Yakın Bayii - Android |2015|
+  ==> https://play.google.com/store/apps/details?id=com.gbj.enyakinbayifawori
+| Filli Boya En Yakın Bayii - Android |2015|
+  ==> https://play.google.com/store/apps/details?id=com.gbj.enyakinbayifilliboya
