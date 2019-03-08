@@ -14,11 +14,11 @@ class App extends Component {
     this.fs = {
       type: "directory",
       children: {
-        about: {
+        "about.txt": {
           type: "file",
           src: "/files/aboutme.txt"
         },
-        awards: {
+        "awards.txt": {
           type: "file",
           src: "/files/awards.txt"
         },
@@ -31,19 +31,23 @@ class App extends Component {
             }
           }
         },
-        contact: {
+        "contact.txt": {
           type: "file",
           src: "/files/contact.txt"
         },
-        credits: {
+        "credits.txt": {
           type: "file",
           src: "/files/credits.txt"
         },
-        github: {
+        "github.txt": {
           type: "file",
           src: "/files/github.txt"
         },
-        skills: {
+        "projects.txt": {
+          type: "file",
+          src: "/files/projects.txt"
+        },
+        "skills.txt": {
           type: "file",
           src: "/files/skills.txt"
         },
