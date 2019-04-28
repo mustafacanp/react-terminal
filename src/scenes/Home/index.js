@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./Home.css";
 import Line from "../../components/Line";
 import Toolbar from "../../components/Toolbar";
+import fs from "../../fs.json"
 
 class App extends Component {
 
@@ -11,61 +12,13 @@ class App extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
-    this.fs = {
-      type: "directory",
-      children: {
-        Desktop: {
-          type: "directory",
-          children: {
-            ReactApp: {
-              type: "directory",
-              children: {}
-            },
-            "readme.txt": {
-              type: "file",
-              src: "/files/readme.txt"
-            },
-          }
-        },
-        Documents: {
-          type: "directory",
-          children: {},
-        },
-        Downloads: {
-          type: "directory",
-          children: {},
-        },
-        Music: {
-          type: "directory",
-          children: {},
-        },
-        Pictures: {
-          type: "directory",
-          children: {},
-        },
-        Public: {
-          type: "directory",
-          children: {},
-        },
-        Templates: {
-          type: "directory",
-          children: {},
-        },
-        Videos: {
-          type: "directory",
-          children: {},
-        },
-      }
-    };
-
     this.state = {
       settings: {
         computer_name: "ubuntu",
         user_name: "root",
       },
-      fs: this.fs,
-      cfs: this.fs, // Current fs
-      // path: ["home", "user"],
+      fs: fs,
+      cfs: fs,
       path: [],
       base_path: "home/user",
       prompt_text: "",
@@ -78,13 +31,8 @@ class App extends Component {
     }
   }
 
-
   pwd_text = () => {
     return "~" + ((this.state.path.join("/") === this.state.base_path) ? "" : "/" + this.state.path.join("/"));
-  }
-
-  isDirecroryExist = (dir_name) => {
-    
   }
 
   is_dir = (obj) => {
@@ -137,9 +85,7 @@ class App extends Component {
     };
 
     if(type==="cout") {
-
       new_command.id = this.state.previousLines.length+2;
-
       const response_of_command = new_command;
 
       const new_command2 = {
@@ -185,14 +131,14 @@ class App extends Component {
 
   commands = {
     help: () => {
-      const usable_commands = Object.keys(this.commands).join("   ");
+      const usable_commands = Object.keys(this.commands).join("&#09;");
       this.createNewLine(`Usable Commands:   ${usable_commands}`, "cout");
     },
     ls: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
       if(this.checkSecondParameter(cmd, "ls")) return;
-      const folders = Object.keys(this.state.cfs.children).filter(folder => folder);
-      this.createNewLine(folders.join("   "), "cout", "break-none");
+      const folders = Object.keys(this.state.cfs.children).map(key => `<span class="type-${this.state.cfs.children[key].type}">${key}</span>`);
+      this.createNewLine(folders.join("&#09;"), "cout", "break-none");
     },
     cd: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
@@ -215,6 +161,11 @@ class App extends Component {
 
           this.setState({ cfs: temp_cfs });
         }
+        return;
+      } else if (secondParam === "~") {
+        this.printCommandLine();
+        this.setState({ cfs: this.state.fs });
+        this.setState({ path: [] });
         return;
       }
 
@@ -341,7 +292,7 @@ class App extends Component {
       }
 
       if(this.state.tab_pressed) {
-        this.createNewLine(existed_things.join("   "), "cout", "break-none");
+        this.createNewLine(existed_things.join("&#09;"), "cout", "break-none");
         this.setState({ prompt_text: this.state.prompt_text });
         return;
       }
