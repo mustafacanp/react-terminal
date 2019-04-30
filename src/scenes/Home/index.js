@@ -137,7 +137,10 @@ class App extends Component {
     ls: () => {
       const cmd = this.state.prompt_text.replace(/\s+/g, " ");
       if(this.checkSecondParameter(cmd, "ls")) return;
-      const folders = Object.keys(this.state.cfs.children).map(key => `<span class="type-${this.state.cfs.children[key].type}">${key}</span>`);
+      const folders = Object.keys(this.state.cfs.children).map(key => {
+        let slash = this.state.cfs.children[key].type === "directory" ? "/" : "";
+        return `<span class="type-${this.state.cfs.children[key].type}">${key}${slash}</span>`
+      });
       this.createNewLine(folders.join("&#09;"), "cout", "break-none");
     },
     cd: () => {
@@ -287,7 +290,8 @@ class App extends Component {
       if(existed_things.length > 1) this.setState({ tab_pressed: true });
 
       if (existed_things.length === 1) {
-        this.setState({ prompt_text: `${param1} ${existed_things[0]}/` });
+        let slash = this.state.cfs.children[existed_things[0]].type === "directory" ? "/" : "";
+        this.setState({ prompt_text: `${param1} ${existed_things[0]}${slash}` });
         return;
       }
 
