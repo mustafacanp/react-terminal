@@ -33,11 +33,26 @@ class App extends Component {
 
   commands = {
     sudo: () => {
-      console.log("sudo");
+      const input = this.removeSpaces(this.state.prompt_text);
+      const input_without_sudo = input.substr(input.indexOf(" ")+1);
+
+      const is_it_command = this.isItCommand(input_without_sudo);
+      const command = this.clearCommandName(input_without_sudo);
+
+      const command_input = this.removeSpaces(input_without_sudo);
+      if(is_it_command) this.commands[command](command_input);
+      else if(input === "") this.cin();
+      else this.createErrorLine();
     },
     help: () => this.cout((["Usable Commands:", ...Object.keys(this.commands)]).join("&#09;")),
-    ls: () => {
-      const input = this.removeSpaces(this.state.prompt_text);
+    clear: () => {
+      this.setState({ previousLines: [] }, this.printCommandLine());
+    },
+    pwd: () => {
+      const cwd = this.pwd_text().replace("~", "/" + this.state.base_path);
+      this.cout(cwd);
+    },
+    ls: (input) => {
       if(this.checkSecondParameter(input, "ls")) return;
       const folders = Object.keys(this.state.cfs.children).map(key => {
         let slash = this.is_dir(this.state.cfs.children[key]) ? "/" : "";
@@ -45,8 +60,7 @@ class App extends Component {
       });
       this.cout(folders.join("&#09;"), "break-none");
     },
-    cd: () => {
-      const input = this.removeSpaces(this.state.prompt_text);
+    cd: (input) => {
       if(input === "cd" || input === "cd ") { this.printCommandLine(); return; }
       const secondParam = this.secondParameter(input).replace("/", "");
 
@@ -86,15 +100,7 @@ class App extends Component {
       }
       this.printCommandLine();
     },
-    pwd: () => {
-      const cwd = this.pwd_text().replace("~", "/" + this.state.base_path);
-      this.cout(cwd);
-    },
-    clear: () => {
-      this.setState({ previousLines: [] }, this.printCommandLine());
-    },
-    cat: async () => {
-      const input = this.removeSpaces(this.state.prompt_text);
+    cat: async (input) => {
 
       if(!this.secondParameter(input)) { this.cout("cat: missing operand"); return }
       const secondParam = this.secondParameter(input).replace("/", "");
@@ -108,8 +114,7 @@ class App extends Component {
       else
         this.cout(`cat: ${secondParam}: No such file or directory`);
     },
-    rm: () => {
-      const input = this.removeSpaces(this.state.prompt_text);
+    rm: (input) => {
 
       if(!this.secondParameter(input)) { this.cout("rm: missing operand"); return }
       const secondParam = this.secondParameter(input).replace("/", "");
@@ -140,6 +145,19 @@ class App extends Component {
     }
   }
 
+
+  isItCommand = (input) => {
+    return !!Object.keys(this.commands).find(command_name => {
+      if(input === command_name || input.startsWith(command_name+" ")) return true;
+      else return false;
+    });
+  }
+
+  clearCommandName = (input) => Object.keys(this.commands).find(command_name => {
+    if(input.startsWith(command_name+" ")) return input.split(" ")[0];
+    else if(input === command_name) return input;
+    else return undefined;
+  });
 
   createNewCommand = (type, text, breakWord) => {
     return {
@@ -178,11 +196,10 @@ class App extends Component {
   }
 
   updatePreviousCommands = (command_text) => {
-    if(command_text !== ""){
+    if(command_text !== "")
       this.setState(prevState => ({
         previousCommands: [...prevState.previousCommands, command_text]
       }));
-    }
   }
 
   checkSecondParameter = (text, command_name) => {
@@ -207,7 +224,7 @@ class App extends Component {
   is_file = obj => !!(obj && obj.type === "file");
 
   printCommandLine = () => this.cin(this.state.prompt_text);
-  handleInputChange = (e) => this.setState({ prompt_text:e.target.value });
+  handleInputChange = (e) => this.setState({ prompt_text: e.target.value });
   createErrorLine = () => this.cout(this.firstParameter(this.state.prompt_text)+": command not found");
   pwd_text = () =>  "~" + ((this.state.path.join("/") === this.state.base_path) ? "" : "/" + this.state.path.join("/"));
 
@@ -237,9 +254,11 @@ class App extends Component {
     e.preventDefault();
 
     const input = this.state.prompt_text;
+    const input_without_sudo = input.replace("sudo ", "");
+    const sudo_string = input.startsWith("sudo ") ? "sudo " : "";
 
-    const param1 = this.firstParameter(input);
-    const param2 = this.secondParameter(input);
+    const param1 = this.firstParameter(input_without_sudo);
+    const param2 = this.secondParameter(input_without_sudo);
 
     if((param1 === "cd" || param1 === "cat" || param1 === "rm") && param2) {
       const children = Object.keys(this.state.cfs.children);
@@ -249,7 +268,7 @@ class App extends Component {
 
       if (existed_things.length === 1) {
         let slash = this.is_dir(this.state.cfs.children[existed_things[0]]) ? "/" : "";
-        this.setState({ prompt_text: `${param1} ${existed_things[0]}${slash}` });
+        this.setState({ prompt_text: `${sudo_string+param1} ${existed_things[0]}${slash}` });
         return;
       }
 
@@ -266,21 +285,11 @@ class App extends Component {
     this.setState({ current_line_from_last: 0 });
 
     const input = this.removeSpaces(this.state.prompt_text);
-    let is_it_command = false;
-    let command = "";
+    const is_it_command = this.isItCommand(input);
+    const command = this.clearCommandName(input);
 
-    Object.keys(this.commands).map(command_name => {
-      if(input === command_name) {
-        is_it_command = true;
-        command = input;
-      } else if(input.startsWith(command_name+" ")) {
-        is_it_command = true;
-        command = input.split(" ")[0];
-      }
-      return undefined;
-    });
-
-    if(is_it_command) this.commands[command]();
+    const command_input = this.removeSpaces(input);
+    if(is_it_command) this.commands[command](command_input);
     else if(input === "") this.cin();
     else this.createErrorLine();
 
