@@ -183,3 +183,13 @@ body {
     opacity: 1;
   }
 }
+
+@media screen and (max-width: 991px) {
+  .terminal {
+    width: 100%;
+    height: 100%;
+  }
+  .terminal-body-container {
+    height: calc(100% - 25px);
+  }
+}
