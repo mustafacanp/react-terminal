@@ -1,2 +1,0 @@
-alias textgame='xdg-open http://textgamerpg.com'
-alias randomcolor='xdg-open http://randomcolor.online'

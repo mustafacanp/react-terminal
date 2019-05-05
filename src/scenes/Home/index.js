@@ -40,11 +40,20 @@ class App extends Component {
       const command = this.clearCommandName(input_without_sudo);
 
       const command_input = this.removeSpaces(input_without_sudo);
-      if(is_it_command) this.commands[command](command_input);
+      if(is_it_command) this.commands[command](true, command_input);
       else if(input === "") this.cin();
       else this.createErrorLine();
     },
-    help: () => this.cout((["Usable Commands:", ...Object.keys(this.commands)]).join("&#09;")),
+    help: async () => {
+      const commands = await this.getUsableCommands();
+      this.cout((["Usable Commands:", ...commands]).join("&#09;"));
+    },
+    textgame: () => {
+      this.openLink("http://textgamerpg.com");
+    },
+    randomcolor: () => {
+      this.openLink("http://randomcolor.online");
+    },
     clear: () => {
       this.setState({ previousLines: [] }, this.printCommandLine());
     },
@@ -52,15 +61,15 @@ class App extends Component {
       const cwd = this.pwd_text().replace("~", "/" + this.state.base_path);
       this.cout(cwd);
     },
-    ls: (input) => {
+    ls: (sudo, input) => {
       if(this.checkSecondParameter(input, "ls")) return;
-      const folders = Object.keys(this.state.cfs.children).map(key => {
+      const dirs = Object.keys(this.state.cfs.children).map(key => {
         let slash = this.is_dir(this.state.cfs.children[key]) ? "/" : "";
         return `<span class="type-${this.state.cfs.children[key].type}">${key}${slash}</span>`
       });
-      this.cout(folders.join("&#09;"), "break-none");
+      this.cout(dirs.join("&#09;"), "break-none");
     },
-    cd: (input) => {
+    cd: (sudo, input) => {
       if(input === "cd" || input === "cd ") { this.printCommandLine(); return; }
       const secondParam = this.secondParameter(input).replace("/", "");
 
@@ -72,12 +81,10 @@ class App extends Component {
         if(this.state.path.length){
           let temp_path = this.state.path;
           temp_path.pop();
-
           let temp_cfs = this.state.fs;
           temp_path.forEach(path => {
             temp_cfs = temp_cfs.children[path];
           });
-
           this.setState({ cfs: temp_cfs });
         }
         return;
@@ -88,63 +95,91 @@ class App extends Component {
         return;
       }
 
-      if(this.is_dir(this.state.cfs.children[secondParam])) {
+      const selected_file_or_dir = this.state.cfs.children[secondParam];
+      if(this.is_dir(selected_file_or_dir)) {
         this.setState(prevState => ({
           path: [...prevState.path, secondParam]
         }));
-        this.setState({ cfs: this.state.cfs.children[secondParam] });
-      } else if(this.is_file(this.state.cfs.children[secondParam])) {
+        this.setState({ cfs: selected_file_or_dir });
+      } else if(this.is_file(selected_file_or_dir)) {
         this.cout(`bash: cd: ${secondParam}: Not a directory`); return;
       } else {
         this.cout(`bash: cd: ${secondParam}: No such file or directory`); return;
       }
       this.printCommandLine();
     },
-    cat: async (input) => {
-
+    cat: async (sudo, input) => {
       if(!this.secondParameter(input)) { this.cout("cat: missing operand"); return }
       const secondParam = this.secondParameter(input).replace("/", "");
       if(this.checkThirdParameter(input, "cat")) return;
 
-      if(this.is_file(this.state.cfs.children[secondParam])) {
-        const file = this.state.cfs.children[secondParam];
-        this.cout(await fetch(file.src).then(res => res.text()));
-      } else if(this.is_dir(this.state.cfs.children[secondParam]))
+      const selected_file_or_dir = this.state.cfs.children[secondParam];
+      if(this.is_file(selected_file_or_dir)) {
+        const file = selected_file_or_dir;
+        if(!file.sudo || sudo)
+          this.cout(await fetch(file.src).then(res => res.text()));
+        else
+          this.cout(`bash: ${secondParam}: permission denied`); return;
+      } else if(this.is_dir(selected_file_or_dir))
         this.cout(`cat: ${secondParam}: Is a directory`);
       else
         this.cout(`cat: ${secondParam}: No such file or directory`);
     },
-    rm: (input) => {
-
+    rm: (sudo, input) => {
       if(!this.secondParameter(input)) { this.cout("rm: missing operand"); return }
       const secondParam = this.secondParameter(input).replace("/", "");
       if(this.checkThirdParameter(input, "rm")) return;
 
-      if(this.is_file(this.state.cfs.children[secondParam])) {
-        const new_fs = Object.keys(this.state.fs.children)
-          .filter(key => key !== secondParam)
-          .reduce((obj, key) => {
-            obj[key] = this.state.fs.children[key];
-            return obj;
-          }, {});
-        
-        const new_cfs = Object.keys(this.state.cfs.children)
-          .filter(key => key !== secondParam)
-          .reduce((obj, key) => {
-            obj[key] = this.state.cfs.children[key];
-            return obj;
-          }, {});
-        
-        this.setState({ fs: { type: "directory", children: new_fs }});
-        this.setState({ cfs: { type: "directory", children: new_cfs }});
-        this.cout();
-      } else if(this.is_dir(this.state.cfs.children[secondParam]))
+      const selected_file_or_dir = this.state.cfs.children[secondParam];
+      if(this.is_file(selected_file_or_dir)) {
+        const file = selected_file_or_dir;
+        if(!file.sudo || sudo) {
+          const new_fs = Object.keys(this.state.fs.children)
+            .filter(key => key !== secondParam)
+            .reduce((obj, key) => {
+              obj[key] = this.state.fs.children[key];
+              return obj;
+            }, {});
+          
+          const new_cfs = Object.keys(this.state.cfs.children)
+            .filter(key => key !== secondParam)
+            .reduce((obj, key) => {
+              obj[key] = this.state.cfs.children[key];
+              return obj;
+            }, {});
+          
+          this.setState({ fs: { type: "directory", children: new_fs }});
+          this.setState({ cfs: { type: "directory", children: new_cfs }});
+          this.cout();
+        } else
+          this.cout(`bash: ${secondParam}: permission denied`); return;
+      } else if(this.is_dir(selected_file_or_dir))
         this.cout(`rm: cannot remove '${secondParam}': Is a directory`);
       else
         this.cout(`rm: ${secondParam}: No such file or directory`);
     }
   }
 
+  openLink(link){
+    var win = window.open(link, '_blank');
+    win.focus();
+    this.printCommandLine();
+  }
+
+  async getUsableCommands() {
+    const bashrc = await fetch("/files/bashrc.txt").then(res => res.text());
+    const rows = bashrc.split("\n");
+
+    let hiddenCommands = rows.map(row => {
+      return row.substring(
+        row.indexOf(" ") + 1, 
+        row.indexOf("=")
+      );
+    });
+    hiddenCommands.push("sudo");
+
+    return Object.keys(this.commands).filter(cmd => hiddenCommands.indexOf(cmd) < 0);
+  }
 
   isItCommand = (input) => {
     return !!Object.keys(this.commands).find(command_name => {
@@ -262,7 +297,7 @@ class App extends Component {
 
     if((param1 === "cd" || param1 === "cat" || param1 === "rm") && param2) {
       const children = Object.keys(this.state.cfs.children);
-      const existed_things = children.filter(folder => folder.startsWith(param2));
+      const existed_things = children.filter(dir => dir.startsWith(param2));
 
       if(existed_things.length > 1) this.setState({ tab_pressed: true });
 
@@ -289,7 +324,7 @@ class App extends Component {
     const command = this.clearCommandName(input);
 
     const command_input = this.removeSpaces(input);
-    if(is_it_command) this.commands[command](command_input);
+    if(is_it_command) this.commands[command](false, command_input);
     else if(input === "") this.cin();
     else this.createErrorLine();
 
@@ -356,7 +391,7 @@ class App extends Component {
     return(
       <div className="App" onClick={()=>this.focusTerminal()}>
         <div className="container">
-          <div className="terminal">
+          <div className="terminal" onContextMenu={e=>e.preventDefault()}>
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
             <div className="terminal-body-container">
               <div className="terminal-body">

@@ -24,7 +24,8 @@
                      "children":{
                         "dont_open.jpg":{
                            "type":"file",
-                           "src":"/files/images/boobs.txt"
+                           "src":"/files/images/boobs.txt",
+                           "sudo": true
                         }
                      }
                   }
@@ -65,7 +66,8 @@
       },
       ".bashrc":{
          "type":"file",
-         "src":"/files/texts/bashrc.txt"
+         "src":"/files/bashrc.txt",
+         "sudo": true
       }
    }
 }
