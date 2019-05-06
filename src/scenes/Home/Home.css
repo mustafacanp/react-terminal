@@ -141,6 +141,9 @@ body {
   word-break: break-all;
   white-space: pre-wrap;
 }
+.terminal-prompt:first-child .prompt-text {
+  color: #0E9591;
+}
 .prompt-input {
   width: 0;
   height: 0;
@@ -157,12 +160,16 @@ body {
   animation: 600ms ease infinite alternate blink;
 }
 
+.type-directory {
+  color: #38B8E7;
+}
+
 .type-file {
 
 }
 
-.type-directory {
-  color: #38B8E7;
+.type-sh {
+ color: #DC461D;
 }
 
 .ml-0 {

@@ -8,11 +8,13 @@ class App extends Component {
 
   constructor() {
     super();
-    
+
+    const version = "1.1.0";
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
     this.state = {
+      infoText: `ReactTerminal, version ${version}-release\nLinux Ubuntu style terminal with React.JS\nRepository: https://github.com/mustafacanp/ReactTerminal\nAuthor: Mustafa Can Palaz`,
       settings: {
         computer_name: "ubuntu",
         user_name: "root",
@@ -44,15 +46,21 @@ class App extends Component {
       else if(input === "") this.cin();
       else this.createErrorLine();
     },
-    help: async () => {
-      const commands = await this.getUsableCommands();
-      this.cout((["Usable Commands:", ...commands]).join("&#09;"));
+    github: () => {
+      this.openLink("https://github.com/mustafacanp");
+    },
+    linkedin: () => {
+      this.openLink("https://www.linkedin.com/in/mustafa-can-palaz");
     },
     textgame: () => {
       this.openLink("http://textgamerpg.com");
     },
     randomcolor: () => {
       this.openLink("http://randomcolor.online");
+    },
+    help: async () => {
+      const commands = await this.getUsableCommands();
+      this.cout((["Usable Commands:", ...commands]).join("&#09;"));
     },
     clear: () => {
       this.setState({ previousLines: [] }, this.printCommandLine());
@@ -67,7 +75,7 @@ class App extends Component {
         let slash = this.is_dir(this.state.cfs.children[key]) ? "/" : "";
         return `<span class="type-${this.state.cfs.children[key].type}">${key}${slash}</span>`
       });
-      this.cout(dirs.join("&#09;"), "break-none");
+      this.cout(dirs.join("&#09;&#09;"), "break-none");
     },
     cd: (sudo, input) => {
       if(input === "cd" || input === "cd ") { this.printCommandLine(); return; }
@@ -119,7 +127,7 @@ class App extends Component {
         if(!file.sudo || sudo)
           this.cout(await fetch(file.src).then(res => res.text()));
         else
-          this.cout(`bash: ${secondParam}: permission denied`); return;
+          this.cout(`bash: ${secondParam}: permission denied. Try with sudo`); return;
       } else if(this.is_dir(selected_file_or_dir))
         this.cout(`cat: ${secondParam}: Is a directory`);
       else
@@ -152,7 +160,7 @@ class App extends Component {
           this.setState({ cfs: { type: "directory", children: new_cfs }});
           this.cout();
         } else
-          this.cout(`bash: ${secondParam}: permission denied`); return;
+          this.cout(`bash: ${secondParam}: permission denied. Try with sudo`); return;
       } else if(this.is_dir(selected_file_or_dir))
         this.cout(`rm: cannot remove '${secondParam}': Is a directory`);
       else
@@ -176,7 +184,7 @@ class App extends Component {
         row.indexOf("=")
       );
     });
-    hiddenCommands.push("sudo");
+    hiddenCommands = hiddenCommands.concat(["sudo", "github", "linkedin"]);
 
     return Object.keys(this.commands).filter(cmd => hiddenCommands.indexOf(cmd) < 0);
   }
@@ -360,6 +368,16 @@ class App extends Component {
   /** DOM ACTIONS */
 
   componentDidMount() {
+    console.log(this.state.infoText);
+
+    this.setState({ previousLines: [{
+      type: "cout",
+      id: 1,
+      pwd: "~/",
+      text: this.state.infoText,
+      breakWord: false
+    }]});
+
     this._promptInput = document.querySelector(".prompt-input");
     this._cursor = document.querySelector(".prompt-cursor");
     this._terminal_body_container = document.querySelector(".terminal-body-container");

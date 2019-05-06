@@ -1,46 +1,28 @@
 {
    "type":"directory",
    "children":{
-      "Documents":{
-         "type":"directory",
-         "children":{
-
-         }
-      },
-      "Downloads":{
-         "type":"directory",
-         "children":{
-
-         }
-      },
-      "game_saves":{
-         "type":"directory",
-         "children":{
-            "nsfw":{
-               "type":"directory",
-               "children":{
-                  "not_porn":{
-                     "type":"directory",
-                     "children":{
-                        "dont_open.jpg":{
-                           "type":"file",
-                           "src":"/files/images/boobs.txt",
-                           "sudo": true
-                        }
-                     }
-                  }
-               }
-            }
-         }
-      },
-      "gta_sa_cheats.txt":{
+      ".bashrc":{
          "type":"file",
-         "src":"/files/texts/gta_sa_cheats.txt"
+         "src":"/files/bashrc.txt",
+         "sudo": true
       },
-      "Music":{
+      "contact.txt":{
+         "type":"file",
+         "src":"/files/texts/contact.txt"
+      },
+      "experience.txt":{
+         "type":"file",
+         "src":"/files/texts/experience.txt"
+      },
+      "Links":{
          "type":"directory",
          "children":{
-
+            "github":{
+               "type":"sh"
+            },
+            "linkedin":{
+               "type":"sh"
+            }
          }
       },
       "Pictures":{
@@ -57,17 +39,20 @@
             "magnificent_castle.png":{
                "type":"file",
                "src":"/files/images/magnificent_castle.txt"
-            },
-            "profile.png":{
-               "type":"file",
-               "src":"/files/images/profile.txt"
             }
          }
       },
-      ".bashrc":{
+      "profile.png":{
          "type":"file",
-         "src":"/files/bashrc.txt",
-         "sudo": true
+         "src":"/files/images/profile.txt"
+      },
+      "projects.txt":{
+         "type":"file",
+         "src":"/files/texts/projects.txt"
+      },
+      "skills.txt":{
+         "type":"file",
+         "src":"/files/texts/skills.txt"
       }
    }
 }
