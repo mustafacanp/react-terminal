@@ -16,8 +16,8 @@ class App extends Component {
     this.state = {
       infoText: `ReactTerminal, version ${version}-release\nLinux Ubuntu style terminal with React.JS\nRepository: https://github.com/mustafacanp/ReactTerminal\nAuthor: Mustafa Can Palaz`,
       settings: {
-        computer_name: "ubuntu",
-        user_name: "root",
+        computer_name: "mustafacanpalaz.com",
+        user_name: "guest",
       },
       fs: fs,
       cfs: fs,
