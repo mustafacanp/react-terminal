@@ -1,0 +1,5 @@
+| Dipnot Web Design - PHP |2015-2016|
+| Bulutsoft Software (TravelUs, Nexus and OtelScanner Projects) - PHP/Laravel |2016-2017|
+| Alpha Creative - Laravel, VueJS |2018|
+| Arisdot Digital - Laravel, NodeJS, VueJS |2018|
+| Destek Engineering (Risksoft ISG Software) - NodeJS, VueJS |2019-...|
