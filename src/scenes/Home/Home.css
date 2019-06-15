@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu');
 
 body {
-  background: linear-gradient(45deg, #57003f 0%,#f57453 100%);
+  background: linear-gradient(45deg, #57003f 0%, #f57453 100%);
   font-family: 'Ubuntu';
 }
 
@@ -11,22 +11,20 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-
 }
 .terminal {
   width: 818px;
   height: 524px;
-  box-shadow: 2px 4px 10px rgba(0,0,0,.5);
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
 
   position: absolute;
   bottom: auto;
   left: auto;
-  -webkit-transition:all 1s ease;
-  -moz-transition:all 1s ease;
-   -ms-transition:all 1s ease;
-    -o-transition:all 1s ease;
-       transition:all 1s ease;
-
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -ms-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  transition: all 1s ease;
 }
 /*
 .terminal:hover {
@@ -34,7 +32,6 @@ body {
   left: 30px;
 }
 */
-
 
 .menu {
   position: absolute;
@@ -45,9 +42,8 @@ body {
   clip: rect(0px 70px 34px 0px);
 }
 
-
 .terminal-toolbar {
-  background: linear-gradient(#504b45 0%,#3c3b37 100%);
+  background: linear-gradient(#504b45 0%, #3c3b37 100%);
   width: 100%;
   padding: 0 8px;
   box-sizing: border-box;
@@ -74,11 +70,10 @@ body {
   padding: 0;
   font-size: 7px;
   background: linear-gradient(#7d7871 0%, #595953 100%);
-  text-shadow: 0px 1px 0px rgba(255,255,255,0.2);
-  box-shadow: 0px 0px 1px 0px #41403A,0px 1px 1px 0px #474642;
+  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 0px 1px 0px #41403a, 0px 1px 1px 0px #474642;
   border: none;
   margin-right: 4px;
-
 }
 .toolbar-button:hover {
   cursor: pointer;
@@ -101,18 +96,17 @@ body {
   margin-bottom: 1px;
 }
 
-
 .terminal-body-container {
   height: 500px;
   overflow-y: scroll;
-  background: rgba(56, 4, 40, .9);
+  background: rgba(56, 4, 40, 0.9);
 }
 .terminal-body-container::-webkit-scrollbar {
   width: 12px;
   border: none;
 }
 .terminal-body-container::-webkit-scrollbar-thumb {
-	background: linear-gradient(#504b45 0%,#3c3b37 100%);
+  background: linear-gradient(#504b45 0%, #3c3b37 100%);
 }
 .terminal-body {
   font-family: 'Ubuntu mono';
@@ -145,6 +139,7 @@ body {
   width: 0;
   height: 0;
   border: 0;
+  padding: 0;
 }
 .prompt-cursor {
   height: 17px;
@@ -158,11 +153,10 @@ body {
 }
 
 .type-file {
-
 }
 
 .type-directory {
-  color: #38B8E7;
+  color: #38b8e7;
 }
 
 .ml-0 {
