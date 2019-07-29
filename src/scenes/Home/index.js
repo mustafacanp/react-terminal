@@ -7,8 +7,8 @@ class App extends Component {
 
   constructor() {
     super();
-    
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
     this.fs = {
@@ -84,7 +84,7 @@ class App extends Component {
   }
 
   isDirecroryExist = (dir_name) => {
-    
+
   }
 
   is_dir = (obj) => {
@@ -99,8 +99,12 @@ class App extends Component {
     this._cursor = document.querySelector(".prompt-cursor");
     this._terminal_body_container = document.querySelector(".terminal-body-container");
     this._terminal_body = document.querySelector(".terminal-body-container");
-
     this.focusTerminal();
+    document.addEventListener('keydown', this.handleKeyDown.bind(this));
+  }
+
+  componentWillUnmount() {
+    document.addEventListener('keydown', this.handleKeyDown);
   }
 
   focusTerminal() {
@@ -112,7 +116,17 @@ class App extends Component {
     this.setState({prompt_text:e.target.value});
   }
 
-  handleKeyPress = (e) => {
+  handleKeyDown = (e) => {
+    // Handles non-printable chars.
+    if (e.ctrlKey || e.altKey) {
+      this._promptInput.blur();
+      e.preventDefault();
+      e.returnValue = false;
+      return false;
+    } else {
+      this.focusTerminal();
+    }
+
     switch (e.keyCode) {
       case 9: this.handleTab(e); break; // tab
       case 13: this.handleEnter(); break; // enter
@@ -121,9 +135,8 @@ class App extends Component {
       case 38: this.handleUpArrow(e); break; // up
       case 40: this.handleDownArrow(); break; // down
       case 46: this.handleRightArrow(); break; // del
-      // case 16: return; // shift
-      // case 17: return; // ctrl
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -260,21 +273,21 @@ class App extends Component {
 
       let coutString = "";
       if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "file") {
-        
+
         const new_fs = Object.keys(this.state.fs.children)
           .filter(key => key !== secondParam)
           .reduce((obj, key) => {
             obj[key] = this.state.fs.children[key];
             return obj;
           }, {});
-        
+
         const new_cfs = Object.keys(this.state.cfs.children)
           .filter(key => key !== secondParam)
           .reduce((obj, key) => {
             obj[key] = this.state.cfs.children[key];
             return obj;
           }, {});
-        
+
         this.setState({ fs: { type: "directory", children: new_fs }});
         this.setState({ cfs: { type: "directory", children: new_cfs }});
       } else if(this.state.cfs.children[secondParam] && this.state.cfs.children[secondParam].type === "directory") {
@@ -399,8 +412,8 @@ class App extends Component {
   }
 
   /** END HANDLE KEYS */
-  
-  
+
+
   moveCursor = () => {
     this._cursor.style.marginLeft = -8*this.state.cursor_from_the_right+"px"; // move cursor
     this.setState({cursor_letter:this.state.prompt_text[this.state.prompt_text.length-this.state.cursor_from_the_right]}); // set letter to cursor
@@ -420,9 +433,8 @@ class App extends Component {
 
   render() {
     return(
-      <div className="App" onClick={()=>this.focusTerminal()}>
+      <div className="App">
         <div className="container">
-
           <div className="terminal">
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
             <div className="terminal-body-container">
@@ -430,7 +442,7 @@ class App extends Component {
                 {this.renderPreviousLines()}
                 <div className="terminal-prompt">
                   <span className="prompt-user">{this.state.settings.user_name}@{this.state.settings.computer_name}:</span><span className="prompt-location">{this.pwd_text()}</span><span className="prompt-dollar">$</span>
-                  <input className="prompt-input" value={this.state.prompt_text} onChange={this.handleInputChange} onKeyDown={this.handleKeyPress} />
+                  <input className="prompt-input" value={this.state.prompt_text} onChange={this.handleInputChange} />
                   <span className="prompt-text">{this.state.prompt_text}</span>
                   <span className="prompt-cursor">{this.state.cursor_letter}</span>
                 </div>
