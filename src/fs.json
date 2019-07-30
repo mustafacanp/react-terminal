@@ -1,58 +1,58 @@
 {
-   "type":"directory",
-   "children":{
-      ".bashrc":{
-         "type":"file",
-         "src":"/files/bashrc.txt",
-         "sudo": true
-      },
-      "contact.txt":{
-         "type":"file",
-         "src":"/files/texts/contact.txt"
-      },
-      "experience.txt":{
-         "type":"file",
-         "src":"/files/texts/experience.txt"
-      },
-      "Links":{
-         "type":"directory",
-         "children":{
-            "github":{
-               "type":"sh"
-            },
-            "linkedin":{
-               "type":"sh"
-            }
-         }
-      },
-      "Pictures":{
-         "type":"directory",
-         "children":{
-            "amazing_view.png":{
-               "type":"file",
-               "src":"/files/images/amazing_view.txt"
-            },
-            "awesome_space.png":{
-               "type":"file",
-               "src":"/files/images/awesome_space.txt"
-            },
-            "magnificent_castle.png":{
-               "type":"file",
-               "src":"/files/images/magnificent_castle.txt"
-            }
-         }
-      },
-      "profile.png":{
-         "type":"file",
-         "src":"/files/images/profile.txt"
-      },
-      "projects.txt":{
-         "type":"file",
-         "src":"/files/texts/projects.txt"
-      },
-      "skills.txt":{
-         "type":"file",
-         "src":"/files/texts/skills.txt"
+  "type": "directory",
+  "children": {
+    ".bashrc": {
+      "type": "file",
+      "src": "/files/bashrc.txt",
+      "sudo": true
+    },
+    "contact.txt": {
+      "type": "file",
+      "src": "/files/texts/contact.txt"
+    },
+    "experience.txt": {
+      "type": "file",
+      "src": "/files/texts/experience.txt"
+    },
+    "Links": {
+      "type": "directory",
+      "children": {
+        "github": {
+          "type": "sh"
+        },
+        "linkedin": {
+          "type": "sh"
+        }
       }
-   }
+    },
+    "Pictures": {
+      "type": "directory",
+      "children": {
+        "amazing_view.png": {
+          "type": "file",
+          "src": "/files/images/amazing_view.txt"
+        },
+        "awesome_space.png": {
+          "type": "file",
+          "src": "/files/images/awesome_space.txt"
+        },
+        "magnificent_castle.png": {
+          "type": "file",
+          "src": "/files/images/magnificent_castle.txt"
+        }
+      }
+    },
+    "profile.png": {
+      "type": "file",
+      "src": "/files/images/profile.txt"
+    },
+    "projects.txt": {
+      "type": "file",
+      "src": "/files/texts/projects.txt"
+    },
+    "skills.txt": {
+      "type": "file",
+      "src": "/files/texts/skills.txt"
+    }
+  }
 }
