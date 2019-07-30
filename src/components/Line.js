@@ -26,7 +26,7 @@ class Line extends Component {
         } else {
             return(
                 <div className="terminal-prompt">
-                    <span className="prompt-text ml-0" style={this.wordBreakStyle}>{this.text}</span>
+                    <span className="prompt-text ml-0" style={this.wordBreakStyle} dangerouslySetInnerHTML={{ __html: this.text }}></span>
                 </div>
             );
         }

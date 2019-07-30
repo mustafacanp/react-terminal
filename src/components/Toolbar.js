@@ -17,47 +17,46 @@ class Toolbar extends Component {
 
   exitFullscreen() {
     if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
-      document.querySelector('.terminal').style.height = '424px';
-      document.querySelector('.terminal').style.width = '600px';
+      document.querySelector('.terminal').style.height = '524px';
+      document.querySelector('.terminal').style.width = '818px';
       document.querySelector('.terminal').style.top = 'auto';
-      document.querySelector('.terminal-body-container').style.height = '400px';
+      document.querySelector('.terminal-body-container').style.height = '500px';
     }
   }
 
   requestFullScreen() {
-    var isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
-      (document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
-      (document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
-      (document.msFullscreenElement && document.msFullscreenElement !== null);
-
-    var docElm = document.documentElement;
-    if (!isInFullScreen) {
-      document.querySelector('.terminal').style.height = window.screen.height-25+'px';
-      document.querySelector('.terminal').style.width = window.screen.width+'px';
-      document.querySelector('.terminal').style.top = '0';
-      document.querySelector('.terminal-body-container').style.height = window.screen.height-25+'px';
-      if (docElm.requestFullscreen) {
-        docElm.requestFullscreen();
-      } else if (docElm.mozRequestFullScreen) {
-        docElm.mozRequestFullScreen();
-      } else if (docElm.webkitRequestFullScreen) {
-        docElm.webkitRequestFullScreen();
-      } else if (docElm.msRequestFullscreen) {
-        docElm.msRequestFullscreen();
-      }
-    } else {
-      document.querySelector('.terminal').style.height = '424px';
-      document.querySelector('.terminal').style.width = '600px';
-      document.querySelector('.terminal').style.top = 'auto';
-      document.querySelector('.terminal-body-container').style.height = '400px';
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
+    const isMobileOrTablet = window.matchMedia('screen and (max-width: 991px)').matches;
+    if(!isMobileOrTablet) {
+      const isInFullScreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      const docElm = document.documentElement;
+      if (!isInFullScreen) {
+        document.querySelector('.terminal').style.height = window.screen.height-25+'px';
+        document.querySelector('.terminal').style.width = window.screen.width+'px';
+        document.querySelector('.terminal').style.top = '0';
+        document.querySelector('.terminal-body-container').style.height = window.screen.height-25+'px';
+        if (docElm.requestFullscreen) {
+          docElm.requestFullscreen();
+        } else if (docElm.mozRequestFullScreen) {
+          docElm.mozRequestFullScreen();
+        } else if (docElm.webkitRequestFullScreen) {
+          docElm.webkitRequestFullScreen();
+        } else if (docElm.msRequestFullscreen) {
+          docElm.msRequestFullscreen();
+        }
+      } else {
+        document.querySelector('.terminal').style.height = '524px';
+        document.querySelector('.terminal').style.width = '818px';
+        document.querySelector('.terminal').style.top = 'auto';
+        document.querySelector('.terminal-body-container').style.height = '500px';
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
       }
     }
   }

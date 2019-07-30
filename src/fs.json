@@ -1,0 +1,73 @@
+{
+   "type":"directory",
+   "children":{
+      "Documents":{
+         "type":"directory",
+         "children":{
+
+         }
+      },
+      "Downloads":{
+         "type":"directory",
+         "children":{
+
+         }
+      },
+      "game_saves":{
+         "type":"directory",
+         "children":{
+            "nsfw":{
+               "type":"directory",
+               "children":{
+                  "not_porn":{
+                     "type":"directory",
+                     "children":{
+                        "dont_open.jpg":{
+                           "type":"file",
+                           "src":"/files/images/boobs.txt",
+                           "sudo": true
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "gta_sa_cheats.txt":{
+         "type":"file",
+         "src":"/files/texts/gta_sa_cheats.txt"
+      },
+      "Music":{
+         "type":"directory",
+         "children":{
+
+         }
+      },
+      "Pictures":{
+         "type":"directory",
+         "children":{
+            "amazing_view.png":{
+               "type":"file",
+               "src":"/files/images/amazing_view.txt"
+            },
+            "awesome_space.png":{
+               "type":"file",
+               "src":"/files/images/awesome_space.txt"
+            },
+            "magnificent_castle.png":{
+               "type":"file",
+               "src":"/files/images/magnificent_castle.txt"
+            },
+            "profile.png":{
+               "type":"file",
+               "src":"/files/images/profile.txt"
+            }
+         }
+      },
+      ".bashrc":{
+         "type":"file",
+         "src":"/files/bashrc.txt",
+         "sudo": true
+      }
+   }
+}
