@@ -408,6 +408,12 @@ class App extends Component {
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
 
+  focusTerminalIfTouchDevice = (e) => {
+    if(window.isTouchDevice()) {
+      this.focusTerminal();  
+    }
+  }
+
   moveCursor = () => {
     this._cursor.style.marginLeft = -8*this.state.cursor_from_the_right+"px"; // move cursor
     this.setState({cursor_letter:this.state.prompt_text[this.state.prompt_text.length-this.state.cursor_from_the_right]}); // set letter to cursor
@@ -426,7 +432,7 @@ class App extends Component {
     return(
       <div className="App">
         <div className="container">
-          <div className="terminal" onContextMenu={e=>e.preventDefault()}>
+          <div className="terminal" onContextMenu={e=>e.preventDefault()} onClick={e => this.focusTerminalIfTouchDevice(e)}>
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
             <div className="terminal-body-container">
               <div className="terminal-body">
