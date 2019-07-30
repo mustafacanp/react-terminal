@@ -8,7 +8,7 @@ class App extends Component {
   constructor() {
     super();
 
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
     this.state = {
@@ -295,7 +295,17 @@ class App extends Component {
 
   /** START HANDLE KEYS */
 
-  handleKeyPress = e => {
+  handleKeyDown = e => {
+    // Handles non-printable chars.
+    if (e.ctrlKey || e.altKey) {
+      this._promptInput.blur();
+      e.preventDefault();
+      e.returnValue = false;
+      return false;
+    } else {
+      this.focusTerminal();
+    }
+
     switch (e.keyCode) {
       case 9:
         this.handleTab(e);
@@ -318,8 +328,6 @@ class App extends Component {
       case 46:
         this.handleRightArrow();
         break; // del
-      // case 16: return; // shift
-      // case 17: return; // ctrl
       default:
         break;
     }
@@ -439,6 +447,11 @@ class App extends Component {
     this._terminal_body = document.querySelector('.terminal-body-container');
 
     this.focusTerminal();
+    document.addEventListener('keydown', this.handleKeyDown.bind(this));
+  }
+
+  componentWillUnmount() {
+    document.addEventListener('keydown', this.handleKeyDown);
   }
 
   focusTerminal() {
@@ -471,11 +484,11 @@ class App extends Component {
 
   /** DOM ACTIONS */
 
-  render() {
+  render = () => {
     return (
-      <div className="App" onClick={() => this.focusTerminal()}>
+      <div className="App">
         <div className="container">
-          <div className="terminal" onContextMenu={e => e.preventDefault()}>
+          <div className="terminal">
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()} />
             <div className="terminal-body-container">
               <div className="terminal-body">
@@ -491,7 +504,6 @@ class App extends Component {
                     className="prompt-input"
                     value={this.state.prompt_text}
                     onChange={this.handleInputChange}
-                    onKeyDown={this.handleKeyPress}
                   />
                   <span className="prompt-text">{this.state.prompt_text}</span>
                   <span className="prompt-cursor">
@@ -504,7 +516,7 @@ class App extends Component {
         </div>
       </div>
     );
-  }
+  };
 }
 
 export default App;
