@@ -96,16 +96,17 @@ class App extends Component {
 
       const selected_file_or_dir = this.state.cfs.children[secondParam];
       if(this.is_dir(selected_file_or_dir)) {
+        this.printCommandLine();
         this.setState(prevState => ({
           path: [...prevState.path, secondParam]
         }));
         this.setState({ cfs: selected_file_or_dir });
+        return;
       } else if(this.is_file(selected_file_or_dir)) {
         this.cout(`bash: cd: ${secondParam}: Not a directory`); return;
       } else {
         this.cout(`bash: cd: ${secondParam}: No such file or directory`); return;
       }
-      this.printCommandLine();
     },
     cat: async (sudo, input) => {
       if(!this.secondParameter(input)) { this.cout("cat: missing operand"); return }
