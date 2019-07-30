@@ -103,19 +103,19 @@ class App extends Component {
       }
 
       const selected_file_or_dir = this.state.cfs.children[secondParam];
-      if (this.is_dir(selected_file_or_dir)) {
+      if(this.is_dir(selected_file_or_dir)) {
+        this.printCommandLine();
         this.setState(prevState => ({
           path: [...prevState.path, secondParam]
         }));
         this.setState({ cfs: selected_file_or_dir });
-      } else if (this.is_file(selected_file_or_dir)) {
-        this.cout(`bash: cd: ${secondParam}: Not a directory`);
         return;
+      } else if(this.is_file(selected_file_or_dir)) {
+        this.cout(`bash: cd: ${secondParam}: Not a directory`); return;
       } else {
         this.cout(`bash: cd: ${secondParam}: No such file or directory`);
         return;
       }
-      this.printCommandLine();
     },
     cat: async (sudo, input) => {
       if (!this.secondParameter(input)) {
@@ -459,6 +459,12 @@ class App extends Component {
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
 
+  focusTerminalIfTouchDevice = (e) => {
+    if(window.isTouchDevice()) {
+      this.focusTerminal();  
+    }
+  }
+
   moveCursor = () => {
     this._cursor.style.marginLeft =
       -8 * this.state.cursor_from_the_right + 'px'; // move cursor
@@ -488,8 +494,8 @@ class App extends Component {
     return (
       <div className="App">
         <div className="container">
-          <div className="terminal">
-            <Toolbar settings={this.state.settings} pwd={this.pwd_text()} />
+          <div className="terminal" onContextMenu={e=>e.preventDefault()} onClick={e => this.focusTerminalIfTouchDevice(e)}>
+            <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
             <div className="terminal-body-container">
               <div className="terminal-body">
                 {this.renderPreviousLines()}
