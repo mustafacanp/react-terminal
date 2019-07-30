@@ -8,8 +8,8 @@ class App extends Component {
 
   constructor() {
     super();
-    
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
 
     this.state = {
@@ -75,7 +75,6 @@ class App extends Component {
 
       if(this.checkThirdParameter(input, "cd")) return;
       if(!secondParam || secondParam === ".") { this.printCommandLine(); return; }
-
       if(secondParam === "..") {
         this.printCommandLine();
         if(this.state.path.length){
@@ -140,14 +139,14 @@ class App extends Component {
               obj[key] = this.state.fs.children[key];
               return obj;
             }, {});
-          
+
           const new_cfs = Object.keys(this.state.cfs.children)
             .filter(key => key !== secondParam)
             .reduce((obj, key) => {
               obj[key] = this.state.cfs.children[key];
               return obj;
             }, {});
-          
+
           this.setState({ fs: { type: "directory", children: new_fs }});
           this.setState({ cfs: { type: "directory", children: new_cfs }});
           this.cout();
@@ -160,7 +159,20 @@ class App extends Component {
     }
   }
 
-  openLink(link){
+  componentDidMount() {
+    this._promptInput = document.querySelector(".prompt-input");
+    this._cursor = document.querySelector(".prompt-cursor");
+    this._terminal_body_container = document.querySelector(".terminal-body-container");
+    this._terminal_body = document.querySelector(".terminal-body-container");
+    this.focusTerminal();
+    document.addEventListener('keydown', this.handleKeyDown.bind(this));
+  }
+
+  componentWillUnmount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  openLink(link) {
     var win = window.open(link, '_blank');
     win.focus();
     this.printCommandLine();
@@ -172,13 +184,37 @@ class App extends Component {
 
     let hiddenCommands = rows.map(row => {
       return row.substring(
-        row.indexOf(" ") + 1, 
+        row.indexOf(" ") + 1,
         row.indexOf("=")
       );
     });
     hiddenCommands.push("sudo");
 
     return Object.keys(this.commands).filter(cmd => hiddenCommands.indexOf(cmd) < 0);
+  }
+
+  handleKeyDown = (e) => {
+    // Handles non-printable chars.
+    if (e.ctrlKey || e.altKey) {
+      this._promptInput.blur();
+      e.preventDefault();
+      e.returnValue = false;
+      return false;
+    } else {
+      this.focusTerminal();
+    }
+
+    switch (e.keyCode) {
+      case 9: this.handleTab(e); break; // tab
+      case 13: this.handleEnter(); break; // enter
+      case 37: this.handleLeftArrow(); break; // left
+      case 39: this.handleRightArrow(); break; // right
+      case 38: this.handleUpArrow(e); break; // up
+      case 40: this.handleDownArrow(); break; // down
+      case 46: this.handleRightArrow(); break; // del
+      default:
+        break;
+    }
   }
 
   isItCommand = (input) => {
@@ -210,7 +246,7 @@ class App extends Component {
     this.setState(prevState => ({
       previousLines: [...prevState.previousLines, cin_text]
     }));
-  
+
     this.setState({prompt_text:""}, () => this.focusTerminal());
   }
 
@@ -237,6 +273,14 @@ class App extends Component {
       }));
   }
 
+  trim = (str) => {
+    return str.trimStart().trimEnd();
+  }
+
+  createErrorLine = () => {
+    this.createNewLine(this.firstParameter(this.state.prompt_text)+": command not found", "cout");
+  }
+
   checkSecondParameter = (text, command_name) => {
     if(this.secondParameter(text)){
       this.cout(`bash: ${command_name}: too many arguments`);
@@ -244,6 +288,7 @@ class App extends Component {
     }
     return false;
   }
+
   checkThirdParameter = (text, command_name) => {
     if(this.thirthParameter(text)){
       this.cout(`bash: ${command_name}: too many arguments`);
@@ -355,20 +400,10 @@ class App extends Component {
   }
 
   /** END HANDLE KEYS */
-  
 
   /** DOM ACTIONS */
 
-  componentDidMount() {
-    this._promptInput = document.querySelector(".prompt-input");
-    this._cursor = document.querySelector(".prompt-cursor");
-    this._terminal_body_container = document.querySelector(".terminal-body-container");
-    this._terminal_body = document.querySelector(".terminal-body-container");
-
-    this.focusTerminal();
-  }
-
-  focusTerminal() {
+  focusTerminal = () => {
     this._promptInput.focus();
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
@@ -387,9 +422,9 @@ class App extends Component {
 
   /** DOM ACTIONS */
 
-  render() {
+  render = () => {
     return(
-      <div className="App" onClick={()=>this.focusTerminal()}>
+      <div className="App">
         <div className="container">
           <div className="terminal" onContextMenu={e=>e.preventDefault()}>
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
@@ -398,7 +433,7 @@ class App extends Component {
                 {this.renderPreviousLines()}
                 <div className="terminal-prompt">
                   <span className="prompt-user">{this.state.settings.user_name}@{this.state.settings.computer_name}:</span><span className="prompt-location">{this.pwd_text()}</span><span className="prompt-dollar">$</span>
-                  <input className="prompt-input" value={this.state.prompt_text} onChange={this.handleInputChange} onKeyDown={this.handleKeyPress} />
+                  <input className="prompt-input" value={this.state.prompt_text} onChange={this.handleInputChange} />
                   <span className="prompt-text">{this.state.prompt_text}</span>
                   <span className="prompt-cursor">{this.state.cursor_letter}</span>
                 </div>
