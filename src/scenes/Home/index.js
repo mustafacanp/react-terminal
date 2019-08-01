@@ -459,9 +459,40 @@ class App extends Component {
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
 
+  copy = (text) => {
+    let fallback = () => {
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Fallback: Copying text command was ' + msg);
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+      }
+    }
+    if (!navigator.clipboard) {
+      fallback();
+      return;
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Async: Copying to clipboard was successful!');
+    }, err => {
+      console.error('Async: Could not copy text: ', err);
+    });
+
+  }
+
   focusTerminalIfTouchDevice = (e) => {
-    if(window.isTouchDevice()) {
-      this.focusTerminal();  
+    if (e.buttons === 2) { // right click
+      e.preventDefault();
+      if (window.getSelection().toString() !== "") {
+        this.copy(window.getSelection().toString());
+        window.getSelection().empty();
+      }
+    } else if (e.type === "click") {
+      if(window.isTouchDevice()) {
+        this.focusTerminal();
+      }
     }
   }
 
@@ -494,7 +525,7 @@ class App extends Component {
     return (
       <div className="App">
         <div className="container">
-          <div className="terminal" onContextMenu={e=>e.preventDefault()} onClick={e => this.focusTerminalIfTouchDevice(e)}>
+          <div className="terminal" onMouseDown={e => this.focusTerminalIfTouchDevice(e)} onContextMenu={e => e.preventDefault()} onClick={e => this.focusTerminalIfTouchDevice(e)}>
             <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
             <div className="terminal-body-container">
               <div className="terminal-body">
