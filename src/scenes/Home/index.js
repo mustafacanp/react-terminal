@@ -4,7 +4,7 @@ import Line from "../../components/Line";
 import Toolbar from "../../components/Toolbar";
 import fs from "../../fs.json"
 import { FSEntry } from "../../enums";
-import { Cursor } from "../../components";
+import { Cursor, Prompt } from "../../components";
 
 class App extends Component {
   constructor() {
@@ -23,8 +23,6 @@ class App extends Component {
       path: [],
       base_path: 'home/user',
       prompt_text: '',
-      cursor_from_the_right: 0,
-      cursor_letter: '',
       previousLines: [],
       previousCommands: [],
       current_line_from_last: 0,
@@ -497,12 +495,9 @@ class App extends Component {
               <div className="terminal-body">
                 {this.renderPreviousLines()}
                 <div className="terminal-prompt">
-                  <span className="prompt-user">
-                    {this.state.settings.user_name}@
-                    {this.state.settings.computer_name}:
-                  </span>
-                  <span className="prompt-location">{this.pwd_text()}</span>
-                  <span className="prompt-dollar">$</span>
+                  <Prompt username={this.state.settings.user_name}
+                          computerName={this.state.settings.computer_name}
+                          currentPath={this.pwd_text()} />
                   <input
                     className="prompt-input"
                     value={this.state.prompt_text}

@@ -1,5 +1,7 @@
 import Cursor from "./cursor";
+import Prompt from "./prompt";
 
 export {
-  Cursor
+  Cursor,
+  Prompt
 };
