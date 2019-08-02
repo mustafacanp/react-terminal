@@ -4,15 +4,15 @@ import Line from "../../components/Line";
 import Toolbar from "../../components/Toolbar";
 import fs from "../../fs.json"
 import { FSEntry } from "../../enums";
-import { Cursor, Prompt } from "../../components";
+import { Prompt } from "../../components";
 
 class App extends Component {
   constructor() {
     super();
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this._promptInput = this._terminal_body = this._terminal_body_container = undefined;
-
+    this._terminal_body = this._terminal_body_container = undefined;
+    this._prompt = React.createRef();
     this.state = {
       settings: {
         computer_name: 'ubuntu',
@@ -32,7 +32,7 @@ class App extends Component {
 
   commands = {
     sudo: () => {
-      const input = this.removeSpaces(this.state.prompt_text);
+      const input = this.removeSpaces(this._prompt.current.content);
       const input_without_sudo = input.substr(input.indexOf(' ') + 1);
 
       const is_it_command = this.isItCommand(input_without_sudo);
@@ -233,7 +233,7 @@ class App extends Component {
     new_command.id = this.state.previousLines.length + 2;
     const cout_text = new_command;
 
-    const input = this.removeSpaces(this.state.prompt_text);
+    const input = this.removeSpaces(this._prompt.current.content);
 
     this.cin(input, breakWord);
 
@@ -275,11 +275,10 @@ class App extends Component {
   is_dir = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
   is_file = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
 
-  printCommandLine = () => this.cin(this.state.prompt_text);
-  handleInputChange = e => this.setState({ prompt_text: e.target.value });
+  printCommandLine = () => this.cin(this._prompt.current.content);
   createErrorLine = () =>
     this.cout(
-      this.firstParameter(this.state.prompt_text) + ': command not found'
+      this.firstParameter(this._prompt.current.content) + ': command not found'
     );
   pwd_text = () =>
     '~' +
@@ -298,7 +297,7 @@ class App extends Component {
   handleKeyDown = e => {
     // Handles non-printable chars.
     if (e.ctrlKey || e.altKey) {
-      this._promptInput.blur();
+      this._prompt.current.blurPrompt();
       e.preventDefault();
       e.returnValue = false;
       return false;
@@ -327,7 +326,7 @@ class App extends Component {
   handleTab = e => {
     e.preventDefault();
 
-    const input = this.state.prompt_text;
+    const input = this._prompt.current.content;
     const input_without_sudo = input.replace('sudo ', '');
     const sudo_string = input.startsWith('sudo ') ? 'sudo ' : '';
 
@@ -344,9 +343,7 @@ class App extends Component {
         let slash = this.is_dir(this.state.cfs.children[existed_things[0]])
           ? '/'
           : '';
-        this.setState({
-          prompt_text: `${sudo_string + param1} ${existed_things[0]}${slash}`
-        });
+        this._prompt.current.content = `${sudo_string + param1} ${existed_things[0]}${slash}`;
         return;
       }
 
@@ -362,7 +359,7 @@ class App extends Component {
     this.setState({ tab_pressed: false });
     this.setState({ current_line_from_last: 0 });
 
-    const input = this.removeSpaces(this.state.prompt_text);
+    const input = this.removeSpaces(this._prompt.current.content);
     const is_it_command = this.isItCommand(input);
     const command = this.clearCommandName(input);
 
@@ -372,6 +369,7 @@ class App extends Component {
     else this.createErrorLine();
 
     this.updatePreviousCommands(input);
+    this._prompt.current.clear();
   };
 
   handleUpArrow = e => {
@@ -379,16 +377,11 @@ class App extends Component {
     if (this.state.current_line_from_last < this.state.previousCommands.length)
       this.setState(
         { current_line_from_last: this.state.current_line_from_last + 1 },
-        () =>
-          this.setState(
-            {
-              prompt_text: this.state.previousCommands[
-                this.state.previousCommands.length -
-                  this.state.current_line_from_last
-              ]
-            },
-            () => this.focusTerminal()
-          )
+        () => this._prompt.current.content = this.state.previousCommands[
+                                                this.state.previousCommands.length -
+                                                  this.state.current_line_from_last
+                                              ],
+        () => this.focusTerminal()
       );
   };
 
@@ -396,16 +389,11 @@ class App extends Component {
     if (this.state.current_line_from_last > 1)
       this.setState(
         { current_line_from_last: this.state.current_line_from_last - 1 },
-        () =>
-          this.setState(
-            {
-              prompt_text: this.state.previousCommands[
+        () => this._prompt.current.content = this.state.previousCommands[
                 this.state.previousCommands.length -
                   this.state.current_line_from_last
-              ]
-            },
-            () => this.focusTerminal()
-          )
+          ],
+        () => this.focusTerminal()
       );
   };
 
@@ -414,13 +402,12 @@ class App extends Component {
   /** DOM ACTIONS */
 
   componentDidMount() {
-    this._promptInput = document.querySelector('.prompt-input');
     this._terminal_body_container = document.querySelector(
       '.terminal-body-container'
     );
     this._terminal_body = document.querySelector('.terminal-body-container');
 
-    this.focusTerminal();
+    // this.focusTerminal();
     document.addEventListener('keydown', this.handleKeyDown.bind(this));
   }
 
@@ -429,7 +416,7 @@ class App extends Component {
   }
 
   focusTerminal() {
-    this._promptInput.focus();
+    this._prompt.current.focusPrompt();
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
 
@@ -494,18 +481,10 @@ class App extends Component {
             <div className="terminal-body-container">
               <div className="terminal-body">
                 {this.renderPreviousLines()}
-                <div className="terminal-prompt">
-                  <Prompt username={this.state.settings.user_name}
-                          computerName={this.state.settings.computer_name}
-                          currentPath={this.pwd_text()} />
-                  <input
-                    className="prompt-input"
-                    value={this.state.prompt_text}
-                    onChange={this.handleInputChange}
-                  />
-                  <span className="prompt-text">{this.state.prompt_text}</span>
-                  <Cursor promptText={this.state.prompt_text} />
-                </div>
+                <Prompt ref={this._prompt}
+                        username={this.state.settings.user_name}
+                        computerName={this.state.settings.computer_name}
+                        currentPath={this.pwd_text()} />
               </div>
             </div>
           </div>
