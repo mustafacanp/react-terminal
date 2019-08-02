@@ -4,13 +4,14 @@ import Line from "../../components/Line";
 import Toolbar from "../../components/Toolbar";
 import fs from "../../fs.json"
 import { FSEntry } from "../../enums";
+import { Cursor } from "../../components";
 
 class App extends Component {
   constructor() {
     super();
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this._promptInput = this._cursor = this._terminal_body = this._terminal_body_container = undefined;
+    this._promptInput = this._terminal_body = this._terminal_body_container = undefined;
 
     this.state = {
       settings: {
@@ -314,21 +315,12 @@ class App extends Component {
       case 13:
         this.handleEnter();
         break; // enter
-      case 37:
-        this.handleLeftArrow();
-        break; // left
-      case 39:
-        this.handleRightArrow();
-        break; // right
       case 38:
         this.handleUpArrow(e);
         break; // up
       case 40:
         this.handleDownArrow();
         break; // down
-      case 46:
-        this.handleRightArrow();
-        break; // del
       default:
         break;
     }
@@ -384,22 +376,6 @@ class App extends Component {
     this.updatePreviousCommands(input);
   };
 
-  handleLeftArrow = () => {
-    if (this.state.cursor_from_the_right < this.state.prompt_text.length)
-      this.setState(
-        { cursor_from_the_right: this.state.cursor_from_the_right + 1 },
-        () => this.moveCursor()
-      );
-  };
-
-  handleRightArrow = () => {
-    if (this.state.cursor_from_the_right > 0)
-      this.setState(
-        { cursor_from_the_right: this.state.cursor_from_the_right - 1 },
-        () => this.moveCursor()
-      );
-  };
-
   handleUpArrow = e => {
     e.preventDefault();
     if (this.state.current_line_from_last < this.state.previousCommands.length)
@@ -441,7 +417,6 @@ class App extends Component {
 
   componentDidMount() {
     this._promptInput = document.querySelector('.prompt-input');
-    this._cursor = document.querySelector('.prompt-cursor');
     this._terminal_body_container = document.querySelector(
       '.terminal-body-container'
     );
@@ -497,16 +472,6 @@ class App extends Component {
     }
   }
 
-  moveCursor = () => {
-    this._cursor.style.marginLeft =
-      -8 * this.state.cursor_from_the_right + 'px'; // move cursor
-    this.setState({
-      cursor_letter: this.state.prompt_text[
-        this.state.prompt_text.length - this.state.cursor_from_the_right
-      ]
-    }); // set letter to cursor
-  };
-
   renderPreviousLines = () =>
     this.state.previousLines.map(previousCommand => (
       <Line
@@ -544,9 +509,7 @@ class App extends Component {
                     onChange={this.handleInputChange}
                   />
                   <span className="prompt-text">{this.state.prompt_text}</span>
-                  <span className="prompt-cursor">
-                    {this.state.cursor_letter}
-                  </span>
+                  <Cursor promptText={this.state.prompt_text} />
                 </div>
               </div>
             </div>
