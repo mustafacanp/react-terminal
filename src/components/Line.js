@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PromptLabel from "./promptLabel";
 
 class Line extends Component {
   constructor(props) {
@@ -17,11 +18,7 @@ class Line extends Component {
     if (this.type === 'cin') {
       return (
         <div className="terminal-prompt">
-          <span className="prompt-user">
-            {this.settings.user_name}@{this.settings.computer_name}:
-          </span>
-          <span className="prompt-location">{this.pwd}</span>
-          <span className="prompt-dollar">$</span>
+          <PromptLabel username={this.settings.user_name} computerName={this.settings.computer_name} currentPath={this.pwd}/>
           <span className="prompt-text">{this.text}</span>
         </div>
       );

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Cursor from "./cursor";
 import PropTypes from "prop-types";
+import PromptLabel from "./promptLabel";
 
 class Prompt extends Component {
 
@@ -47,11 +48,7 @@ class Prompt extends Component {
     let { username, computerName, currentPath } = this.props;
     return (
       <div className="terminal-prompt">
-        <span className="prompt-user">
-          {username}@{computerName}:
-        </span>
-        <span className="prompt-location">{currentPath}</span>
-        <span className="prompt-dollar">$</span>
+        <PromptLabel username={username} computerName={computerName} currentPath={currentPath}/>
         <input
           className="prompt-input"
           ref={this._promptInput}

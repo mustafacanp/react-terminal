@@ -466,10 +466,6 @@ class App extends Component {
       />
     ));
 
-  renderCoutResponse = content => (
-    <div className="terminal-prompt">{content}</div>
-  );
-
   /** DOM ACTIONS */
 
   render = () => {
