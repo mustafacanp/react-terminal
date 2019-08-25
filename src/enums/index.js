@@ -1,1 +1,1 @@
-export { FSEntry } from "./fsentry";
+export { FSEntry } from './fsentry';

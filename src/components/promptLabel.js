@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 class PromptLabel extends Component {
   render() {
@@ -19,7 +19,7 @@ class PromptLabel extends Component {
 PromptLabel.propTypes = {
   username: PropTypes.string.isRequired,
   computerName: PropTypes.string.isRequired,
-  currentPath: PropTypes.string.isRequired,
-}
+  currentPath: PropTypes.string.isRequired
+};
 
 export default PromptLabel;

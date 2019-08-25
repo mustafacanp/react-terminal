@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import Cursor from "./cursor";
-import PropTypes from "prop-types";
-import PromptLabel from "./promptLabel";
+import Cursor from './cursor';
+import PropTypes from 'prop-types';
+import PromptLabel from './promptLabel';
 
 class Prompt extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
-      promptText: ""
-    }
+      promptText: ''
+    };
     this.handleInputChange = this.handleInputChange.bind(this);
     this.focusPrompt = this.focusPrompt.bind(this);
     this.blurPrompt = this.blurPrompt.bind(this);
@@ -25,7 +24,7 @@ class Prompt extends Component {
   }
 
   clear() {
-    this.setState({ promptText: "" });
+    this.setState({ promptText: '' });
   }
 
   componentDidMount() {
@@ -48,7 +47,11 @@ class Prompt extends Component {
     let { username, computerName, currentPath } = this.props;
     return (
       <div className="terminal-prompt">
-        <PromptLabel username={username} computerName={computerName} currentPath={currentPath}/>
+        <PromptLabel
+          username={username}
+          computerName={computerName}
+          currentPath={currentPath}
+        />
         <input
           className="prompt-input"
           ref={this._promptInput}
@@ -65,7 +68,7 @@ class Prompt extends Component {
 Prompt.propTypes = {
   username: PropTypes.string.isRequired,
   computerName: PropTypes.string.isRequired,
-  currentPath: PropTypes.string.isRequired,
-}
+  currentPath: PropTypes.string.isRequired
+};
 
 export default Prompt;

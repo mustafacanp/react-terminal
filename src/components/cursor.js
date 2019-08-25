@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 class Cursor extends Component {
   constructor(props) {
     super(props);
     this.state = {
       style: {},
-      cursorLetter: "",
-      cursorFromTheRight: 0,
+      cursorLetter: '',
+      cursorFromTheRight: 0
     };
     this.initialState = Object.assign({}, this.state);
     this.resetState = this.resetState.bind(this);
@@ -70,15 +70,21 @@ class Cursor extends Component {
   };
 
   render() {
-    if (this.props.promptText.length === 0 && this.state.cursorFromTheRight !== 0) this.resetState();
+    if (
+      this.props.promptText.length === 0 &&
+      this.state.cursorFromTheRight !== 0
+    )
+      this.resetState();
     return (
-      <span style={this.state.style} className="prompt-cursor">{this.state.cursorLetter}</span>
+      <span style={this.state.style} className="prompt-cursor">
+        {this.state.cursorLetter}
+      </span>
     );
   }
 }
 
 Cursor.propTypes = {
   promptText: PropTypes.string.isRequired
-}
+};
 
 export default Cursor;

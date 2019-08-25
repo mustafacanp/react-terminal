@@ -4,7 +4,8 @@ import './index.css';
 import App from './scenes/Home/';
 import * as serviceWorker from './serviceWorker';
 
-window.isTouchDevice = () => (navigator.maxTouchPoints || 'ontouchstart' in document.documentElement);
+window.isTouchDevice = () =>
+  navigator.maxTouchPoints || 'ontouchstart' in document.documentElement;
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import "./Home.css";
-import Line from "../../components/Line";
-import Toolbar from "../../components/Toolbar";
-import fs from "../../fs.json"
-import { FSEntry } from "../../enums";
-import { Prompt } from "../../components";
+import React, { Component } from 'react';
+import './Home.css';
+import Line from '../../components/Line';
+import Toolbar from '../../components/Toolbar';
+import fs from '../../fs.json';
+import { FSEntry } from '../../enums';
+import { Prompt } from '../../components';
 
 class App extends Component {
   constructor() {
@@ -63,10 +63,8 @@ class App extends Component {
     ls: (sudo, input) => {
       if (this.checkSecondParameter(input, 'ls')) return;
       const dirs = Object.keys(this.state.cfs.children).map(key => {
-        let slash = this.is_dir(this.state.cfs.children[key]) ? '/' : '';
-        return `<span class="type-${
-          this.state.cfs.children[key].type
-        }">${key}${slash}</span>`;
+        const slash = this.is_dir(this.state.cfs.children[key]) ? '/' : '';
+        return `<span class="type-${this.state.cfs.children[key].type}">${key}${slash}</span>`;
       });
       this.cout(dirs.join('&#09;'), 'break-none');
     },
@@ -86,7 +84,7 @@ class App extends Component {
       if (secondParam === '..') {
         this.printCommandLine();
         if (this.state.path.length) {
-          let temp_path = this.state.path;
+          const temp_path = this.state.path;
           temp_path.pop();
           let temp_cfs = this.state.fs;
           temp_path.forEach(path => {
@@ -103,15 +101,16 @@ class App extends Component {
       }
 
       const selected_file_or_dir = this.state.cfs.children[secondParam];
-      if(this.is_dir(selected_file_or_dir)) {
+      if (this.is_dir(selected_file_or_dir)) {
         this.printCommandLine();
         this.setState(prevState => ({
           path: [...prevState.path, secondParam]
         }));
         this.setState({ cfs: selected_file_or_dir });
         return;
-      } else if(this.is_file(selected_file_or_dir)) {
-        this.cout(`bash: cd: ${secondParam}: Not a directory`); return;
+      } else if (this.is_file(selected_file_or_dir)) {
+        this.cout(`bash: cd: ${secondParam}: Not a directory`);
+        return;
       } else {
         this.cout(`bash: cd: ${secondParam}: No such file or directory`);
         return;
@@ -183,7 +182,7 @@ class App extends Component {
     const bashrc = await fetch('/files/bashrc.txt').then(res => res.text());
     const rows = bashrc.split('\n');
 
-    let hiddenCommands = rows.map(row => {
+    const hiddenCommands = rows.map(row => {
       return row.substring(row.indexOf(' ') + 1, row.indexOf('='));
     });
     hiddenCommands.push('sudo');
@@ -340,10 +339,12 @@ class App extends Component {
       if (existed_things.length > 1) this.setState({ tab_pressed: true });
 
       if (existed_things.length === 1) {
-        let slash = this.is_dir(this.state.cfs.children[existed_things[0]])
+        const slash = this.is_dir(this.state.cfs.children[existed_things[0]])
           ? '/'
           : '';
-        this._prompt.current.content = `${sudo_string + param1} ${existed_things[0]}${slash}`;
+        this._prompt.current.content = `${sudo_string + param1} ${
+          existed_things[0]
+        }${slash}`;
         return;
       }
 
@@ -377,10 +378,11 @@ class App extends Component {
     if (this.state.current_line_from_last < this.state.previousCommands.length)
       this.setState(
         { current_line_from_last: this.state.current_line_from_last + 1 },
-        () => this._prompt.current.content = this.state.previousCommands[
-                                                this.state.previousCommands.length -
-                                                  this.state.current_line_from_last
-                                              ],
+        () =>
+          (this._prompt.current.content = this.state.previousCommands[
+            this.state.previousCommands.length -
+              this.state.current_line_from_last
+          ]),
         () => this.focusTerminal()
       );
   };
@@ -389,10 +391,11 @@ class App extends Component {
     if (this.state.current_line_from_last > 1)
       this.setState(
         { current_line_from_last: this.state.current_line_from_last - 1 },
-        () => this._prompt.current.content = this.state.previousCommands[
-                this.state.previousCommands.length -
-                  this.state.current_line_from_last
-          ],
+        () =>
+          (this._prompt.current.content = this.state.previousCommands[
+            this.state.previousCommands.length -
+              this.state.current_line_from_last
+          ]),
         () => this.focusTerminal()
       );
   };
@@ -420,8 +423,8 @@ class App extends Component {
     this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
   }
 
-  copy = (text) => {
-    let fallback = () => {
+  copy = text => {
+    const fallback = () => {
       try {
         var successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';
@@ -429,33 +432,36 @@ class App extends Component {
       } catch (err) {
         console.error('Fallback: Oops, unable to copy', err);
       }
-    }
+    };
     if (!navigator.clipboard) {
       fallback();
       return;
     }
 
-    navigator.clipboard.writeText(text).then(() => {
-      console.log('Async: Copying to clipboard was successful!');
-    }, err => {
-      console.error('Async: Could not copy text: ', err);
-    });
+    navigator.clipboard.writeText(text).then(
+      () => {
+        console.log('Async: Copying to clipboard was successful!');
+      },
+      err => {
+        console.error('Async: Could not copy text: ', err);
+      }
+    );
+  };
 
-  }
-
-  focusTerminalIfTouchDevice = (e) => {
-    if (e.buttons === 2) { // right click
+  focusTerminalIfTouchDevice = e => {
+    if (e.buttons === 2) {
+      // right click
       e.preventDefault();
-      if (window.getSelection().toString() !== "") {
+      if (window.getSelection().toString() !== '') {
         this.copy(window.getSelection().toString());
         window.getSelection().empty();
       }
-    } else if (e.type === "click") {
-      if(window.isTouchDevice()) {
+    } else if (e.type === 'click') {
+      if (window.isTouchDevice()) {
         this.focusTerminal();
       }
     }
-  }
+  };
 
   renderPreviousLines = () =>
     this.state.previousLines.map(previousCommand => (
@@ -472,15 +478,25 @@ class App extends Component {
     return (
       <div className="App">
         <div className="container">
-          <div className="terminal" onMouseDown={e => this.focusTerminalIfTouchDevice(e)} onContextMenu={e => e.preventDefault()} onClick={e => this.focusTerminalIfTouchDevice(e)}>
-            <Toolbar settings={this.state.settings} pwd={this.pwd_text()}></Toolbar>
+          <div
+            className="terminal"
+            onMouseDown={e => this.focusTerminalIfTouchDevice(e)}
+            onContextMenu={e => e.preventDefault()}
+            onClick={e => this.focusTerminalIfTouchDevice(e)}
+          >
+            <Toolbar
+              settings={this.state.settings}
+              pwd={this.pwd_text()}
+            ></Toolbar>
             <div className="terminal-body-container">
               <div className="terminal-body">
                 {this.renderPreviousLines()}
-                <Prompt ref={this._prompt}
-                        username={this.state.settings.user_name}
-                        computerName={this.state.settings.computer_name}
-                        currentPath={this.pwd_text()} />
+                <Prompt
+                  ref={this._prompt}
+                  username={this.state.settings.user_name}
+                  computerName={this.state.settings.computer_name}
+                  currentPath={this.pwd_text()}
+                />
               </div>
             </div>
           </div>
