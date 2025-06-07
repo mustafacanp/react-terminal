@@ -44,15 +44,27 @@ Use ↑/↓ arrows for command history, Tab for completion.
 
 ### Adding New Commands
 
-To add a new command, extend the `commands` object in `src/scenes/Home/index.js`:
+To add a new command, extend the commands object in `src/commands/terminalCommands.js`:
 
 ```javascript
-commands = {
-  // ... existing commands
-  yourcommand: (sudo, input) => {
-    // Command implementation
-    this.cout('Your command output');
-  }
+export const createTerminalCommands = (context) => {
+  const {
+    getState,
+    setState,
+    cout,
+    // ... other context properties
+  } = context;
+
+  return {
+    // ... existing commands
+    yourcommand: (sudo, input) => {
+      const state = getState(); // Get current state
+      // Command implementation
+      cout('Your command output');
+      // Update state if needed
+      setState({ /* new state */ });
+    }
+  };
 };
 ```
 

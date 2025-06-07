@@ -5,6 +5,7 @@ import Toolbar from '../../components/Toolbar';
 import fs from '../../fs.json';
 import { FSEntry } from '../../enums';
 import { Prompt } from '../../components';
+import { createTerminalCommands } from '../../commands/terminalCommands';
 
 class App extends Component {
   constructor() {
@@ -28,149 +29,37 @@ class App extends Component {
       current_line_from_last: 0,
       tab_pressed: false
     };
+
+    // Initialize commands - will be created dynamically to access current state
+    this.commands = null;
   }
 
-  commands = {
-    sudo: () => {
-      const input = this.removeSpaces(this._prompt.current.content);
-      const input_without_sudo = input.substr(input.indexOf(' ') + 1);
-
-      const is_it_command = this.isItCommand(input_without_sudo);
-      const command = this.clearCommandName(input_without_sudo);
-
-      const command_input = this.removeSpaces(input_without_sudo);
-      if (is_it_command) this.commands[command](true, command_input);
-      else if (input === '') this.cin();
-      else this.createErrorLine();
-    },
-    help: async () => {
-      const commands = await this.getUsableCommands();
-      this.cout(['Usable Commands:', ...commands].join('&#09;'));
-    },
-    textgame: () => {
-      this.openLink('http://textgamerpg.com');
-    },
-    randomcolor: () => {
-      this.openLink('http://randomcolor.online');
-    },
-    clear: () => {
-      this.setState({ previousLines: [] }, this.printCommandLine());
-    },
-    pwd: () => {
-      const cwd = this.pwd_text().replace('~', '/' + this.state.base_path);
-      this.cout(cwd);
-    },
-    ls: (sudo, input) => {
-      if (this.checkSecondParameter(input, 'ls')) return;
-      const dirs = Object.keys(this.state.cfs.children).map(key => {
-        const slash = this.is_dir(this.state.cfs.children[key]) ? '/' : '';
-        return `<span class="type-${this.state.cfs.children[key].type}">${key}${slash}</span>`;
+  getCommands() {
+    if (!this.commands) {
+      this.commands = createTerminalCommands({
+        getState: () => this.state,
+        setState: this.setState.bind(this),
+        removeSpaces: this.removeSpaces,
+        _prompt: this._prompt,
+        isItCommand: this.isItCommand,
+        extractCommandName: this.extractCommandName,
+        cin: this.cin,
+        createErrorLine: this.createErrorLine,
+        getUsableCommands: this.getUsableCommands.bind(this),
+        cout: this.cout,
+        openLink: this.openLink.bind(this),
+        printCommandLine: this.printCommandLine,
+        pwd_text: this.pwd_text,
+        checkSecondParameter: this.checkSecondParameter,
+        is_dir: this.is_dir,
+        is_file: this.is_file,
+        checkThirdParameter: this.checkThirdParameter,
+        secondParameter: this.secondParameter,
+        getCommands: this.getCommands.bind(this)
       });
-      this.cout(dirs.join('&#09;'), 'break-none');
-    },
-    cd: (sudo, input) => {
-      if (input === 'cd' || input === 'cd ') {
-        this.printCommandLine();
-        return;
-      }
-      const secondParam = this.secondParameter(input).replace('/', '');
-
-      if (this.checkThirdParameter(input, 'cd')) return;
-      if (!secondParam || secondParam === '.') {
-        this.printCommandLine();
-        return;
-      }
-
-      if (secondParam === '..') {
-        this.printCommandLine();
-        if (this.state.path.length) {
-          const temp_path = this.state.path;
-          temp_path.pop();
-          let temp_cfs = this.state.fs;
-          temp_path.forEach(path => {
-            temp_cfs = temp_cfs.children[path];
-          });
-          this.setState({ cfs: temp_cfs });
-        }
-        return;
-      } else if (secondParam === '~') {
-        this.printCommandLine();
-        this.setState({ cfs: this.state.fs });
-        this.setState({ path: [] });
-        return;
-      }
-
-      const selected_file_or_dir = this.state.cfs.children[secondParam];
-      if (this.is_dir(selected_file_or_dir)) {
-        this.printCommandLine();
-        this.setState(prevState => ({
-          path: [...prevState.path, secondParam]
-        }));
-        this.setState({ cfs: selected_file_or_dir });
-        return;
-      } else if (this.is_file(selected_file_or_dir)) {
-        this.cout(`bash: cd: ${secondParam}: Not a directory`);
-        return;
-      } else {
-        this.cout(`bash: cd: ${secondParam}: No such file or directory`);
-        return;
-      }
-    },
-    cat: async (sudo, input) => {
-      if (!this.secondParameter(input)) {
-        this.cout('cat: missing operand');
-        return;
-      }
-      const secondParam = this.secondParameter(input).replace('/', '');
-      if (this.checkThirdParameter(input, 'cat')) return;
-
-      const selected_file_or_dir = this.state.cfs.children[secondParam];
-      if (this.is_file(selected_file_or_dir)) {
-        const file = selected_file_or_dir;
-        if (!file.sudo || sudo)
-          this.cout(await fetch(file.src).then(res => res.text()));
-        else this.cout(`bash: ${secondParam}: permission denied`);
-        return;
-      } else if (this.is_dir(selected_file_or_dir))
-        this.cout(`cat: ${secondParam}: Is a directory`);
-      else this.cout(`cat: ${secondParam}: No such file or directory`);
-    },
-    rm: (sudo, input) => {
-      if (!this.secondParameter(input)) {
-        this.cout('rm: missing operand');
-        return;
-      }
-      const secondParam = this.secondParameter(input).replace('/', '');
-      if (this.checkThirdParameter(input, 'rm')) return;
-
-      const selected_file_or_dir = this.state.cfs.children[secondParam];
-      if (this.is_file(selected_file_or_dir)) {
-        const file = selected_file_or_dir;
-        if (!file.sudo || sudo) {
-          const new_fs = Object.keys(this.state.fs.children)
-            .filter(key => key !== secondParam)
-            .reduce((obj, key) => {
-              obj[key] = this.state.fs.children[key];
-              return obj;
-            }, {});
-
-          const new_cfs = Object.keys(this.state.cfs.children)
-            .filter(key => key !== secondParam)
-            .reduce((obj, key) => {
-              obj[key] = this.state.cfs.children[key];
-              return obj;
-            }, {});
-
-          this.setState({ fs: { type: 'directory', children: new_fs } });
-          this.setState({ cfs: { type: 'directory', children: new_cfs } });
-          this.cout();
-        } else this.cout(`bash: ${secondParam}: permission denied`);
-        return;
-      } else if (this.is_dir(selected_file_or_dir))
-        this.cout(`rm: cannot remove '${secondParam}': Is a directory`);
-      else this.cout(`rm: ${secondParam}: No such file or directory`);
     }
-  };
+    return this.commands;
+  }
 
   openLink(link) {
     var win = window.open(link, '_blank');
@@ -187,21 +76,21 @@ class App extends Component {
     });
     hiddenCommands.push('sudo');
 
-    return Object.keys(this.commands).filter(
+    return Object.keys(this.getCommands()).filter(
       cmd => hiddenCommands.indexOf(cmd) < 0
     );
   }
 
   isItCommand = input => {
-    return !!Object.keys(this.commands).find(command_name => {
+    return !!Object.keys(this.getCommands()).find(command_name => {
       if (input === command_name || input.startsWith(command_name + ' '))
         return true;
       else return false;
     });
   };
 
-  clearCommandName = input =>
-    Object.keys(this.commands).find(command_name => {
+  extractCommandName = input =>
+    Object.keys(this.getCommands()).find(command_name => {
       if (input.startsWith(command_name + ' ')) return input.split(' ')[0];
       else if (input === command_name) return input;
       else return undefined;
@@ -344,9 +233,9 @@ class App extends Component {
         const slash = this.is_dir(this.state.cfs.children[existed_things[0]])
           ? '/'
           : '';
-        this._prompt.current.content = `${sudo_string + param1} ${
-          existed_things[0]
-        }${slash}`;
+          this._prompt.current.content = `${sudo_string + param1} ${
+            existed_things[0]
+          }${slash}`;
         return;
       }
 
@@ -364,10 +253,10 @@ class App extends Component {
 
     const input = this.removeSpaces(this._prompt.current.content);
     const is_it_command = this.isItCommand(input);
-    const command = this.clearCommandName(input);
+    const command = this.extractCommandName(input);
 
     const command_input = this.removeSpaces(input);
-    if (is_it_command) this.commands[command](false, command_input);
+    if (is_it_command) this.getCommands()[command](false, command_input);
     else if (input === '') this.cin();
     else this.createErrorLine();
 
@@ -382,8 +271,8 @@ class App extends Component {
         { current_line_from_last: this.state.current_line_from_last + 1 },
         () =>
           (this._prompt.current.content = this.state.previousCommands[
-            this.state.previousCommands.length -
-              this.state.current_line_from_last
+              this.state.previousCommands.length -
+                this.state.current_line_from_last
           ]),
         () => this.focusTerminal()
       );
@@ -395,8 +284,8 @@ class App extends Component {
         { current_line_from_last: this.state.current_line_from_last - 1 },
         () =>
           (this._prompt.current.content = this.state.previousCommands[
-            this.state.previousCommands.length -
-              this.state.current_line_from_last
+              this.state.previousCommands.length -
+                this.state.current_line_from_last
           ]),
         () => this.focusTerminal()
       );
@@ -417,7 +306,7 @@ class App extends Component {
   }
 
   componentWillUnmount() {
-    document.addEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   focusTerminal() {
@@ -426,28 +315,18 @@ class App extends Component {
   }
 
   copy = text => {
-    const fallback = () => {
-      try {
-        var successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
-        console.log('Fallback: Copying text command was ' + msg);
-      } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-      }
-    };
-    if (!navigator.clipboard) {
-      fallback();
-      return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(
+        () => {
+          console.log('Copying to clipboard was successful!');
+        },
+        err => {
+          console.error('Could not copy text: ', err);
+        }
+      );
+    } else {
+      console.warn('Clipboard API not available');
     }
-
-    navigator.clipboard.writeText(text).then(
-      () => {
-        console.log('Async: Copying to clipboard was successful!');
-      },
-      err => {
-        console.error('Async: Could not copy text: ', err);
-      }
-    );
   };
 
   focusTerminalIfTouchDevice = e => {
@@ -465,7 +344,7 @@ class App extends Component {
     }
   };
 
-  renderPreviousLines = () =>
+    renderPreviousLines = () =>
     this.state.previousLines.map(previousCommand => (
       <Line
         settings={this.state.settings}
