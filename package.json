@@ -1,8 +1,37 @@
 {
   "name": "react-terminal",
-  "version": "1.1.3",
-  "private": true,
+  "version": "2.0.0",
+  "description": "A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser",
+  "keywords": [
+    "react",
+    "terminal",
+    "simulator",
+    "cli",
+    "command-line",
+    "linux",
+    "unix",
+    "bash",
+    "web-terminal",
+    "interactive"
+  ],
+  "homepage": "https://mustafacanpalaz.com/cmd",
+  "bugs": {
+    "url": "https://github.com/your-username/react-terminal/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/react-terminal.git"
+  },
+  "author": {
+    "name": "Mustafa Can Palaz",
+    "url": "https://mustafacanpalaz.com"
+  },
   "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "dependencies": {
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
@@ -18,10 +47,16 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
