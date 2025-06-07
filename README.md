@@ -1,44 +1,91 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# React Terminal Simulator
 
-## Available Scripts
+A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser.
 
-In the project directory, you can run:
+![Version](https://img.shields.io/badge/version-1.1.3-blue.svg) ![React](https://img.shields.io/badge/react-16.7.0-61dafb.svg)
 
-### `npm start`
+## 📸 Screenshot
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+![Terminal Demo](.github/images/terminal-demo.png)
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## ✨ Features
 
-### `npm test`
+- Interactive terminal with command history and tab completion
+- File system navigation (`ls`, `cd`, `pwd`, `cat`, `rm`, `clear`, `help`, `sudo`)
+- Right-click to copy selected text
+- Touch device support
+- Realistic bash-like behavior
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚀 Quick Start
 
-### `npm run build`
+```bash
+git clone https://github.com/your-username/react-terminal.git
+cd react-terminal
+npm install
+npm start
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## 🎮 Usage
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+root@ubuntu:~/$ ls
+Documents/  Downloads/  Music/  Pictures/  game_saves/  gta_sa_cheats.txt  .bashrc
 
-### `npm run eject`
+root@ubuntu:~/$ cd Pictures
+root@ubuntu:~/Pictures$ cat profile.png
+[File contents displayed]
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Use ↑/↓ arrows for command history, Tab for completion.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🎨 Customization
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Adding New Commands
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+To add a new command, extend the `commands` object in `src/scenes/Home/index.js`:
 
-## Learn More
+```javascript
+commands = {
+  // ... existing commands
+  yourcommand: (sudo, input) => {
+    // Command implementation
+    this.cout('Your command output');
+  }
+};
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Modifying File System
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Edit `src/fs.json` to customize the virtual file system structure:
+
+```json
+{
+  "type": "directory",
+  "children": {
+    "your_folder": {
+      "type": "directory",
+      "children": {}
+    },
+    "your_file.txt": {
+      "type": "file",
+      "src": "/path/to/file/content.txt"
+    }
+  }
+}
+```
+
+## 🔗 Demo
+
+Try it live: [https://mustafacanpalaz.com/cmd](https://mustafacanpalaz.com/cmd)
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) file.
+
+---
+
+Built with ❤️ using React
+
+Copyright (c) 2025 Mustafa Can Palaz
