@@ -1,2 +1,2 @@
-alias textgame='xdg-open http://textgamerpg.com'
-alias randomcolor='xdg-open http://randomcolor.online'
+alias textgame='xdg-open https://rpgtextgame.netlify.app'
+alias randomcolor='xdg-open https://randomcolor2.netlify.app'
