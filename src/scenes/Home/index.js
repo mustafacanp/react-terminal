@@ -334,7 +334,9 @@ class App extends Component {
 
     if ((param1 === 'cd' || param1 === 'cat' || param1 === 'rm') && param2) {
       const children = Object.keys(this.state.cfs.children);
-      const existed_things = children.filter(dir => dir.startsWith(param2));
+      const existed_things = children.filter(dir =>
+        dir.toLowerCase().startsWith(param2.toLowerCase())
+      );
 
       if (existed_things.length > 1) this.setState({ tab_pressed: true });
 
