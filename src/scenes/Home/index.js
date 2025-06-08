@@ -12,22 +12,22 @@ class App extends Component {
 		super();
 
 		this.handleKeyDown = this.handleKeyDown.bind(this);
-		this._terminal_body = this._terminal_body_container = undefined;
+		this._terminalBody = this._terminalBodyContainer = undefined;
 		this._prompt = React.createRef();
 		this.state = {
 			settings: {
-				computer_name: 'ubuntu',
-				user_name: 'root'
+				computerName: 'ubuntu',
+				userName: 'root'
 			},
 			fs: fs,
 			cfs: fs,
 			path: [],
-			base_path: 'home/user',
-			prompt_text: '',
+			basePath: 'home/user',
+			promptText: '',
 			previousLines: [],
 			previousCommands: [],
-			current_line_from_last: 0,
-			tab_pressed: false
+			currentLineFromLast: 0,
+			tabPressed: false
 		};
 
 		// Initialize commands - will be created dynamically to access current state
@@ -49,10 +49,10 @@ class App extends Component {
 				cout: this.cout,
 				openLink: this.openLink.bind(this),
 				printCommandLine: this.printCommandLine,
-				pwd_text: this.pwd_text,
+				pwdText: this.pwdText,
 				checkSecondParameter: this.checkSecondParameter,
-				is_dir: this.is_dir,
-				is_file: this.is_file,
+				isDir: this.isDir,
+				isFile: this.isFile,
 				checkThirdParameter: this.checkThirdParameter,
 				secondParameter: this.secondParameter,
 				getCommands: this.getCommands.bind(this)
@@ -82,17 +82,17 @@ class App extends Component {
 	}
 
 	isItCommand = input => {
-		return !!Object.keys(this.getCommands()).find(command_name => {
-			if (input === command_name || input.startsWith(command_name + ' '))
+		return !!Object.keys(this.getCommands()).find(commandName => {
+			if (input === commandName || input.startsWith(commandName + ' '))
 				return true;
 			else return false;
 		});
 	};
 
 	extractCommandName = input =>
-		Object.keys(this.getCommands()).find(command_name => {
-			if (input.startsWith(command_name + ' ')) return input.split(' ')[0];
-			else if (input === command_name) return input;
+		Object.keys(this.getCommands()).find(commandName => {
+			if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
+			else if (input === commandName) return input;
 			else return undefined;
 		});
 
@@ -100,26 +100,26 @@ class App extends Component {
 		return {
 			type,
 			id: this.state.previousLines.length + 1,
-			pwd: this.pwd_text(),
+			pwd: this.pwdText(),
 			text: noTrim ? text : this.trim(text),
 			breakWord: breakWord ? false : true
 		};
 	};
 
 	cin = (text = '', breakWord) => {
-		const cin_text = this.createNewCommand('cin', text, breakWord);
+		const cinText = this.createNewCommand('cin', text, breakWord);
 
 		this.setState(prevState => ({
-			previousLines: [...prevState.previousLines, cin_text]
+			previousLines: [...prevState.previousLines, cinText]
 		}));
 
-		this.setState({ prompt_text: '' }, () => this.focusTerminal());
+		this.setState({ promptText: '' }, () => this.focusTerminal());
 	};
 
 	cout = (text = '', breakWord, input, noTrim) => {
-		const new_command = this.createNewCommand('cout', text, breakWord, noTrim);
-		new_command.id = this.state.previousLines.length + 2;
-		const cout_text = new_command;
+		const newCommand = this.createNewCommand('cout', text, breakWord, noTrim);
+		newCommand.id = this.state.previousLines.length + 2;
+		const coutText = newCommand;
 
 		const inputTrimmed = this.removeSpaces(
 			this._prompt.current.content || input
@@ -128,31 +128,31 @@ class App extends Component {
 
 		this.setState(
 			prevState => ({
-				previousLines: [...prevState.previousLines, cout_text]
+				previousLines: [...prevState.previousLines, coutText]
 			}),
 			() => this.focusTerminal()
 		);
 
-		this.setState({ prompt_text: '' }, () => this.focusTerminal());
+		this.setState({ promptText: '' }, () => this.focusTerminal());
 	};
 
-	updatePreviousCommands = command_text => {
-		if (command_text !== '')
+	updatePreviousCommands = commandText => {
+		if (commandText !== '')
 			this.setState(prevState => ({
-				previousCommands: [...prevState.previousCommands, command_text]
+				previousCommands: [...prevState.previousCommands, commandText]
 			}));
 	};
 
-	checkSecondParameter = (text, command_name) => {
+	checkSecondParameter = (text, commandName) => {
 		if (this.secondParameter(text)) {
-			this.cout(`bash: ${command_name}: too many arguments`);
+			this.cout(`bash: ${commandName}: too many arguments`);
 			return true;
 		}
 		return false;
 	};
-	checkThirdParameter = (text, command_name) => {
-		if (this.thirthParameter(text)) {
-			this.cout(`bash: ${command_name}: too many arguments`);
+	checkThirdParameter = (text, commandName) => {
+		if (this.thirdParameter(text)) {
+			this.cout(`bash: ${commandName}: too many arguments`);
 			return true;
 		}
 		return false;
@@ -161,23 +161,23 @@ class App extends Component {
 	trim = str => str.trimStart().trimEnd();
 	removeSpaces = text => text.replace(/\s+/g, ' ').trim();
 
-	is_dir = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
-	is_file = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
+	isDir = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
+	isFile = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
 
 	printCommandLine = () => this.cin(this._prompt.current.content);
 	createErrorLine = () =>
 		this.cout(
 			this.firstParameter(this._prompt.current.content) + ': command not found'
 		);
-	pwd_text = () =>
+	pwdText = () =>
 		'~' +
-		(this.state.path.join('/') === this.state.base_path
+		(this.state.path.join('/') === this.state.basePath
 			? ''
 			: '/' + this.state.path.join('/'));
 
 	firstParameter = str => this.trim(str).split(' ')[0];
 	secondParameter = str => this.trim(str).split(' ')[1] || '';
-	thirthParameter = str => this.trim(str).split(' ').length > 2 || '';
+	thirdParameter = str => this.trim(str).split(' ').length > 2 || '';
 
 	/** START HANDLE KEYS */
 
@@ -259,7 +259,7 @@ class App extends Component {
 					if (
 						targetFS.children &&
 						targetFS.children[dirName] &&
-						this.is_dir(targetFS.children[dirName])
+						this.isDir(targetFS.children[dirName])
 					) {
 						targetFS = targetFS.children[dirName];
 						workingPath.push(dirName);
@@ -304,7 +304,7 @@ class App extends Component {
 		if (targetPath.includes('/')) {
 			const selectedDir = this.getLastDir(targetPath);
 			const dir = childrenFS[selectedDir];
-			if (this.is_dir(dir)) {
+			if (this.isDir(dir)) {
 				const newTargetPath = targetPath.split('/').pop().toLowerCase();
 				const children = Object.keys(dir.children);
 				const newMatchingItems = children.filter(dir =>
@@ -324,7 +324,7 @@ class App extends Component {
 
 		if (targetPath === '') {
 			this.cout(matchingItems.join('&#09;'), 'break-none');
-			this.setState({ prompt_text: originalInput });
+			this.setState({ promptText: originalInput });
 			return;
 		}
 
@@ -332,7 +332,7 @@ class App extends Component {
 			const inputWithoutSudo = originalInput.replace('sudo ', '');
 			const param2 = this.secondParameter(inputWithoutSudo);
 			const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
-			const dirSlash = this.is_dir(childrenFS[matchingItems[0]]) ? '/' : '';
+			const dirSlash = this.isDir(childrenFS[matchingItems[0]]) ? '/' : '';
 
 			this._prompt.current.content = `${sudoPrefix + command} ${parentFolders}${
 				matchingItems[0]
@@ -341,22 +341,22 @@ class App extends Component {
 		}
 
 		if (matchingItems.length > 1) {
-			this.setState({ tab_pressed: true });
+			this.setState({ tabPressed: true });
 			this.cout(matchingItems.join('&#09;'), 'break-none');
-			this.setState({ prompt_text: originalInput });
+			this.setState({ promptText: originalInput });
 		}
 	};
 
 	handleEnter = () => {
-		this.setState({ tab_pressed: false });
-		this.setState({ current_line_from_last: 0 });
+		this.setState({ tabPressed: false });
+		this.setState({ currentLineFromLast: 0 });
 
 		const input = this.removeSpaces(this._prompt.current.content);
-		const is_it_command = this.isItCommand(input);
+		const isItCommand = this.isItCommand(input);
 		const command = this.extractCommandName(input);
 
-		const command_input = this.removeSpaces(input);
-		if (is_it_command) this.getCommands()[command](false, command_input);
+		const commandInput = this.removeSpaces(input);
+		if (isItCommand) this.getCommands()[command](false, commandInput);
 		else if (input === '') this.cin();
 		else this.createErrorLine();
 
@@ -366,28 +366,28 @@ class App extends Component {
 
 	handleUpArrow = e => {
 		e.preventDefault();
-		if (this.state.current_line_from_last < this.state.previousCommands.length)
+		if (this.state.currentLineFromLast < this.state.previousCommands.length)
 			this.setState(
-				{ current_line_from_last: this.state.current_line_from_last + 1 },
+				{ currentLineFromLast: this.state.currentLineFromLast + 1 },
 				() =>
 					(this._prompt.current.content =
 						this.state.previousCommands[
 							this.state.previousCommands.length -
-								this.state.current_line_from_last
+								this.state.currentLineFromLast
 						]),
 				() => this.focusTerminal()
 			);
 	};
 
 	handleDownArrow = () => {
-		if (this.state.current_line_from_last > 1)
+		if (this.state.currentLineFromLast > 1)
 			this.setState(
-				{ current_line_from_last: this.state.current_line_from_last - 1 },
+				{ currentLineFromLast: this.state.currentLineFromLast - 1 },
 				() =>
 					(this._prompt.current.content =
 						this.state.previousCommands[
 							this.state.previousCommands.length -
-								this.state.current_line_from_last
+								this.state.currentLineFromLast
 						]),
 				() => this.focusTerminal()
 			);
@@ -398,10 +398,10 @@ class App extends Component {
 	/** DOM ACTIONS */
 
 	componentDidMount() {
-		this._terminal_body_container = document.querySelector(
+		this._terminalBodyContainer = document.querySelector(
 			'.terminal-body-container'
 		);
-		this._terminal_body = document.querySelector('.terminal-body-container');
+		this._terminalBody = document.querySelector('.terminal-body-container');
 
 		// this.focusTerminal();
 		document.addEventListener('keydown', this.handleKeyDown.bind(this));
@@ -413,7 +413,7 @@ class App extends Component {
 
 	focusTerminal() {
 		this._prompt.current.focusPrompt();
-		this._terminal_body_container.scrollTop = this._terminal_body.scrollHeight;
+		this._terminalBodyContainer.scrollTop = this._terminalBody.scrollHeight;
 	}
 
 	copy = text => {
@@ -469,16 +469,16 @@ class App extends Component {
 					>
 						<Toolbar
 							settings={this.state.settings}
-							pwd={this.pwd_text()}
+							pwd={this.pwdText()}
 						></Toolbar>
 						<div className="terminal-body-container">
 							<div className="terminal-body">
 								{this.renderPreviousLines()}
 								<Prompt
 									ref={this._prompt}
-									username={this.state.settings.user_name}
-									computerName={this.state.settings.computer_name}
-									currentPath={this.pwd_text()}
+									username={this.state.settings.userName}
+									computerName={this.state.settings.computerName}
+									currentPath={this.pwdText()}
 								/>
 							</div>
 						</div>

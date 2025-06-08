@@ -12,10 +12,10 @@ export const createTerminalCommands = context => {
 		cout,
 		openLink,
 		printCommandLine,
-		pwd_text,
+		pwdText,
 		checkSecondParameter,
-		is_dir,
-		is_file,
+		isDir,
+		isFile,
 		checkThirdParameter,
 		secondParameter,
 		getCommands
@@ -68,13 +68,13 @@ export const createTerminalCommands = context => {
 	return {
 		sudo: () => {
 			const input = removeSpaces(_prompt.current.content);
-			const input_without_sudo = input.substr(input.indexOf(' ') + 1);
+			const inputWithoutSudo = input.substr(input.indexOf(' ') + 1);
 
-			const is_it_command = isItCommand(input_without_sudo);
-			const command = extractCommandName(input_without_sudo);
+			const isCommand = isItCommand(inputWithoutSudo);
+			const command = extractCommandName(inputWithoutSudo);
 
-			const command_input = removeSpaces(input_without_sudo);
-			if (is_it_command) getCommands()[command](true, command_input);
+			const commandInput = removeSpaces(inputWithoutSudo);
+			if (isCommand) getCommands()[command](true, commandInput);
 			else if (input === '') cin();
 			else createErrorLine();
 		},
@@ -88,14 +88,14 @@ export const createTerminalCommands = context => {
 		},
 		pwd: () => {
 			const state = getState();
-			const cwd = pwd_text().replace('~', '/' + state.base_path);
+			const cwd = pwdText().replace('~', '/' + state.basePath);
 			cout(cwd);
 		},
 		ls: (sudo, input) => {
 			const state = getState();
 			if (checkSecondParameter(input, 'ls')) return;
 			const dirs = Object.keys(state.cfs.children).map(key => {
-				const slash = is_dir(state.cfs.children[key]) ? '/' : '';
+				const slash = isDir(state.cfs.children[key]) ? '/' : '';
 				return `<span class="type-${state.cfs.children[key].type}">${key}${slash}</span>`;
 			});
 			cout(dirs.join('&#09;'), true);
@@ -124,13 +124,13 @@ export const createTerminalCommands = context => {
 				return;
 			}
 
-			const selected_file_or_dir = resolveFileSystemPath(
+			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
 				state.cfs,
 				state.path,
 				secondParam
 			);
-			if (is_dir(selected_file_or_dir)) {
+			if (isDir(selectedFileOrDir)) {
 				printCommandLine();
 
 				// Calculate the new path considering ".." navigation
@@ -149,10 +149,10 @@ export const createTerminalCommands = context => {
 
 				setState(prevState => ({
 					path: newPath,
-					cfs: selected_file_or_dir
+					cfs: selectedFileOrDir
 				}));
 				return;
-			} else if (is_file(selected_file_or_dir)) {
+			} else if (isFile(selectedFileOrDir)) {
 				cout(`bash: cd: ${secondParam}: Not a directory`);
 				return;
 			} else {
@@ -169,24 +169,24 @@ export const createTerminalCommands = context => {
 			const secondParam = secondParameter(input);
 			if (checkThirdParameter(input, 'cat')) return;
 
-			const selected_file_or_dir = resolveFileSystemPath(
+			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
 				state.cfs,
 				state.path,
 				secondParam
 			);
-			if (is_file(selected_file_or_dir)) {
-				const file = selected_file_or_dir;
+			if (isFile(selectedFileOrDir)) {
+				const file = selectedFileOrDir;
 				if (!file.sudo || sudo) {
 					const input = _prompt.current.content;
-					const file_content = await fetch(
+					const fileContent = await fetch(
 						process.env.PUBLIC_URL + file.src
 					).then(res => res.text());
-					cout(file_content, false, input, true);
+					cout(fileContent, false, input, true);
 				} else {
 					cout(`bash: ${secondParam}: permission denied`);
 				}
-			} else if (is_dir(selected_file_or_dir)) {
+			} else if (isDir(selectedFileOrDir)) {
 				cout(`cat: ${secondParam}: Is a directory`);
 			} else {
 				cout(`cat: ${secondParam}: No such file or directory`);
@@ -201,14 +201,14 @@ export const createTerminalCommands = context => {
 			const secondParam = secondParameter(input);
 			if (checkThirdParameter(input, 'rm')) return;
 
-			const selected_file_or_dir = resolveFileSystemPath(
+			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
 				state.cfs,
 				state.path,
 				secondParam
 			);
-			if (is_file(selected_file_or_dir)) {
-				const file = selected_file_or_dir;
+			if (isFile(selectedFileOrDir)) {
+				const file = selectedFileOrDir;
 				if (!file.sudo || sudo) {
 					// Handle nested path removal
 					const pathParts = secondParam.split('/').filter(part => part !== '');
@@ -216,7 +216,7 @@ export const createTerminalCommands = context => {
 
 					if (pathParts.length === 1) {
 						// Simple case: file in current directory
-						const new_cfs = Object.keys(state.cfs.children)
+						const newCfs = Object.keys(state.cfs.children)
 							.filter(key => key !== fileName)
 							.reduce((obj, key) => {
 								obj[key] = state.cfs.children[key];
@@ -224,7 +224,7 @@ export const createTerminalCommands = context => {
 							}, {});
 
 						setState(prevState => ({
-							cfs: { ...prevState.cfs, children: new_cfs }
+							cfs: { ...prevState.cfs, children: newCfs }
 						}));
 					} else {
 						// Complex case: file in nested directory - for now, show error
@@ -236,7 +236,7 @@ export const createTerminalCommands = context => {
 					cout();
 				} else cout(`bash: ${secondParam}: permission denied`);
 				return;
-			} else if (is_dir(selected_file_or_dir))
+			} else if (isDir(selectedFileOrDir))
 				cout(`rm: cannot remove '${secondParam}': Is a directory`);
 			else cout(`rm: ${secondParam}: No such file or directory`);
 		},

@@ -1,91 +1,85 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, useCallback } from 'react';
 
-class Cursor extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			style: {},
-			cursorLetter: '',
-			cursorFromTheRight: 0
-		};
-		this.initialState = Object.assign({}, this.state);
-		this.resetState = this.resetState.bind(this);
-	}
+const Cursor = ({ promptText }) => {
+	const [style, setStyle] = useState({});
+	const [cursorLetter, setCursorLetter] = useState('');
+	const [cursorFromTheRight, setCursorFromTheRight] = useState(0);
 
-	resetState() {
-		this.setState(this.initialState);
-	}
+	const resetState = useCallback(() => {
+		setStyle({});
+		setCursorLetter('');
+		setCursorFromTheRight(0);
+	}, []);
 
-	componentDidMount() {
-		document.addEventListener('keydown', this.handleKeyDown.bind(this));
-	}
+	const updateCursor = useCallback(
+		newValue => {
+			setStyle({
+				marginLeft: -8 * newValue + 'px'
+			});
+			setCursorLetter(promptText[promptText.length - newValue]);
+		},
+		[promptText]
+	);
 
-	componentWillUnmount() {
-		document.addEventListener('keydown', this.handleKeyDown);
-	}
-
-	handleKeyDown = e => {
-		// Handles non-printable chars.
-		switch (e.keyCode) {
-			case 37:
-				this.handleLeftArrow();
-				break;
-			case 39:
-				this.handleRightArrow();
-				break;
-			case 46:
-				this.handleRightArrow();
-				break; // del
-			default:
-				break;
+	const handleLeftArrow = useCallback(() => {
+		if (cursorFromTheRight < promptText.length) {
+			setCursorFromTheRight(prev => {
+				const newValue = prev + 1;
+				setTimeout(() => updateCursor(newValue), 0);
+				return newValue;
+			});
 		}
-	};
+	}, [cursorFromTheRight, promptText, updateCursor]);
 
-	moveCursor = () => {
-		this.setState({
-			style: {
-				marginLeft: -8 * this.state.cursorFromTheRight + 'px'
-			},
-			cursorLetter:
-				this.props.promptText[
-					this.props.promptText.length - this.state.cursorFromTheRight
-				]
-		}); // set letter to cursor
-	};
+	const handleRightArrow = useCallback(() => {
+		if (cursorFromTheRight > 0) {
+			setCursorFromTheRight(prev => {
+				const newValue = prev - 1;
+				setTimeout(() => updateCursor(newValue), 0);
+				return newValue;
+			});
+		}
+	}, [cursorFromTheRight, updateCursor]);
 
-	handleLeftArrow = () => {
-		if (this.state.cursorFromTheRight < this.props.promptText.length)
-			this.setState(
-				{ cursorFromTheRight: this.state.cursorFromTheRight + 1 },
-				() => this.moveCursor()
-			);
-	};
+	const handleKeyDown = useCallback(
+		e => {
+			// Handles non-printable chars.
+			switch (e.keyCode) {
+				case 37:
+					handleLeftArrow();
+					break;
+				case 39:
+					handleRightArrow();
+					break;
+				case 46:
+					handleRightArrow();
+					break; // del
+				default:
+					break;
+			}
+		},
+		[handleLeftArrow, handleRightArrow]
+	);
 
-	handleRightArrow = () => {
-		if (this.state.cursorFromTheRight > 0)
-			this.setState(
-				{ cursorFromTheRight: this.state.cursorFromTheRight - 1 },
-				() => this.moveCursor()
-			);
-	};
+	useEffect(() => {
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [handleKeyDown]);
 
-	render() {
-		if (
-			this.props.promptText.length === 0 &&
-			this.state.cursorFromTheRight !== 0
-		)
-			this.resetState();
-		return (
-			<span style={this.state.style} className="prompt-cursor">
-				{this.state.cursorLetter}
-			</span>
-		);
-	}
-}
+	// Reset state when promptText is empty
+	useEffect(() => {
+		if (promptText.length === 0 && cursorFromTheRight !== 0) {
+			resetState();
+		}
+	}, [promptText.length, cursorFromTheRight, resetState]);
 
-Cursor.propTypes = {
-	promptText: PropTypes.string.isRequired
+	return (
+		<span style={style} className="prompt-cursor">
+			{cursorLetter}
+		</span>
+	);
 };
 
 export default Cursor;

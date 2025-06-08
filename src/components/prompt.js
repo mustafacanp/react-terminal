@@ -1,74 +1,66 @@
-import React, { Component } from 'react';
-import Cursor from './cursor';
-import PropTypes from 'prop-types';
-import PromptLabel from './promptLabel';
+import React, {
+	useState,
+	useEffect,
+	useRef,
+	useImperativeHandle,
+	forwardRef
+} from 'react';
+import Cursor from './Cursor';
+import PromptLabel from './PromptLabel';
 
-class Prompt extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			promptText: ''
-		};
-		this.handleInputChange = this.handleInputChange.bind(this);
-		this.focusPrompt = this.focusPrompt.bind(this);
-		this.blurPrompt = this.blurPrompt.bind(this);
-		this._promptInput = React.createRef();
-	}
+const Prompt = forwardRef(({ username, computerName, currentPath }, ref) => {
+	const [promptText, setPromptText] = useState('');
+	const promptInputRef = useRef();
 
-	get content() {
-		return this.state.promptText;
-	}
+	const handleInputChange = e => {
+		setPromptText(e.target.value);
+	};
 
-	set content(value) {
-		this.setState({ promptText: value });
-	}
+	const focusPrompt = () => {
+		promptInputRef.current.focus();
+	};
 
-	clear() {
-		this.setState({ promptText: '' });
-	}
+	const blurPrompt = () => {
+		promptInputRef.current.blur();
+	};
 
-	componentDidMount() {
-		this.focusPrompt();
-	}
+	const clear = () => {
+		setPromptText('');
+	};
 
-	handleInputChange(e) {
-		this.setState({ promptText: e.target.value });
-	}
+	useImperativeHandle(ref, () => ({
+		get content() {
+			return promptText;
+		},
+		set content(value) {
+			setPromptText(value);
+		},
+		clear,
+		focusPrompt,
+		blurPrompt
+	}));
 
-	focusPrompt() {
-		this._promptInput.current.focus();
-	}
+	useEffect(() => {
+		focusPrompt();
+	}, []);
 
-	blurPrompt() {
-		this._promptInput.current.blur();
-	}
-
-	render() {
-		let { username, computerName, currentPath } = this.props;
-		return (
-			<div className="terminal-prompt">
-				<PromptLabel
-					username={username}
-					computerName={computerName}
-					currentPath={currentPath}
-				/>
-				<input
-					className="prompt-input"
-					ref={this._promptInput}
-					value={this.state.promptText}
-					onChange={this.handleInputChange}
-				/>
-				<span className="prompt-text">{this.state.promptText}</span>
-				<Cursor promptText={this.state.promptText} />
-			</div>
-		);
-	}
-}
-
-Prompt.propTypes = {
-	username: PropTypes.string.isRequired,
-	computerName: PropTypes.string.isRequired,
-	currentPath: PropTypes.string.isRequired
-};
+	return (
+		<div className="terminal-prompt">
+			<PromptLabel
+				username={username}
+				computerName={computerName}
+				currentPath={currentPath}
+			/>
+			<input
+				className="prompt-input"
+				ref={promptInputRef}
+				value={promptText}
+				onChange={handleInputChange}
+			/>
+			<span className="prompt-text">{promptText}</span>
+			<Cursor promptText={promptText} />
+		</div>
+	);
+});
 
 export default Prompt;

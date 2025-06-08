@@ -1,4 +1,4 @@
-import Cursor from './cursor';
-import Prompt from './prompt';
+import Cursor from './Cursor';
+import Prompt from './Prompt';
 
 export { Cursor, Prompt };

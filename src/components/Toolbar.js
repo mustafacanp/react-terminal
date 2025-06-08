@@ -1,19 +1,9 @@
-import React, { Component } from 'react';
+import React, { useEffect, useCallback } from 'react';
 
-class Toolbar extends Component {
-	constructor(props) {
-		super();
-		this.user_name = props.settings.user_name;
-		this.computer_name = props.settings.computer_name;
-		this.pwd = props.pwd;
+const Toolbar = ({ settings, pwd }) => {
+	const { userName, computerName } = settings;
 
-		document.addEventListener('fullscreenchange', this.exitFullscreen);
-		document.addEventListener('webkitfullscreenchange', this.exitFullscreen);
-		document.addEventListener('mozfullscreenchange', this.exitFullscreen);
-		document.addEventListener('MSFullscreenChange', this.exitFullscreen);
-	}
-
-	exitFullscreen() {
+	const exitFullscreen = useCallback(() => {
 		if (
 			!document.fullscreenElement &&
 			!document.webkitIsFullScreen &&
@@ -25,9 +15,9 @@ class Toolbar extends Component {
 			document.querySelector('.terminal').style.top = 'auto';
 			document.querySelector('.terminal-body-container').style.height = '500px';
 		}
-	}
+	}, []);
 
-	requestFullScreen() {
+	const requestFullScreen = useCallback(() => {
 		const isMobileOrTablet = window.matchMedia(
 			'screen and (max-width: 991px)'
 		).matches;
@@ -42,7 +32,7 @@ class Toolbar extends Component {
 				document.querySelector('.terminal').style.height =
 					window.screen.height - 25 + 'px';
 				document.querySelector('.terminal').style.width =
-					window.screen.width + 'px';
+					window.innerWidth + 'px';
 				document.querySelector('.terminal').style.top = '0';
 				document.querySelector('.terminal-body-container').style.height =
 					window.screen.height - 25 + 'px';
@@ -72,37 +62,43 @@ class Toolbar extends Component {
 				}
 			}
 		}
-	}
+	}, []);
 
-	render() {
-		return (
-			<div
-				className="terminal-toolbar"
-				onDoubleClick={() => this.requestFullScreen()}
-			>
-				<div className="toolbar-buttons">
-					<button
-						className="toolbar-button toolbar-button--exit"
-						onClick={() => {
-							alert('You shall not exit!');
-						}}
-					>
-						&#10005;
-					</button>
-					<button className="toolbar-button">&#9472;</button>
-					<button
-						className="toolbar-button"
-						onClick={() => this.requestFullScreen()}
-					>
-						&#9723;
-					</button>
-				</div>
-				<p className="toolbar-user">
-					{this.user_name}@{this.computer_name}:{this.pwd}
-				</p>
+	useEffect(() => {
+		document.addEventListener('fullscreenchange', exitFullscreen);
+		document.addEventListener('webkitfullscreenchange', exitFullscreen);
+		document.addEventListener('mozfullscreenchange', exitFullscreen);
+		document.addEventListener('MSFullscreenChange', exitFullscreen);
+
+		return () => {
+			document.removeEventListener('fullscreenchange', exitFullscreen);
+			document.removeEventListener('webkitfullscreenchange', exitFullscreen);
+			document.removeEventListener('mozfullscreenchange', exitFullscreen);
+			document.removeEventListener('MSFullscreenChange', exitFullscreen);
+		};
+	}, [exitFullscreen]);
+
+	return (
+		<div className="terminal-toolbar" onDoubleClick={requestFullScreen}>
+			<div className="toolbar-buttons">
+				<button
+					className="toolbar-button toolbar-button--exit"
+					onClick={() => {
+						alert('You shall not exit!');
+					}}
+				>
+					&#10005;
+				</button>
+				<button className="toolbar-button">&#9472;</button>
+				<button className="toolbar-button" onClick={requestFullScreen}>
+					&#9723;
+				</button>
 			</div>
-		);
-	}
-}
+			<p className="toolbar-user">
+				{userName}@{computerName}:{pwd}
+			</p>
+		</div>
+	);
+};
 
 export default Toolbar;
