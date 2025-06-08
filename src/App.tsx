@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Line, Toolbar, Prompt } from './components';
 import { useTerminal } from './hooks/useTerminal';
 import { copy } from './utils/utils';
@@ -17,13 +17,13 @@ const App = () => {
 	const _terminalBodyContainer = useRef<HTMLElement | null>(null);
 	const _terminalBody = useRef<HTMLElement | null>(null);
 
-	const focusTerminal = useCallback(() => {
-		_prompt.current?.focusPrompt();
+	// Auto-scroll to bottom when new lines are added
+	useLayoutEffect(() => {
 		if (_terminalBodyContainer.current && _terminalBody.current) {
 			_terminalBodyContainer.current.scrollTop =
 				_terminalBody.current.scrollHeight;
 		}
-	}, []);
+	}, [state.previousLines]);
 
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
@@ -50,29 +50,26 @@ const App = () => {
 					break;
 			}
 
-			focusTerminal();
+			_prompt.current?.focusPrompt();
 		},
-		[handleTab, handleEnter, handleUpArrow, handleDownArrow, focusTerminal]
+		[handleTab, handleEnter, handleUpArrow, handleDownArrow]
 	);
 
-	const focusTerminalIfTouchDevice = useCallback(
-		(e: React.MouseEvent) => {
-			if (e.buttons === 2) {
-				// right click
-				e.preventDefault();
-				const selection = window.getSelection();
-				if (selection && selection.toString() !== '') {
-					copy(selection.toString());
-					selection.empty();
-				}
-			} else if (e.type === 'click') {
-				if ((window as any).isTouchDevice?.()) {
-					focusTerminal();
-				}
+	const focusTerminalIfTouchDevice = useCallback((e: React.MouseEvent) => {
+		if (e.buttons === 2) {
+			// right click
+			e.preventDefault();
+			const selection = window.getSelection();
+			if (selection && selection.toString() !== '') {
+				copy(selection.toString());
+				selection.empty();
 			}
-		},
-		[focusTerminal]
-	);
+		} else if (e.type === 'click') {
+			if ((window as any).isTouchDevice?.()) {
+				_prompt.current?.focusPrompt();
+			}
+		}
+	}, []);
 
 	const renderPreviousLines = () => {
 		return state.previousLines.map((previousCommand: any) => (
