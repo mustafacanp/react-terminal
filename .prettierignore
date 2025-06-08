@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Production builds
+build/
+dist/
+
+# Generated files
+*.log
+*.lock
+package-lock.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Git
+.git/
+
+# Other
+coverage/ 

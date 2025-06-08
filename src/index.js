@@ -5,7 +5,7 @@ import App from './scenes/Home/';
 import * as serviceWorker from './serviceWorker';
 
 window.isTouchDevice = () =>
-  navigator.maxTouchPoints || 'ontouchstart' in document.documentElement;
+	navigator.maxTouchPoints || 'ontouchstart' in document.documentElement;
 
 const container = document.getElementById('root');
 const root = createRoot(container);
