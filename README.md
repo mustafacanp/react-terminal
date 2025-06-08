@@ -47,24 +47,26 @@ Use ↑/↓ arrows for command history, Tab for completion.
 To add a new command, extend the commands object in `src/commands/terminalCommands.js`:
 
 ```javascript
-export const createTerminalCommands = (context) => {
-  const {
-    getState,
-    setState,
-    cout,
-    // ... other context properties
-  } = context;
+export const createTerminalCommands = context => {
+	const {
+		getState,
+		setState,
+		cout
+		// ... other context properties
+	} = context;
 
-  return {
-    // ... existing commands
-    yourcommand: (sudo, input) => {
-      const state = getState(); // Get current state
-      // Command implementation
-      cout('Your command output');
-      // Update state if needed
-      setState({ /* new state */ });
-    }
-  };
+	return {
+		// ... existing commands
+		yourcommand: (sudo, input) => {
+			const state = getState(); // Get current state
+			// Command implementation
+			cout('Your command output');
+			// Update state if needed
+			setState({
+				/* new state */
+			});
+		}
+	};
 };
 ```
 
@@ -74,17 +76,17 @@ Edit `src/fs.json` to customize the virtual file system structure:
 
 ```json
 {
-  "type": "directory",
-  "children": {
-    "your_folder": {
-      "type": "directory",
-      "children": {}
-    },
-    "your_file.txt": {
-      "type": "file",
-      "src": "/path/to/file/content.txt"
-    }
-  }
+	"type": "directory",
+	"children": {
+		"your_folder": {
+			"type": "directory",
+			"children": {}
+		},
+		"your_file.txt": {
+			"type": "file",
+			"src": "/path/to/file/content.txt"
+		}
+	}
 }
 ```
 
