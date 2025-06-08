@@ -224,26 +224,49 @@ class App extends Component {
 			return;
 		}
 
-		// Navigate to the target directory for nested paths
+		// Navigate to the target directory for nested paths with ".." support
 		let targetFS = this.state.cfs;
 		let searchTerm = param2;
+		let workingPath = [...this.state.path]; // Copy current path
 
 		if (param2.includes('/')) {
 			const pathParts = param2.split('/');
 			searchTerm = pathParts.pop(); // Get the last part to search for
 			const directoryPath = pathParts.filter(part => part !== '');
 
-			// Navigate through the directory structure
+			// Navigate through the directory structure with ".." support
 			for (const dirName of directoryPath) {
-				if (
-					targetFS.children &&
-					targetFS.children[dirName] &&
-					this.is_dir(targetFS.children[dirName])
-				) {
-					targetFS = targetFS.children[dirName];
+				if (dirName === '..') {
+					// Go up one directory
+					if (workingPath.length > 0) {
+						workingPath.pop();
+						// Navigate to the parent directory from root
+						targetFS = this.state.fs;
+						for (const pathSegment of workingPath) {
+							if (targetFS.children && targetFS.children[pathSegment]) {
+								targetFS = targetFS.children[pathSegment];
+							} else {
+								// Path not found
+								return;
+							}
+						}
+					} else {
+						// Already at root, can't go up further
+						targetFS = this.state.fs;
+					}
 				} else {
-					// Path doesn't exist, no completions available
-					return;
+					// Normal directory navigation
+					if (
+						targetFS.children &&
+						targetFS.children[dirName] &&
+						this.is_dir(targetFS.children[dirName])
+					) {
+						targetFS = targetFS.children[dirName];
+						workingPath.push(dirName);
+					} else {
+						// Path doesn't exist, no completions available
+						return;
+					}
 				}
 			}
 		}
