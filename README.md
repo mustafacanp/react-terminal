@@ -44,29 +44,26 @@ Use ↑/↓ arrows for command history, Tab for completion.
 
 ### Adding New Commands
 
-To add a new command, extend the commands object in `src/commands/terminalCommands.js`:
+To add a new command, extend the commands object in the `useTerminal` hook at `src/hooks/useTerminal.tsx`:
 
-```javascript
-export const createTerminalCommands = context => {
-	const {
-		getState,
-		setState,
-		cout
-		// ... other context properties
-	} = context;
+```typescript
+// Inside the useTerminal hook
+const commands = {
+	// ... existing commands
+	yourcommand: (input?: string) => {
+		if (validateAndShowError(hasTooManyParameters(input || ''), 'yourcommand'))
+			return;
 
-	return {
-		// ... existing commands
-		yourcommand: (sudo, input) => {
-			const state = getState(); // Get current state
-			// Command implementation
-			cout('Your command output');
-			// Update state if needed
-			setState({
-				/* new state */
-			});
-		}
-	};
+		const param = getSecondParameter(input || '');
+		// Command implementation using hook's state and helper functions
+		cout('Your command output');
+
+		// Update state if needed using functional setState
+		setState(prev => ({
+			...prev
+			// ... your state updates
+		}));
+	}
 };
 ```
 
