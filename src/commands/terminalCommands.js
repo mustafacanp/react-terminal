@@ -1,8 +1,15 @@
+import {
+	removeSpaces,
+	isDir,
+	isFile,
+	secondParameter,
+	resolveFileSystemPath
+} from '../utils/utils';
+
 export const createTerminalCommands = context => {
 	const {
 		getState,
 		setState,
-		removeSpaces,
 		_prompt,
 		isItCommand,
 		extractCommandName,
@@ -14,56 +21,9 @@ export const createTerminalCommands = context => {
 		printCommandLine,
 		pwdText,
 		checkSecondParameter,
-		isDir,
-		isFile,
 		checkThirdParameter,
-		secondParameter,
 		getCommands
 	} = context;
-
-	// Helper function to resolve paths with slashes through nested file structure
-	const resolveFileSystemPath = (
-		rootFileSystem,
-		currentFileSystem,
-		currentPath,
-		targetPath
-	) => {
-		if (!targetPath || targetPath === '.') return currentFileSystem;
-
-		const pathParts = targetPath.split('/').filter(part => part !== '');
-		let current = currentFileSystem;
-		let workingPath = [...currentPath]; // Copy current path
-
-		for (const part of pathParts) {
-			if (part === '..') {
-				// Go up one directory
-				if (workingPath.length > 0) {
-					workingPath.pop();
-					// Navigate to the parent directory from root
-					current = rootFileSystem;
-					for (const pathSegment of workingPath) {
-						if (current.children && current.children[pathSegment]) {
-							current = current.children[pathSegment];
-						} else {
-							return null; // Path not found
-						}
-					}
-				} else {
-					// Already at root, can't go up further
-					current = rootFileSystem;
-				}
-			} else {
-				// Normal directory navigation
-				if (!current || !current.children || !current.children[part]) {
-					return null; // Path not found
-				}
-				current = current.children[part];
-				workingPath.push(part);
-			}
-		}
-
-		return current;
-	};
 
 	return {
 		sudo: () => {
@@ -88,7 +48,7 @@ export const createTerminalCommands = context => {
 		},
 		pwd: () => {
 			const state = getState();
-			const cwd = pwdText().replace('~', '/' + state.basePath);
+			const cwd = pwdText(state).replace('~', '/' + state.basePath);
 			cout(cwd);
 		},
 		ls: (sudo, input) => {
@@ -115,7 +75,7 @@ export const createTerminalCommands = context => {
 				return;
 			}
 
-			if (secondParam === '~') {
+			if (secondParam === '/' || secondParam === '~') {
 				printCommandLine();
 				setState({
 					cfs: state.fs,

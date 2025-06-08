@@ -1,73 +1,160 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Home.css';
 import Line from '../../components/Line';
 import Toolbar from '../../components/Toolbar';
 import fs from '../../fs.json';
-import { FSEntry } from '../../enums';
 import { Prompt } from '../../components';
 import { createTerminalCommands } from '../../commands/terminalCommands';
+import {
+	trim,
+	removeSpaces,
+	isDir,
+	firstParameter,
+	secondParameter,
+	thirdParameter
+} from '../../utils/utils';
 
-class App extends Component {
-	constructor() {
-		super();
+const App = () => {
+	// State management
+	const [state, setState] = useState({
+		settings: {
+			computerName: 'ubuntu',
+			userName: 'root'
+		},
+		fs: fs,
+		cfs: fs,
+		path: [],
+		basePath: 'home/user',
+		promptText: '',
+		previousLines: [],
+		previousCommands: [],
+		currentLineFromLast: 0,
+		tabPressed: false
+	});
 
-		this.handleKeyDown = this.handleKeyDown.bind(this);
-		this._terminalBody = this._terminalBodyContainer = undefined;
-		this._prompt = React.createRef();
-		this.state = {
-			settings: {
-				computerName: 'ubuntu',
-				userName: 'root'
-			},
-			fs: fs,
-			cfs: fs,
-			path: [],
-			basePath: 'home/user',
-			promptText: '',
-			previousLines: [],
-			previousCommands: [],
-			currentLineFromLast: 0,
-			tabPressed: false
-		};
+	// Refs
+	const _prompt = useRef();
+	const _terminalBodyContainer = useRef();
+	const _terminalBody = useRef();
+	const commands = useRef(null);
+	const commandIdCounter = useRef(0);
+	const stateRef = useRef(state);
 
-		// Initialize commands - will be created dynamically to access current state
-		this.commands = null;
-	}
+	// Keep state ref in sync
+	useEffect(() => {
+		stateRef.current = state;
+	}, [state]);
 
-	getCommands() {
-		if (!this.commands) {
-			this.commands = createTerminalCommands({
-				getState: () => this.state,
-				setState: this.setState.bind(this),
-				removeSpaces: this.removeSpaces,
-				_prompt: this._prompt,
-				isItCommand: this.isItCommand,
-				extractCommandName: this.extractCommandName,
-				cin: this.cin,
-				createErrorLine: this.createErrorLine,
-				getUsableCommands: this.getUsableCommands.bind(this),
-				cout: this.cout,
-				openLink: this.openLink.bind(this),
-				printCommandLine: this.printCommandLine,
-				pwdText: this.pwdText,
-				checkSecondParameter: this.checkSecondParameter,
-				isDir: this.isDir,
-				isFile: this.isFile,
-				checkThirdParameter: this.checkThirdParameter,
-				secondParameter: this.secondParameter,
-				getCommands: this.getCommands.bind(this)
-			});
+	const pwdText = useCallback((currentState = null) => {
+		const activeState = currentState || stateRef.current;
+		return (
+			'~' +
+			(activeState.path.join('/') === activeState.basePath
+				? ''
+				: '/' + activeState.path.join('/'))
+		);
+	}, []);
+
+	const focusTerminal = useCallback(() => {
+		_prompt.current.focusPrompt();
+		_terminalBodyContainer.current.scrollTop =
+			_terminalBody.current.scrollHeight;
+	}, []);
+
+	const createNewCommand = useCallback(
+		(type, text, breakWord, noTrim) => {
+			commandIdCounter.current += 1;
+			return {
+				type,
+				id: commandIdCounter.current,
+				pwd: pwdText(),
+				text: noTrim ? text : trim(text),
+				breakWord: breakWord ? false : true
+			};
+		},
+		[pwdText]
+	);
+
+	const cin = useCallback(
+		(text = '', breakWord) => {
+			const cinText = createNewCommand('cin', text, breakWord);
+			setState(prevState => ({
+				...prevState,
+				previousLines: [...prevState.previousLines, cinText],
+				promptText: ''
+			}));
+			setTimeout(() => focusTerminal(), 0);
+		},
+		[createNewCommand, focusTerminal]
+	);
+
+	const cout = useCallback(
+		(text = '', breakWord, input, noTrim) => {
+			const inputTrimmed = removeSpaces(_prompt.current.content || input);
+			cin(inputTrimmed, breakWord);
+
+			const coutText = createNewCommand('cout', text, breakWord, noTrim);
+			setState(prevState => ({
+				...prevState,
+				previousLines: [...prevState.previousLines, coutText],
+				promptText: ''
+			}));
+			setTimeout(() => focusTerminal(), 0);
+		},
+		[createNewCommand, cin, focusTerminal]
+	);
+
+	const printCommandLine = useCallback(
+		() => cin(_prompt.current.content),
+		[cin]
+	);
+
+	const createErrorLine = useCallback(
+		() => cout(firstParameter(_prompt.current.content) + ': command not found'),
+		[cout]
+	);
+
+	const updatePreviousCommands = useCallback(commandText => {
+		if (commandText !== '') {
+			setState(prevState => ({
+				...prevState,
+				previousCommands: [...prevState.previousCommands, commandText]
+			}));
 		}
-		return this.commands;
-	}
+	}, []);
 
-	openLink(link) {
-		var win = window.open(link, '_blank');
-		win.focus();
-		this.printCommandLine();
-	}
+	const checkSecondParameter = useCallback(
+		(text, commandName) => {
+			if (secondParameter(text)) {
+				cout(`bash: ${commandName}: too many arguments`);
+				return true;
+			}
+			return false;
+		},
+		[cout]
+	);
 
-	async getUsableCommands() {
+	const checkThirdParameter = useCallback(
+		(text, commandName) => {
+			if (thirdParameter(text)) {
+				cout(`bash: ${commandName}: too many arguments`);
+				return true;
+			}
+			return false;
+		},
+		[cout]
+	);
+
+	const openLink = useCallback(
+		link => {
+			var win = window.open(link, '_blank');
+			win.focus();
+			printCommandLine();
+		},
+		[printCommandLine]
+	);
+
+	const getUsableCommands = useCallback(async () => {
 		const bashrc = await fetch('/files/bashrc.txt').then(res => res.text());
 		const rows = bashrc.split('\n');
 
@@ -76,347 +163,319 @@ class App extends Component {
 		});
 		hiddenCommands.push('sudo');
 
-		return Object.keys(this.getCommands()).filter(
+		if (!commands.current) return [];
+		return Object.keys(commands.current).filter(
 			cmd => hiddenCommands.indexOf(cmd) < 0
 		);
-	}
+	}, []);
 
-	isItCommand = input => {
-		return !!Object.keys(this.getCommands()).find(commandName => {
-			if (input === commandName || input.startsWith(commandName + ' '))
-				return true;
-			else return false;
-		});
-	};
-
-	extractCommandName = input =>
-		Object.keys(this.getCommands()).find(commandName => {
-			if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
-			else if (input === commandName) return input;
-			else return undefined;
-		});
-
-	createNewCommand = (type, text, breakWord, noTrim) => {
-		return {
-			type,
-			id: this.state.previousLines.length + 1,
-			pwd: this.pwdText(),
-			text: noTrim ? text : this.trim(text),
-			breakWord: breakWord ? false : true
-		};
-	};
-
-	cin = (text = '', breakWord) => {
-		const cinText = this.createNewCommand('cin', text, breakWord);
-
-		this.setState(prevState => ({
-			previousLines: [...prevState.previousLines, cinText]
-		}));
-
-		this.setState({ promptText: '' }, () => this.focusTerminal());
-	};
-
-	cout = (text = '', breakWord, input, noTrim) => {
-		const newCommand = this.createNewCommand('cout', text, breakWord, noTrim);
-		newCommand.id = this.state.previousLines.length + 2;
-		const coutText = newCommand;
-
-		const inputTrimmed = this.removeSpaces(
-			this._prompt.current.content || input
-		);
-		this.cin(inputTrimmed, breakWord);
-
-		this.setState(
-			prevState => ({
-				previousLines: [...prevState.previousLines, coutText]
-			}),
-			() => this.focusTerminal()
-		);
-
-		this.setState({ promptText: '' }, () => this.focusTerminal());
-	};
-
-	updatePreviousCommands = commandText => {
-		if (commandText !== '')
-			this.setState(prevState => ({
-				previousCommands: [...prevState.previousCommands, commandText]
-			}));
-	};
-
-	checkSecondParameter = (text, commandName) => {
-		if (this.secondParameter(text)) {
-			this.cout(`bash: ${commandName}: too many arguments`);
-			return true;
-		}
-		return false;
-	};
-	checkThirdParameter = (text, commandName) => {
-		if (this.thirdParameter(text)) {
-			this.cout(`bash: ${commandName}: too many arguments`);
-			return true;
-		}
-		return false;
-	};
-
-	trim = str => str.trimStart().trimEnd();
-	removeSpaces = text => text.replace(/\s+/g, ' ').trim();
-
-	isDir = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
-	isFile = obj => !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
-
-	printCommandLine = () => this.cin(this._prompt.current.content);
-	createErrorLine = () =>
-		this.cout(
-			this.firstParameter(this._prompt.current.content) + ': command not found'
-		);
-	pwdText = () =>
-		'~' +
-		(this.state.path.join('/') === this.state.basePath
-			? ''
-			: '/' + this.state.path.join('/'));
-
-	firstParameter = str => this.trim(str).split(' ')[0];
-	secondParameter = str => this.trim(str).split(' ')[1] || '';
-	thirdParameter = str => this.trim(str).split(' ').length > 2 || '';
-
-	/** START HANDLE KEYS */
-
-	handleKeyDown = e => {
-		// Handles non-printable chars.
-		if (e.ctrlKey || e.altKey) {
-			this._prompt.current.blurPrompt();
-			e.preventDefault();
-			e.returnValue = false;
-			return false;
-		} else {
-			this.focusTerminal();
-		}
-
-		switch (e.keyCode) {
-			case 9:
-				this.handleTab(e);
-				break; // tab
-			case 13:
-				this.handleEnter();
-				break; // enter
-			case 38:
-				this.handleUpArrow(e);
-				break; // up
-			case 40:
-				this.handleDownArrow();
-				break; // down
-			default:
-				break;
-		}
-	};
-
-	handleTab = e => {
-		e.preventDefault();
-
-		const input = this._prompt.current.content;
-		const inputWithoutSudo = input.replace('sudo ', '');
-		const sudoString = input.startsWith('sudo ') ? 'sudo ' : '';
-
-		const command = this.firstParameter(inputWithoutSudo);
-		const param2 = this.secondParameter(inputWithoutSudo);
-
-		if (!['cd', 'cat', 'rm'].includes(command)) {
-			return;
-		}
-
-		// Navigate to the target directory for nested paths with ".." support
-		let targetFS = this.state.cfs;
-		let searchTerm = param2;
-		let workingPath = [...this.state.path]; // Copy current path
-
-		if (param2.includes('/')) {
-			const pathParts = param2.split('/');
-			searchTerm = pathParts.pop(); // Get the last part to search for
-			const directoryPath = pathParts.filter(part => part !== '');
-
-			// Navigate through the directory structure with ".." support
-			for (const dirName of directoryPath) {
-				if (dirName === '..') {
-					// Go up one directory
-					if (workingPath.length > 0) {
-						workingPath.pop();
-						// Navigate to the parent directory from root
-						targetFS = this.state.fs;
-						for (const pathSegment of workingPath) {
-							if (targetFS.children && targetFS.children[pathSegment]) {
-								targetFS = targetFS.children[pathSegment];
-							} else {
-								// Path not found
-								return;
-							}
-						}
-					} else {
-						// Already at root, can't go up further
-						targetFS = this.state.fs;
-					}
-				} else {
-					// Normal directory navigation
-					if (
-						targetFS.children &&
-						targetFS.children[dirName] &&
-						this.isDir(targetFS.children[dirName])
-					) {
-						targetFS = targetFS.children[dirName];
-						workingPath.push(dirName);
-					} else {
-						// Path doesn't exist, no completions available
-						return;
-					}
-				}
+	// Enhanced setState function for terminal commands
+	const terminalSetState = useCallback(updater => {
+		setState(prevState => {
+			let newState;
+			if (typeof updater === 'function') {
+				// Function-based update
+				newState = { ...prevState, ...updater(prevState) };
+			} else {
+				// Object-based update
+				newState = { ...prevState, ...updater };
 			}
-		}
+			// Immediately update the state ref so pwdText gets fresh state
+			stateRef.current = newState;
+			return newState;
+		});
+	}, []);
 
-		const children = Object.keys(targetFS.children || {});
-		const matchingItems = children.filter(dir =>
-			dir.toLowerCase().startsWith(searchTerm.toLowerCase())
-		);
+	// Get commands with proper context
+	const getCommands = useCallback(() => {
+		// Create local functions to avoid circular dependencies
+		const localIsItCommand = input => {
+			if (!commands.current) return false;
+			return !!Object.keys(commands.current).find(commandName => {
+				if (input === commandName || input.startsWith(commandName + ' '))
+					return true;
+				else return false;
+			});
+		};
 
-		this.handleTabCompletion(
-			input,
-			command,
-			param2,
-			targetFS.children,
-			matchingItems,
-			sudoString
-		);
-	};
+		const localExtractCommandName = input => {
+			if (!commands.current) return undefined;
+			return Object.keys(commands.current).find(commandName => {
+				if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
+				else if (input === commandName) return input;
+				else return undefined;
+			});
+		};
 
-	getLastDir = path => {
+		commands.current = createTerminalCommands({
+			getState: () => stateRef.current,
+			setState: terminalSetState,
+			_prompt,
+			isItCommand: localIsItCommand,
+			extractCommandName: localExtractCommandName,
+			cin,
+			createErrorLine,
+			getUsableCommands,
+			cout,
+			openLink,
+			printCommandLine,
+			pwdText,
+			checkSecondParameter,
+			checkThirdParameter,
+			getCommands: () => commands.current
+		});
+
+		return commands.current;
+	}, [
+		terminalSetState,
+		cin,
+		createErrorLine,
+		getUsableCommands,
+		cout,
+		openLink,
+		printCommandLine,
+		pwdText,
+		checkSecondParameter,
+		checkThirdParameter
+	]);
+
+	// Standalone functions that use commands
+	const isItCommand = useCallback(
+		input => {
+			if (!commands.current) getCommands();
+			return !!Object.keys(commands.current || {}).find(commandName => {
+				if (input === commandName || input.startsWith(commandName + ' '))
+					return true;
+				else return false;
+			});
+		},
+		[getCommands]
+	);
+
+	const extractCommandName = useCallback(
+		input => {
+			if (!commands.current) getCommands();
+			return Object.keys(commands.current || {}).find(commandName => {
+				if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
+				else if (input === commandName) return input;
+				else return undefined;
+			});
+		},
+		[getCommands]
+	);
+
+	const getLastDir = useCallback(path => {
 		const parts = path.split('/').filter(Boolean);
 		return path.endsWith('/')
 			? parts[parts.length - 1]
 			: parts[parts.length - 2];
-	};
+	}, []);
 
-	handleTabCompletion = (
-		originalInput,
-		command,
-		targetPath,
-		childrenFS,
-		matchingItems,
-		sudoPrefix
-	) => {
-		if (targetPath.includes('/')) {
-			const selectedDir = this.getLastDir(targetPath);
-			const dir = childrenFS[selectedDir];
-			if (this.isDir(dir)) {
-				const newTargetPath = targetPath.split('/').pop().toLowerCase();
-				const children = Object.keys(dir.children);
-				const newMatchingItems = children.filter(dir =>
-					dir.toLowerCase().startsWith(newTargetPath.toLowerCase())
-				);
-				this.handleTabCompletion(
-					originalInput,
-					command,
-					newTargetPath,
-					dir.children,
-					newMatchingItems,
-					sudoPrefix
-				);
+	const handleTabCompletion = useCallback(
+		(
+			originalInput,
+			command,
+			targetPath,
+			childrenFS,
+			matchingItems,
+			sudoPrefix
+		) => {
+			if (targetPath.includes('/')) {
+				const selectedDir = getLastDir(targetPath);
+				const dir = childrenFS[selectedDir];
+				if (isDir(dir)) {
+					const newTargetPath = targetPath.split('/').pop().toLowerCase();
+					const children = Object.keys(dir.children);
+					const newMatchingItems = children.filter(dir =>
+						dir.toLowerCase().startsWith(newTargetPath.toLowerCase())
+					);
+					handleTabCompletion(
+						originalInput,
+						command,
+						newTargetPath,
+						dir.children,
+						newMatchingItems,
+						sudoPrefix
+					);
+					return;
+				}
+			}
+
+			if (targetPath === '') {
+				cout(matchingItems.join('&#09;'), 'break-none');
+				setState(prevState => ({ ...prevState, promptText: originalInput }));
 				return;
 			}
-		}
 
-		if (targetPath === '') {
-			this.cout(matchingItems.join('&#09;'), 'break-none');
-			this.setState({ promptText: originalInput });
-			return;
-		}
+			if (matchingItems.length === 1) {
+				const inputWithoutSudo = originalInput.replace('sudo ', '');
+				const param2 = secondParameter(inputWithoutSudo);
+				const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
+				const dirSlash = isDir(childrenFS[matchingItems[0]]) ? '/' : '';
 
-		if (matchingItems.length === 1) {
-			const inputWithoutSudo = originalInput.replace('sudo ', '');
-			const param2 = this.secondParameter(inputWithoutSudo);
-			const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
-			const dirSlash = this.isDir(childrenFS[matchingItems[0]]) ? '/' : '';
+				_prompt.current.content = `${sudoPrefix + command} ${parentFolders}${
+					matchingItems[0]
+				}${dirSlash}`;
+				return;
+			}
 
-			this._prompt.current.content = `${sudoPrefix + command} ${parentFolders}${
-				matchingItems[0]
-			}${dirSlash}`;
-			return;
-		}
+			if (matchingItems.length > 1) {
+				setState(prevState => ({ ...prevState, tabPressed: true }));
+				cout(matchingItems.join('&#09;'), 'break-none');
+				setState(prevState => ({ ...prevState, promptText: originalInput }));
+			}
+		},
+		[getLastDir, cout]
+	);
 
-		if (matchingItems.length > 1) {
-			this.setState({ tabPressed: true });
-			this.cout(matchingItems.join('&#09;'), 'break-none');
-			this.setState({ promptText: originalInput });
-		}
-	};
+	const handleTab = useCallback(
+		e => {
+			e.preventDefault();
 
-	handleEnter = () => {
-		this.setState({ tabPressed: false });
-		this.setState({ currentLineFromLast: 0 });
+			const input = _prompt.current.content;
+			const inputWithoutSudo = input.replace('sudo ', '');
+			const sudoString = input.startsWith('sudo ') ? 'sudo ' : '';
 
-		const input = this.removeSpaces(this._prompt.current.content);
-		const isItCommand = this.isItCommand(input);
-		const command = this.extractCommandName(input);
+			const command = firstParameter(inputWithoutSudo);
+			const param2 = secondParameter(inputWithoutSudo);
 
-		const commandInput = this.removeSpaces(input);
-		if (isItCommand) this.getCommands()[command](false, commandInput);
-		else if (input === '') this.cin();
-		else this.createErrorLine();
+			if (!['cd', 'cat', 'rm'].includes(command)) {
+				return;
+			}
 
-		this.updatePreviousCommands(input);
-		this._prompt.current.clear();
-	};
+			// Navigate to the target directory for nested paths with ".." support
+			let targetFS = stateRef.current.cfs;
+			let searchTerm = param2;
+			let workingPath = [...stateRef.current.path]; // Copy current path
 
-	handleUpArrow = e => {
-		e.preventDefault();
-		if (this.state.currentLineFromLast < this.state.previousCommands.length)
-			this.setState(
-				{ currentLineFromLast: this.state.currentLineFromLast + 1 },
-				() =>
-					(this._prompt.current.content =
-						this.state.previousCommands[
-							this.state.previousCommands.length -
-								this.state.currentLineFromLast
-						]),
-				() => this.focusTerminal()
+			if (param2.includes('/')) {
+				const pathParts = param2.split('/');
+				searchTerm = pathParts.pop(); // Get the last part to search for
+				const directoryPath = pathParts.filter(part => part !== '');
+
+				// Navigate through the directory structure with ".." support
+				for (const dirName of directoryPath) {
+					if (dirName === '..') {
+						// Go up one directory
+						if (workingPath.length > 0) {
+							workingPath.pop();
+							// Navigate to the parent directory from root
+							targetFS = stateRef.current.fs;
+							for (const pathSegment of workingPath) {
+								if (targetFS.children && targetFS.children[pathSegment]) {
+									targetFS = targetFS.children[pathSegment];
+								} else {
+									// Path not found
+									return;
+								}
+							}
+						} else {
+							// Already at root, can't go up further
+							targetFS = stateRef.current.fs;
+						}
+					} else {
+						// Normal directory navigation
+						if (
+							targetFS.children &&
+							targetFS.children[dirName] &&
+							isDir(targetFS.children[dirName])
+						) {
+							targetFS = targetFS.children[dirName];
+							workingPath.push(dirName);
+						} else {
+							// Path doesn't exist, no completions available
+							return;
+						}
+					}
+				}
+			}
+
+			const children = Object.keys(targetFS.children || {});
+			const matchingItems = children.filter(dir =>
+				dir.toLowerCase().startsWith(searchTerm.toLowerCase())
 			);
-	};
 
-	handleDownArrow = () => {
-		if (this.state.currentLineFromLast > 1)
-			this.setState(
-				{ currentLineFromLast: this.state.currentLineFromLast - 1 },
-				() =>
-					(this._prompt.current.content =
-						this.state.previousCommands[
-							this.state.previousCommands.length -
-								this.state.currentLineFromLast
-						]),
-				() => this.focusTerminal()
+			handleTabCompletion(
+				input,
+				command,
+				param2,
+				targetFS.children,
+				matchingItems,
+				sudoString
 			);
-	};
+		},
+		[handleTabCompletion]
+	);
 
-	/** END HANDLE KEYS */
+	const handleEnter = useCallback(() => {
+		setState(prevState => ({
+			...prevState,
+			tabPressed: false,
+			currentLineFromLast: 0
+		}));
 
-	/** DOM ACTIONS */
+		const input = removeSpaces(_prompt.current.content);
+		const isItCommandResult = isItCommand(input);
+		const command = extractCommandName(input);
 
-	componentDidMount() {
-		this._terminalBodyContainer = document.querySelector(
-			'.terminal-body-container'
-		);
-		this._terminalBody = document.querySelector('.terminal-body-container');
+		const commandInput = removeSpaces(input);
+		if (isItCommandResult) {
+			getCommands()[command](false, commandInput);
+		} else if (input === '') {
+			cin();
+		} else {
+			createErrorLine();
+		}
 
-		// this.focusTerminal();
-		document.addEventListener('keydown', this.handleKeyDown.bind(this));
-	}
+		updatePreviousCommands(input);
+		_prompt.current.clear();
+	}, [
+		isItCommand,
+		extractCommandName,
+		getCommands,
+		cin,
+		createErrorLine,
+		updatePreviousCommands
+	]);
 
-	componentWillUnmount() {
-		document.removeEventListener('keydown', this.handleKeyDown);
-	}
+	const handleUpArrow = useCallback(
+		e => {
+			e.preventDefault();
+			if (
+				stateRef.current.currentLineFromLast <
+				stateRef.current.previousCommands.length
+			) {
+				const newCurrentLine = stateRef.current.currentLineFromLast + 1;
+				setState(prevState => ({
+					...prevState,
+					currentLineFromLast: newCurrentLine
+				}));
+				_prompt.current.content =
+					stateRef.current.previousCommands[
+						stateRef.current.previousCommands.length - newCurrentLine
+					];
+				focusTerminal();
+			}
+		},
+		[focusTerminal]
+	);
 
-	focusTerminal() {
-		this._prompt.current.focusPrompt();
-		this._terminalBodyContainer.scrollTop = this._terminalBody.scrollHeight;
-	}
+	const handleDownArrow = useCallback(() => {
+		if (stateRef.current.currentLineFromLast > 1) {
+			const newCurrentLine = stateRef.current.currentLineFromLast - 1;
+			setState(prevState => ({
+				...prevState,
+				currentLineFromLast: newCurrentLine
+			}));
+			_prompt.current.content =
+				stateRef.current.previousCommands[
+					stateRef.current.previousCommands.length - newCurrentLine
+				];
+			focusTerminal();
+		}
+	}, [focusTerminal]);
 
-	copy = text => {
+	const copy = useCallback(text => {
 		if (navigator.clipboard) {
 			navigator.clipboard.writeText(text).then(
 				() => {
@@ -429,64 +488,110 @@ class App extends Component {
 		} else {
 			console.warn('Clipboard API not available');
 		}
-	};
+	}, []);
 
-	focusTerminalIfTouchDevice = e => {
-		if (e.buttons === 2) {
-			// right click
-			e.preventDefault();
-			if (window.getSelection().toString() !== '') {
-				this.copy(window.getSelection().toString());
-				window.getSelection().empty();
+	// Key handling functions
+	const handleKeyDown = useCallback(
+		e => {
+			// Handles non-printable chars.
+			if (e.ctrlKey || e.altKey) {
+				_prompt.current.blurPrompt();
+				e.preventDefault();
+				e.returnValue = false;
+				return false;
+			} else {
+				focusTerminal();
 			}
-		} else if (e.type === 'click') {
-			if (window.isTouchDevice()) {
-				this.focusTerminal();
+
+			switch (e.keyCode) {
+				case 9:
+					handleTab(e);
+					break; // tab
+				case 13:
+					handleEnter();
+					break; // enter
+				case 38:
+					handleUpArrow(e);
+					break; // up
+				case 40:
+					handleDownArrow();
+					break; // down
+				default:
+					break;
 			}
-		}
-	};
+		},
+		[focusTerminal, handleTab, handleEnter, handleUpArrow, handleDownArrow]
+	);
 
-	renderPreviousLines = () =>
-		this.state.previousLines.map(previousCommand => (
-			<Line
-				settings={this.state.settings}
-				key={previousCommand.id}
-				command={previousCommand}
-			/>
-		));
+	const focusTerminalIfTouchDevice = useCallback(
+		e => {
+			if (e.buttons === 2) {
+				// right click
+				e.preventDefault();
+				if (window.getSelection().toString() !== '') {
+					copy(window.getSelection().toString());
+					window.getSelection().empty();
+				}
+			} else if (e.type === 'click') {
+				if (window.isTouchDevice()) {
+					focusTerminal();
+				}
+			}
+		},
+		[copy, focusTerminal]
+	);
 
-	/** DOM ACTIONS */
+	const renderPreviousLines = useCallback(
+		() =>
+			state.previousLines.map(previousCommand => (
+				<Line
+					settings={state.settings}
+					key={previousCommand.id}
+					command={previousCommand}
+				/>
+			)),
+		[state.previousLines, state.settings]
+	);
 
-	render = () => {
-		return (
-			<div className="App">
-				<div className="container">
-					<div
-						className="terminal"
-						onMouseDown={e => this.focusTerminalIfTouchDevice(e)}
-						onContextMenu={e => e.preventDefault()}
-						onClick={e => this.focusTerminalIfTouchDevice(e)}
-					>
-						<Toolbar
-							settings={this.state.settings}
-							pwd={this.pwdText()}
-						></Toolbar>
-						<div className="terminal-body-container">
-							<div className="terminal-body">
-								{this.renderPreviousLines()}
-								<Prompt
-									ref={this._prompt}
-									username={this.state.settings.userName}
-									computerName={this.state.settings.computerName}
-									currentPath={this.pwdText()}
-								/>
-							</div>
+	// Effects
+	useEffect(() => {
+		_terminalBodyContainer.current = document.querySelector(
+			'.terminal-body-container'
+		);
+		_terminalBody.current = document.querySelector('.terminal-body-container');
+
+		document.addEventListener('keydown', handleKeyDown);
+
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [handleKeyDown]);
+
+	return (
+		<div className="App">
+			<div className="container">
+				<div
+					className="terminal"
+					onMouseDown={focusTerminalIfTouchDevice}
+					onContextMenu={e => e.preventDefault()}
+					onClick={focusTerminalIfTouchDevice}
+				>
+					<Toolbar settings={state.settings} pwd={pwdText()}></Toolbar>
+					<div className="terminal-body-container">
+						<div className="terminal-body">
+							{renderPreviousLines()}
+							<Prompt
+								ref={_prompt}
+								username={state.settings.userName}
+								computerName={state.settings.computerName}
+								currentPath={pwdText()}
+							/>
 						</div>
 					</div>
 				</div>
 			</div>
-		);
-	};
-}
+		</div>
+	);
+};
 
 export default App;
