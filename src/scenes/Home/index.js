@@ -96,12 +96,12 @@ class App extends Component {
       else return undefined;
     });
 
-  createNewCommand = (type, text, breakWord) => {
+  createNewCommand = (type, text, breakWord, noTrim) => {
     return {
       type,
       id: this.state.previousLines.length + 1,
       pwd: this.pwd_text(),
-      text: this.trim(text),
+      text: noTrim ? text : this.trim(text),
       breakWord: breakWord ? false : true
     };
   };
@@ -116,14 +116,13 @@ class App extends Component {
     this.setState({ prompt_text: '' }, () => this.focusTerminal());
   };
 
-  cout = (text = '', breakWord) => {
-    const new_command = this.createNewCommand('cout', text, breakWord);
+  cout = (text = '', breakWord, input, noTrim) => {
+    const new_command = this.createNewCommand('cout', text, breakWord, noTrim);
     new_command.id = this.state.previousLines.length + 2;
     const cout_text = new_command;
 
-    const input = this.removeSpaces(this._prompt.current.content);
-
-    this.cin(input, breakWord);
+    const inputTrimmed = this.removeSpaces(this._prompt.current.content || input);
+    this.cin(inputTrimmed, breakWord);
 
     this.setState(
       prevState => ({
@@ -175,10 +174,8 @@ class App extends Component {
       : '/' + this.state.path.join('/'));
 
   firstParameter = str => this.trim(str).split(' ')[0];
-  secondParameter = str =>
-    this.trim(str).split(' ') ? this.trim(str).split(' ')[1] : false;
-  thirthParameter = str =>
-    this.trim(str).split(' ') ? this.trim(str).split(' ').length > 2 : false;
+  secondParameter = str => this.trim(str).split(' ')[1] || '';
+  thirthParameter = str => this.trim(str).split(' ').length > 2 || '';
 
   /** START HANDLE KEYS */
 
@@ -215,37 +212,95 @@ class App extends Component {
     e.preventDefault();
 
     const input = this._prompt.current.content;
-    const input_without_sudo = input.replace('sudo ', '');
-    const sudo_string = input.startsWith('sudo ') ? 'sudo ' : '';
+    const inputWithoutSudo = input.replace('sudo ', '');
+    const sudoString = input.startsWith('sudo ') ? 'sudo ' : '';
 
-    const param1 = this.firstParameter(input_without_sudo);
-    const param2 = this.secondParameter(input_without_sudo);
+    const command = this.firstParameter(inputWithoutSudo);
+    const param2 = this.secondParameter(inputWithoutSudo);
 
-    if ((param1 === 'cd' || param1 === 'cat' || param1 === 'rm') && param2) {
-      const children = Object.keys(this.state.cfs.children);
-      const existed_things = children.filter(dir =>
-        dir.toLowerCase().startsWith(param2.toLowerCase())
-      );
+    if (!['cd', 'cat', 'rm'].includes(command)) {
+      return;
+    }
 
-      if (existed_things.length > 1) this.setState({ tab_pressed: true });
-
-      if (existed_things.length === 1) {
-        const slash = this.is_dir(this.state.cfs.children[existed_things[0]])
-          ? '/'
-          : '';
-          this._prompt.current.content = `${sudo_string + param1} ${
-            existed_things[0]
-          }${slash}`;
-        return;
+    // Navigate to the target directory for nested paths
+    let targetFS = this.state.cfs;
+    let searchTerm = param2;
+    
+    if (param2.includes('/')) {
+      const pathParts = param2.split('/');
+      searchTerm = pathParts.pop(); // Get the last part to search for
+      const directoryPath = pathParts.filter(part => part !== '');
+      
+      // Navigate through the directory structure
+      for (const dirName of directoryPath) {
+        if (targetFS.children && targetFS.children[dirName] && this.is_dir(targetFS.children[dirName])) {
+          targetFS = targetFS.children[dirName];
+        } else {
+          // Path doesn't exist, no completions available
+          return;
+        }
       }
+    }
 
-      if (this.state.tab_pressed) {
-        this.cout(existed_things.join('&#09;'), 'break-none');
-        this.setState({ prompt_text: input });
+    const children = Object.keys(targetFS.children || {});
+    const matchingItems = children.filter(dir =>
+      dir.toLowerCase().startsWith(searchTerm.toLowerCase())
+    );
+
+    this.handleTabCompletion(input, command, param2, targetFS.children, matchingItems, sudoString);
+  };
+
+  getLastDir = (path) => {
+    const parts = path.split('/').filter(Boolean);
+    return path.endsWith('/') ? parts[parts.length - 1] : parts[parts.length - 2];
+  }
+
+  handleTabCompletion = (originalInput, command, targetPath, childrenFS, matchingItems, sudoPrefix) => {
+    if (targetPath.includes('/')) {
+
+      const selectedDir = this.getLastDir(targetPath);
+      const dir = childrenFS[selectedDir];
+      console.log({selectedDir, dir, originalInput, command, targetPath, childrenFS, matchingItems, sudoPrefix});
+      if (this.is_dir(dir)) {
+        console.log(dir.children);
+
+        const newTargetPath = targetPath.split("/").pop().toLowerCase();
+        const children = Object.keys(dir.children);
+        const newMatchingItems = children.filter(dir =>
+          dir.toLowerCase().startsWith(newTargetPath.toLowerCase())
+        );
+        this.handleTabCompletion(originalInput, command, newTargetPath, dir.children, newMatchingItems, sudoPrefix);
         return;
       }
     }
-  };
+
+    if (targetPath === '') {
+      this.cout(matchingItems.join('&#09;'), 'break-none');
+      this.setState({ prompt_text: originalInput });
+      return;
+    }
+
+    if (matchingItems.length === 1) {
+      const inputWithoutSudo = originalInput.replace('sudo ', '');
+      const param2 = this.secondParameter(inputWithoutSudo);
+      const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
+      const dirSlash = this.is_dir(childrenFS[matchingItems[0]])
+        ? '/'
+        : '';
+
+      this._prompt.current.content = `${sudoPrefix + command} ${
+        parentFolders}${
+        matchingItems[0]}${
+        dirSlash}`;
+      return;
+    }
+
+    if (matchingItems.length > 1) {
+      this.setState({ tab_pressed: true });
+      this.cout(matchingItems.join('&#09;'), 'break-none');
+      this.setState({ prompt_text: originalInput });
+    } 
+  }
 
   handleEnter = () => {
     this.setState({ tab_pressed: false });
