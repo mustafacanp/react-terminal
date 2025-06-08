@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './scenes/Home/index.js';
+import App from './App.tsx';
 import * as serviceWorker from './serviceWorker.js';
 
 declare global {

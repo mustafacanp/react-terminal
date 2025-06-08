@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { Line, Toolbar, Prompt } from '../../components';
-import { PromptRef } from '../../components/Prompt';
-import { createTerminalCommands } from '../../commands/terminalCommands';
+import { Line, Toolbar, Prompt } from './components';
+import { PromptRef } from './components/Prompt';
+import { createTerminalCommands } from './commands/terminalCommands';
 import {
 	trim,
 	removeSpaces,
@@ -10,10 +10,10 @@ import {
 	getFirstParameter,
 	getSecondParameter,
 	FileSystemEntry
-} from '../../utils/utils';
+} from './utils/utils';
 
-import fs from '../../fs.json';
-import './Home.css';
+import fs from './fs.json';
+import './App.css';
 
 // State type definitions
 interface Settings {
