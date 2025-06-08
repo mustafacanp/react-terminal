@@ -28,7 +28,7 @@ const Line: React.FC<LineProps> = ({ settings, command }) => {
 				<PromptLabel
 					username={settings.userName}
 					computerName={settings.computerName}
-					currentPath={pwd}
+					currentPath={pwd || ''}
 				/>
 				<span className="prompt-text">{text}</span>
 			</div>

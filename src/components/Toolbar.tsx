@@ -1,12 +1,10 @@
 import React, { useEffect, useCallback } from 'react';
 
-interface ToolbarSettings {
-	userName: string;
-	computerName: string;
-}
-
 interface ToolbarProps {
-	settings: ToolbarSettings;
+	settings: {
+		userName: string;
+		computerName: string;
+	};
 	pwd: string;
 }
 
