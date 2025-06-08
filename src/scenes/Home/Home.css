@@ -20,26 +20,11 @@ body {
 	position: absolute;
 	bottom: auto;
 	left: auto;
-	-webkit-transition: all 1s ease;
-	-moz-transition: all 1s ease;
-	-ms-transition: all 1s ease;
-	-o-transition: all 1s ease;
-	transition: all 1s ease;
-}
-/*
-.terminal:hover {
-  bottom: 30px;
-  left: 30px;
-}
-*/
-
-.menu {
-	position: absolute;
-	clip: rect(0px 112px 175px 0px);
-	transition: clip 600ms ease-out;
-}
-.menu--collapsed {
-	clip: rect(0px 70px 34px 0px);
+	-webkit-transition: all 0.4s ease;
+	-moz-transition: all 0.4s ease;
+	-ms-transition: all 0.4s ease;
+	-o-transition: all 0.4s ease;
+	transition: all 0.4s ease;
 }
 
 .terminal-toolbar {
