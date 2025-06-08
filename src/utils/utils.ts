@@ -76,3 +76,25 @@ export const resolveFileSystemPath = (
 
 	return current;
 };
+
+// Path utilities
+export const getLastDir = (path: string): string => {
+	const parts = path.split('/').filter(Boolean);
+	return path.endsWith('/') ? parts[parts.length - 1] : parts[parts.length - 2];
+};
+
+// Browser utilities
+export const copy = (text: string): void => {
+	if (navigator.clipboard) {
+		navigator.clipboard.writeText(text).then(
+			() => {
+				console.log('Copying to clipboard was successful!');
+			},
+			err => {
+				console.error('Could not copy text: ', err);
+			}
+		);
+	} else {
+		console.warn('Clipboard API not available');
+	}
+};

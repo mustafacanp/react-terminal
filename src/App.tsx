@@ -1,85 +1,21 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-
+import { useEffect, useRef, useCallback } from 'react';
 import { Line, Toolbar, Prompt } from './components';
-import { PromptRef } from './components/Prompt';
-import { createTerminalCommands } from './commands/terminalCommands';
-import {
-	trim,
-	removeSpaces,
-	isDir,
-	getFirstParameter,
-	getSecondParameter,
-	FileSystemEntry
-} from './utils/utils';
-
-import fs from './fs.json';
-
-// State type definitions
-interface Settings {
-	computerName: string;
-	userName: string;
-}
-
-interface CommandLine {
-	type: string;
-	id: number;
-	pwd: string;
-	text: string;
-	breakWord: boolean;
-}
-
-interface AppState {
-	settings: Settings;
-	fs: FileSystemEntry;
-	cfs: FileSystemEntry;
-	path: string[];
-	basePath: string;
-	promptText: string;
-	previousLines: CommandLine[];
-	previousCommands: string[];
-	currentLineFromLast: number;
-	tabPressed: boolean;
-}
+import { useTerminal } from './hooks/useTerminal';
+import { copy } from './utils/utils';
 
 const App = () => {
-	const [state, setState] = useState<AppState>({
-		settings: {
-			computerName: 'ubuntu',
-			userName: 'root'
-		},
-		fs: fs as FileSystemEntry,
-		cfs: fs as FileSystemEntry,
-		path: [],
-		basePath: 'home/user',
-		promptText: '',
-		previousLines: [],
-		previousCommands: [],
-		currentLineFromLast: 0,
-		tabPressed: false
-	});
+	const {
+		state,
+		_prompt,
+		pwdText,
+		handleTab,
+		handleEnter,
+		handleUpArrow,
+		handleDownArrow
+	} = useTerminal();
 
-	// Refs
-	const _prompt = useRef<PromptRef>(null);
 	const _terminalBodyContainer = useRef<HTMLElement | null>(null);
 	const _terminalBody = useRef<HTMLElement | null>(null);
-	const commands = useRef<any>(null);
-	const commandIdCounter = useRef(0);
-	const stateRef = useRef(state);
-
-	// Keep state ref in sync
-	useEffect(() => {
-		stateRef.current = state;
-	}, [state]);
-
-	const pwdText = useCallback((currentState = null) => {
-		const activeState = currentState || stateRef.current;
-		return (
-			'~' +
-			(activeState.path.join('/') === activeState.basePath
-				? ''
-				: '/' + activeState.path.join('/'))
-		);
-	}, []);
 
 	const focusTerminal = useCallback(() => {
 		_prompt.current?.focusPrompt();
@@ -89,457 +25,12 @@ const App = () => {
 		}
 	}, []);
 
-	const createNewCommand = useCallback(
-		(type: string, text: string, breakWord: boolean, noTrim: boolean) => {
-			commandIdCounter.current += 1;
-			return {
-				type,
-				id: commandIdCounter.current,
-				pwd: pwdText(),
-				text: noTrim ? text : trim(text),
-				breakWord
-			};
-		},
-		[pwdText]
-	);
-
-	const cin = useCallback(
-		(text = '', breakWord = true) => {
-			const cinText = createNewCommand('cin', text, breakWord, false);
-			setState((prevState: AppState) => ({
-				...prevState,
-				previousLines: [...prevState.previousLines, cinText],
-				promptText: ''
-			}));
-			setTimeout(() => focusTerminal(), 0);
-		},
-		[createNewCommand, focusTerminal]
-	);
-
-	const cout = useCallback(
-		(text = '', breakWord = true, input = '', noTrim = false) => {
-			const inputTrimmed = removeSpaces(_prompt.current?.content || input);
-			cin(inputTrimmed, breakWord);
-
-			const coutText = createNewCommand('cout', text, breakWord, noTrim);
-			setState(prevState => ({
-				...prevState,
-				previousLines: [...prevState.previousLines, coutText],
-				promptText: ''
-			}));
-			setTimeout(() => focusTerminal(), 0);
-		},
-		[createNewCommand, cin, focusTerminal]
-	);
-
-	const printCommandLine = useCallback(
-		() => cin(_prompt.current?.content || ''),
-		[cin]
-	);
-
-	const createErrorLine = useCallback(
-		() =>
-			cout(
-				getFirstParameter(_prompt.current?.content || '') +
-					': command not found'
-			),
-		[cout]
-	);
-
-	const updatePreviousCommands = useCallback((commandText: string) => {
-		if (commandText !== '') {
-			setState(prevState => ({
-				...prevState,
-				previousCommands: [...prevState.previousCommands, commandText]
-			}));
-		}
-	}, []);
-
-	const validateAndShowError = useCallback(
-		(
-			hasExtraParams: boolean,
-			commandName: string,
-			errorType = 'too many arguments'
-		) => {
-			if (hasExtraParams) {
-				cout(`bash: ${commandName}: ${errorType}`);
-				return true;
-			}
-			return false;
-		},
-		[cout]
-	);
-
-	const openLink = useCallback(
-		(link: string) => {
-			const win = window.open(link, '_blank');
-			win?.focus();
-			printCommandLine();
-		},
-		[printCommandLine]
-	);
-
-	const getUsableCommands = useCallback(async () => {
-		const bashrc = await fetch('/files/bashrc.txt').then(res => res.text());
-		const rows = bashrc.split('\n');
-
-		const hiddenCommands = rows.map(row => {
-			return row.substring(row.indexOf(' ') + 1, row.indexOf('='));
-		});
-		hiddenCommands.push('sudo');
-
-		if (!commands.current) return [];
-		return Object.keys(commands.current).filter(
-			cmd => hiddenCommands.indexOf(cmd) < 0
-		);
-	}, []);
-
-	// Enhanced setState function for terminal commands
-	const terminalSetState = useCallback((updater: any) => {
-		setState((prevState: AppState) => {
-			let newState;
-			if (typeof updater === 'function') {
-				// Function-based update
-				newState = { ...prevState, ...updater(prevState) };
-			} else {
-				// Object-based update
-				newState = { ...prevState, ...updater };
-			}
-			// Immediately update the state ref so pwdText gets fresh state
-			stateRef.current = newState;
-			return newState;
-		});
-	}, []);
-
-	// Get commands with proper context
-	const getCommands = useCallback(() => {
-		// Create local functions to avoid circular dependencies
-		const localIsItCommand = (input: string) => {
-			if (!commands.current) return false;
-			return !!Object.keys(commands.current).find(commandName => {
-				if (input === commandName || input.startsWith(commandName + ' '))
-					return true;
-				else return false;
-			});
-		};
-
-		const extractCommandName = (input: string): string => {
-			if (!commands.current) return '';
-			return (
-				Object.keys(commands.current).find((commandName: string) => {
-					if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
-					else if (input === commandName) return input;
-				}) || ''
-			);
-		};
-
-		commands.current = createTerminalCommands({
-			getState: () => stateRef.current,
-			setState: terminalSetState,
-			_prompt,
-			isItCommand: localIsItCommand,
-			extractCommandName,
-			cin,
-			createErrorLine,
-			getUsableCommands,
-			cout,
-			openLink,
-			printCommandLine,
-			pwdText,
-			validateAndShowError,
-			getCommands: () => commands.current || {}
-		});
-
-		return commands.current;
-	}, [
-		terminalSetState,
-		cin,
-		createErrorLine,
-		getUsableCommands,
-		cout,
-		openLink,
-		printCommandLine,
-		pwdText,
-		validateAndShowError
-	]);
-
-	// Standalone functions that use commands
-	const isItCommand = useCallback(
-		(input: string) => {
-			if (!commands.current) getCommands();
-			return !!Object.keys(commands.current || {}).find(commandName => {
-				if (input === commandName || input.startsWith(commandName + ' '))
-					return true;
-				else return false;
-			});
-		},
-		[getCommands]
-	);
-
-	const extractCommandName = useCallback(
-		(input: string): string => {
-			if (!commands.current) getCommands();
-			const found = Object.keys(commands.current || {}).find(commandName => {
-				if (input.startsWith(commandName + ' ')) return input.split(' ')[0];
-				else if (input === commandName) return input;
-				else return undefined;
-			});
-			return found || '';
-		},
-		[getCommands]
-	);
-
-	const getLastDir = useCallback((path: string) => {
-		const parts = path.split('/').filter(Boolean);
-		return path.endsWith('/')
-			? parts[parts.length - 1]
-			: parts[parts.length - 2];
-	}, []);
-
-	const handleTabCompletion = useCallback(
-		(
-			originalInput: string,
-			command: string,
-			targetPath: string,
-			childrenFS: { [key: string]: FileSystemEntry },
-			matchingItems: string[],
-			sudoPrefix: string
-		) => {
-			if (targetPath.includes('/')) {
-				const selectedDir = getLastDir(targetPath);
-				const dir = childrenFS[selectedDir];
-				if (isDir(dir)) {
-					const newTargetPath =
-						targetPath.split('/').pop()?.toLowerCase() || '';
-					const children = Object.keys(dir.children || {});
-					const newMatchingItems = children.filter(dir =>
-						dir.toLowerCase().startsWith(newTargetPath.toLowerCase())
-					);
-					handleTabCompletion(
-						originalInput,
-						command,
-						newTargetPath,
-						dir.children || {},
-						newMatchingItems,
-						sudoPrefix
-					);
-					return;
-				}
-			}
-
-			if (targetPath === '') {
-				cout(matchingItems.join('&#09;'), false);
-				setState(prevState => ({ ...prevState, promptText: originalInput }));
-				return;
-			}
-
-			if (matchingItems.length === 1) {
-				const inputWithoutSudo = originalInput.replace('sudo ', '');
-				const param2 = getSecondParameter(inputWithoutSudo);
-				const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
-				const dirSlash = isDir(childrenFS[matchingItems[0]]) ? '/' : '';
-
-				if (_prompt.current) {
-					_prompt.current.content = `${sudoPrefix + command} ${parentFolders}${
-						matchingItems[0]
-					}${dirSlash}`;
-				}
-				return;
-			}
-
-			if (matchingItems.length > 1) {
-				setState(prevState => ({ ...prevState, tabPressed: true }));
-				cout(matchingItems.join('&#09;'), false);
-				setState(prevState => ({ ...prevState, promptText: originalInput }));
-			}
-		},
-		[getLastDir, cout]
-	);
-
-	const handleTab = useCallback(
-		(e: KeyboardEvent) => {
-			e.preventDefault();
-
-			const input = _prompt.current?.content || '';
-			const inputWithoutSudo = input.replace('sudo ', '');
-			const sudoString = input.startsWith('sudo ') ? 'sudo ' : '';
-
-			const command = getFirstParameter(inputWithoutSudo);
-			const param2 = getSecondParameter(inputWithoutSudo);
-
-			if (!['cd', 'cat', 'rm'].includes(command)) {
-				return;
-			}
-
-			// Add extra space to the prompt string
-			if (input === 'cd') {
-				if (_prompt.current) {
-					_prompt.current.content = _prompt.current.content + ' ';
-				}
-				return;
-			}
-
-			// Navigate to the target directory for nested paths with ".." support
-			let targetFS = stateRef.current.cfs;
-			let searchTerm = param2;
-			let workingPath = [...stateRef.current.path]; // Copy current path
-
-			if (param2.includes('/')) {
-				const pathParts = param2.split('/');
-				searchTerm = pathParts.pop() || ''; // Get the last part to search for
-				const directoryPath = pathParts.filter(part => part !== '');
-
-				// Navigate through the directory structure with ".." support
-				for (const dirName of directoryPath) {
-					if (dirName === '..') {
-						// Go up one directory
-						if (workingPath.length > 0) {
-							workingPath.pop();
-							// Navigate to the parent directory from root
-							targetFS = stateRef.current.fs;
-							for (const pathSegment of workingPath) {
-								if (targetFS.children && targetFS.children[pathSegment]) {
-									targetFS = targetFS.children[pathSegment];
-								} else {
-									// Path not found
-									return;
-								}
-							}
-						} else {
-							// Already at root, can't go up further
-							targetFS = stateRef.current.fs;
-						}
-					} else {
-						// Normal directory navigation
-						if (
-							targetFS.children &&
-							targetFS.children[dirName] &&
-							isDir(targetFS.children[dirName])
-						) {
-							targetFS = targetFS.children[dirName];
-							workingPath.push(dirName);
-						} else {
-							// Path doesn't exist, no completions available
-							return;
-						}
-					}
-				}
-			}
-
-			const children = Object.keys(targetFS.children || {});
-			const matchingItems = children.filter(dir =>
-				dir.toLowerCase().startsWith(searchTerm.toLowerCase())
-			);
-
-			handleTabCompletion(
-				input,
-				command,
-				param2,
-				targetFS.children || {},
-				matchingItems,
-				sudoString
-			);
-		},
-		[handleTabCompletion]
-	);
-
-	const handleEnter = useCallback(() => {
-		setState(prevState => ({
-			...prevState,
-			tabPressed: false,
-			currentLineFromLast: 0
-		}));
-
-		const input = removeSpaces(_prompt.current?.content || '');
-		const isItCommandResult = isItCommand(input);
-		const command = extractCommandName(input);
-
-		const commandInput = removeSpaces(input);
-		if (isItCommandResult && command) {
-			getCommands()[command](false, commandInput);
-		} else if (input === '') {
-			cin();
-		} else {
-			createErrorLine();
-		}
-
-		updatePreviousCommands(input);
-		_prompt.current?.clear();
-	}, [
-		isItCommand,
-		extractCommandName,
-		getCommands,
-		cin,
-		createErrorLine,
-		updatePreviousCommands
-	]);
-
-	const handleUpArrow = useCallback(
-		(e: KeyboardEvent) => {
-			e.preventDefault();
-			if (
-				stateRef.current.currentLineFromLast <
-				stateRef.current.previousCommands.length
-			) {
-				const newCurrentLine = stateRef.current.currentLineFromLast + 1;
-				setState(prevState => ({
-					...prevState,
-					currentLineFromLast: newCurrentLine
-				}));
-				if (_prompt.current) {
-					_prompt.current.content =
-						stateRef.current.previousCommands[
-							stateRef.current.previousCommands.length - newCurrentLine
-						];
-				}
-				focusTerminal();
-			}
-		},
-		[focusTerminal]
-	);
-
-	const handleDownArrow = useCallback(() => {
-		if (stateRef.current.currentLineFromLast > 1) {
-			const newCurrentLine = stateRef.current.currentLineFromLast - 1;
-			setState(prevState => ({
-				...prevState,
-				currentLineFromLast: newCurrentLine
-			}));
-			if (_prompt.current) {
-				_prompt.current.content =
-					stateRef.current.previousCommands[
-						stateRef.current.previousCommands.length - newCurrentLine
-					];
-			}
-			focusTerminal();
-		}
-	}, [focusTerminal]);
-
-	const copy = useCallback((text: string) => {
-		if (navigator.clipboard) {
-			navigator.clipboard.writeText(text).then(
-				() => {
-					console.log('Copying to clipboard was successful!');
-				},
-				err => {
-					console.error('Could not copy text: ', err);
-				}
-			);
-		} else {
-			console.warn('Clipboard API not available');
-		}
-	}, []);
-
-	// Key handling functions
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
-			// Handles non-printable chars.
 			if (e.ctrlKey || e.altKey) {
 				_prompt.current?.blurPrompt();
 				e.preventDefault();
 				return false;
-			} else {
-				focusTerminal();
 			}
 
 			switch (e.key) {
@@ -558,8 +49,10 @@ const App = () => {
 				default:
 					break;
 			}
+
+			focusTerminal();
 		},
-		[focusTerminal, handleTab, handleEnter, handleUpArrow, handleDownArrow]
+		[handleTab, handleEnter, handleUpArrow, handleDownArrow, focusTerminal]
 	);
 
 	const focusTerminalIfTouchDevice = useCallback(
@@ -573,27 +66,24 @@ const App = () => {
 					selection.empty();
 				}
 			} else if (e.type === 'click') {
-				if (window.isTouchDevice()) {
+				if ((window as any).isTouchDevice?.()) {
 					focusTerminal();
 				}
 			}
 		},
-		[copy, focusTerminal]
+		[focusTerminal]
 	);
 
-	const renderPreviousLines = useCallback(
-		() =>
-			state.previousLines.map(previousCommand => (
-				<Line
-					settings={state.settings}
-					key={previousCommand.id}
-					command={previousCommand}
-				/>
-			)),
-		[state.previousLines, state.settings]
-	);
+	const renderPreviousLines = () => {
+		return state.previousLines.map((previousCommand: any) => (
+			<Line
+				settings={state.settings}
+				key={previousCommand.id}
+				command={previousCommand}
+			/>
+		));
+	};
 
-	// Effects
 	useEffect(() => {
 		_terminalBodyContainer.current = document.querySelector(
 			'.terminal-body-container'
@@ -601,10 +91,7 @@ const App = () => {
 		_terminalBody.current = document.querySelector('.terminal-body-container');
 
 		document.addEventListener('keydown', handleKeyDown);
-
-		return () => {
-			document.removeEventListener('keydown', handleKeyDown);
-		};
+		return () => document.removeEventListener('keydown', handleKeyDown);
 	}, [handleKeyDown]);
 
 	return (
@@ -616,7 +103,7 @@ const App = () => {
 					onContextMenu={e => e.preventDefault()}
 					onClick={focusTerminalIfTouchDevice}
 				>
-					<Toolbar settings={state.settings} pwd={pwdText()}></Toolbar>
+					<Toolbar settings={state.settings} pwd={pwdText()} />
 					<div className="terminal-body-container">
 						<div className="terminal-body">
 							{renderPreviousLines()}

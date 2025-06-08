@@ -48,16 +48,16 @@ const Cursor: React.FC<CursorProps> = ({ promptText }) => {
 	const handleKeyDown = useCallback(
 		(e: KeyboardEvent) => {
 			// Handles non-printable chars.
-			switch (e.keyCode) {
-				case 37:
+			switch (e.key) {
+				case 'ArrowLeft':
 					handleLeftArrow();
 					break;
-				case 39:
+				case 'ArrowRight':
 					handleRightArrow();
 					break;
-				case 46:
+				case 'Delete':
 					handleRightArrow();
-					break; // del
+					break;
 				default:
 					break;
 			}

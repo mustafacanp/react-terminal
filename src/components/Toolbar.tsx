@@ -54,7 +54,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
 		}
 	}, []);
 
-	const requestFullScreen = useCallback(() => {
+	const requestFullScreen = () => {
 		const isMobileOrTablet = window.matchMedia(
 			'screen and (max-width: 991px)'
 		).matches;
@@ -113,7 +113,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
 				}
 			}
 		}
-	}, []);
+	};
 
 	useEffect(() => {
 		document.addEventListener('fullscreenchange', exitFullscreen);

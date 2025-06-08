@@ -12,6 +12,8 @@ interface PromptProps {
 	username: string;
 	computerName: string;
 	currentPath?: string;
+	value?: string;
+	onChange?: (value: string) => void;
 }
 
 export interface PromptRef {
@@ -19,12 +21,17 @@ export interface PromptRef {
 	clear: () => void;
 	focusPrompt: () => void;
 	blurPrompt: () => void;
+	setValue: (value: string) => void;
 }
 
 const Prompt = forwardRef<PromptRef, PromptProps>(
-	({ username, computerName, currentPath }, ref) => {
-		const [promptText, setPromptText] = useState('');
+	({ username, computerName, currentPath, value, onChange }, ref) => {
+		const [internalPromptText, setInternalPromptText] = useState('');
 		const promptInputRef = useRef<HTMLInputElement>(null);
+
+		// Use controlled value if provided, otherwise use internal state
+		const promptText = value !== undefined ? value : internalPromptText;
+		const setPromptText = onChange || setInternalPromptText;
 
 		const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 			setPromptText(e.target.value);
@@ -42,16 +49,21 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
 			setPromptText('');
 		};
 
+		const setValue = (newValue: string) => {
+			setPromptText(newValue);
+		};
+
 		useImperativeHandle(ref, () => ({
 			get content() {
 				return promptText;
 			},
-			set content(value) {
-				setPromptText(value);
+			set content(newValue) {
+				setPromptText(newValue);
 			},
 			clear,
 			focusPrompt,
-			blurPrompt
+			blurPrompt,
+			setValue
 		}));
 
 		useEffect(() => {
