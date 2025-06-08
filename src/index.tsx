@@ -1,13 +1,21 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './scenes/Home/';
-import * as serviceWorker from './serviceWorker';
+import App from './scenes/Home/index.js';
+import * as serviceWorker from './serviceWorker.js';
+
+declare global {
+	interface Window {
+		isTouchDevice: () => boolean;
+	}
+}
 
 window.isTouchDevice = () =>
-	navigator.maxTouchPoints || 'ontouchstart' in document.documentElement;
+	Boolean(navigator.maxTouchPoints) ||
+	'ontouchstart' in document.documentElement;
 
 const container = document.getElementById('root');
+if (!container) throw new Error('Root element not found');
+
 const root = createRoot(container);
 root.render(<App />);
 

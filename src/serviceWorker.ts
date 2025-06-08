@@ -10,6 +10,8 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read http://bit.ly/CRA-PWA
 
+/// <reference types="vite/client" />
+
 const isLocalhost = Boolean(
 	window.location.hostname === 'localhost' ||
 		// [::1] is the IPv6 localhost address.
@@ -20,8 +22,13 @@ const isLocalhost = Boolean(
 		)
 );
 
-export function register(config) {
-	if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+interface Config {
+	onSuccess?: (registration: ServiceWorkerRegistration) => void;
+	onUpdate?: (registration: ServiceWorkerRegistration) => void;
+}
+
+export function register(config?: Config) {
+	if (import.meta.env && import.meta.env.PROD && 'serviceWorker' in navigator) {
 		window.addEventListener('load', () => {
 			const swUrl = '/service-worker.js';
 
@@ -44,7 +51,7 @@ export function register(config) {
 	}
 }
 
-function registerValidSW(swUrl, config) {
+function registerValidSW(swUrl: string, config?: Config) {
 	navigator.serviceWorker
 		.register(swUrl)
 		.then(registration => {
@@ -88,7 +95,7 @@ function registerValidSW(swUrl, config) {
 		});
 }
 
-function checkValidServiceWorker(swUrl, config) {
+function checkValidServiceWorker(swUrl: string, config?: Config) {
 	// Check if the service worker can be found. If it can't reload the page.
 	fetch(swUrl)
 		.then(response => {

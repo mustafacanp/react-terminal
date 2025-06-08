@@ -5,10 +5,46 @@ import {
 	getSecondParameter,
 	hasSecondParameter,
 	hasTooManyParameters,
-	resolveFileSystemPath
+	resolveFileSystemPath,
+	FileSystemEntry
 } from '../utils/utils';
 
-export const createTerminalCommands = context => {
+// Terminal command types
+export type TerminalCommand = (
+	sudo?: boolean,
+	input?: string
+) => void | Promise<void>;
+
+export interface TerminalCommands {
+	[key: string]: TerminalCommand;
+}
+
+// Context interface for dependency injection
+export interface TerminalContext {
+	getState: () => any;
+	setState: (newState: any) => void;
+	_prompt: { current: { content: string } };
+	isItCommand: (input: string) => boolean;
+	extractCommandName: (input: string) => string;
+	cin: (input?: string) => void;
+	createErrorLine: () => void;
+	getUsableCommands: () => Promise<string[]>;
+	cout: (
+		output?: string,
+		breakWord?: boolean,
+		input?: string,
+		noTrim?: boolean
+	) => void;
+	openLink: (url: string) => void;
+	printCommandLine: () => void;
+	pwdText: (state: any) => string;
+	validateAndShowError: (condition: boolean, command: string) => boolean;
+	getCommands: () => TerminalCommands;
+}
+
+export const createTerminalCommands = (
+	context: TerminalContext
+): TerminalCommands => {
 	const {
 		getState,
 		setState,
@@ -29,7 +65,7 @@ export const createTerminalCommands = context => {
 	return {
 		sudo: () => {
 			const input = removeSpaces(_prompt.current.content);
-			const inputWithoutSudo = input.substr(input.indexOf(' ') + 1);
+			const inputWithoutSudo = input.substring(input.indexOf(' ') + 1);
 
 			const isCommand = isItCommand(inputWithoutSudo);
 			const command = extractCommandName(inputWithoutSudo);
@@ -54,7 +90,7 @@ export const createTerminalCommands = context => {
 		},
 		ls: (sudo, input) => {
 			const state = getState();
-			if (validateAndShowError(hasSecondParameter(input), 'ls')) return;
+			if (validateAndShowError(hasSecondParameter(input || ''), 'ls')) return;
 			const dirs = Object.keys(state.cfs.children).map(key => {
 				const slash = isDir(state.cfs.children[key]) ? '/' : '';
 				return `<span class="type-${state.cfs.children[key].type}">${key}${slash}</span>`;
@@ -68,9 +104,9 @@ export const createTerminalCommands = context => {
 				return;
 			}
 
-			if (validateAndShowError(hasTooManyParameters(input), 'cd')) return;
+			if (validateAndShowError(hasTooManyParameters(input || ''), 'cd')) return;
 
-			const secondParam = getSecondParameter(input);
+			const secondParam = getSecondParameter(input || '');
 			if (!secondParam || secondParam === '.') {
 				printCommandLine();
 				return;
@@ -108,7 +144,8 @@ export const createTerminalCommands = context => {
 					}
 				}
 
-				setState(prevState => ({
+				setState((prevState: any) => ({
+					...prevState,
 					path: newPath,
 					cfs: selectedFileOrDir
 				}));
@@ -123,12 +160,13 @@ export const createTerminalCommands = context => {
 		},
 		cat: async (sudo, input) => {
 			const state = getState();
-			if (!getSecondParameter(input)) {
+			const secondParam = getSecondParameter(input || '');
+			if (!secondParam) {
 				cout('cat: missing operand');
 				return;
 			}
-			const secondParam = getSecondParameter(input);
-			if (validateAndShowError(hasTooManyParameters(input), 'cat')) return;
+			if (validateAndShowError(hasTooManyParameters(input || ''), 'cat'))
+				return;
 
 			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
@@ -136,14 +174,14 @@ export const createTerminalCommands = context => {
 				state.path,
 				secondParam
 			);
-			if (isFile(selectedFileOrDir)) {
+			if (isFile(selectedFileOrDir) && selectedFileOrDir) {
 				const file = selectedFileOrDir;
 				if (!file.sudo || sudo) {
-					const input = _prompt.current.content;
+					const promptInput = _prompt.current.content;
 					const fileContent = await fetch(
-						process.env.PUBLIC_URL + file.src
+						(import.meta.env.VITE_PUBLIC_URL || '') + (file.src || '')
 					).then(res => res.text());
-					cout(fileContent, false, input, true);
+					cout(fileContent, false, promptInput, true);
 				} else {
 					cout(`bash: ${secondParam}: permission denied`);
 				}
@@ -155,12 +193,12 @@ export const createTerminalCommands = context => {
 		},
 		rm: (sudo, input) => {
 			const state = getState();
-			if (!getSecondParameter(input)) {
+			const secondParam = getSecondParameter(input || '');
+			if (!secondParam) {
 				cout('rm: missing operand');
 				return;
 			}
-			const secondParam = getSecondParameter(input);
-			if (validateAndShowError(hasTooManyParameters(input), 'rm')) return;
+			if (validateAndShowError(hasTooManyParameters(input || ''), 'rm')) return;
 
 			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
@@ -168,7 +206,7 @@ export const createTerminalCommands = context => {
 				state.path,
 				secondParam
 			);
-			if (isFile(selectedFileOrDir)) {
+			if (isFile(selectedFileOrDir) && selectedFileOrDir) {
 				const file = selectedFileOrDir;
 				if (!file.sudo || sudo) {
 					// Handle nested path removal
@@ -177,14 +215,16 @@ export const createTerminalCommands = context => {
 
 					if (pathParts.length === 1) {
 						// Simple case: file in current directory
-						const newCfs = Object.keys(state.cfs.children)
+						const children = state.cfs.children || {};
+						const newCfs = Object.keys(children)
 							.filter(key => key !== fileName)
-							.reduce((obj, key) => {
-								obj[key] = state.cfs.children[key];
+							.reduce((obj: { [key: string]: FileSystemEntry }, key) => {
+								obj[key] = children[key];
 								return obj;
 							}, {});
 
-						setState(prevState => ({
+						setState((prevState: any) => ({
+							...prevState,
 							cfs: { ...prevState.cfs, children: newCfs }
 						}));
 					} else {

@@ -1,9 +1,26 @@
 import React from 'react';
 import PromptLabel from './PromptLabel';
 
-const Line = ({ settings, command }) => {
+interface Command {
+	pwd?: string;
+	text: string;
+	type?: string;
+	breakWord?: boolean;
+}
+
+interface Settings {
+	userName: string;
+	computerName: string;
+}
+
+interface LineProps {
+	settings: Settings;
+	command: Command;
+}
+
+const Line: React.FC<LineProps> = ({ settings, command }) => {
 	const { pwd, text, type, breakWord } = command;
-	const wordBreakStyle = breakWord ? {} : { wordBreak: 'normal' };
+	const wordBreakStyle = breakWord ? {} : { wordBreak: 'normal' as const };
 
 	if (type === 'cin') {
 		return (

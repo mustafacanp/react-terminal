@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './Home.css';
 import Line from '../../components/Line';
 import Toolbar from '../../components/Toolbar';

@@ -1,30 +1,45 @@
 import { FSEntry } from '../enums';
 
+// File system type definitions
+export interface FileSystemEntry {
+	type: string;
+	name?: string;
+	content?: string;
+	src?: string;
+	sudo?: boolean;
+	children?: { [key: string]: FileSystemEntry };
+}
+
 // String manipulation utilities
-export const trim = str => str.trimStart().trimEnd();
-export const removeSpaces = text => text.replace(/\s+/g, ' ').trim();
+export const trim = (str: string): string => str.trimStart().trimEnd();
+export const removeSpaces = (text: string): string =>
+	text.replace(/\s+/g, ' ').trim();
 
 // File system utilities
-export const isDir = obj =>
+export const isDir = (obj: FileSystemEntry | null | undefined): boolean =>
 	!!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
-export const isFile = obj =>
+export const isFile = (obj: FileSystemEntry | null | undefined): boolean =>
 	!!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
 
 // Command parameter utilities
-export const getFirstParameter = str => trim(str).split(' ')[0];
-export const getSecondParameter = str => trim(str).split(' ')[1] || '';
+export const getFirstParameter = (str: string): string =>
+	trim(str).split(' ')[0];
+export const getSecondParameter = (str: string): string =>
+	trim(str).split(' ')[1] || '';
 
 // Parameter validation utilities
-export const hasSecondParameter = str => !!getSecondParameter(str);
-export const hasTooManyParameters = str => trim(str).split(' ').length > 2;
+export const hasSecondParameter = (str: string): boolean =>
+	!!getSecondParameter(str);
+export const hasTooManyParameters = (str: string): boolean =>
+	trim(str).split(' ').length > 2;
 
 // File system navigation utility
 export const resolveFileSystemPath = (
-	rootFileSystem,
-	currentFileSystem,
-	currentPath,
-	targetPath
-) => {
+	rootFileSystem: FileSystemEntry,
+	currentFileSystem: FileSystemEntry,
+	currentPath: string[],
+	targetPath: string
+): FileSystemEntry | null => {
 	if (!targetPath || targetPath === '.') return currentFileSystem;
 
 	const pathParts = targetPath.split('/').filter(part => part !== '');

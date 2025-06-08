@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-const Cursor = ({ promptText }) => {
+interface CursorProps {
+	promptText: string;
+}
+
+const Cursor: React.FC<CursorProps> = ({ promptText }) => {
 	const [style, setStyle] = useState({});
 	const [cursorLetter, setCursorLetter] = useState('');
 	const [cursorFromTheRight, setCursorFromTheRight] = useState(0);
@@ -12,7 +16,7 @@ const Cursor = ({ promptText }) => {
 	}, []);
 
 	const updateCursor = useCallback(
-		newValue => {
+		(newValue: number) => {
 			setStyle({
 				marginLeft: -8 * newValue + 'px'
 			});
@@ -42,7 +46,7 @@ const Cursor = ({ promptText }) => {
 	}, [cursorFromTheRight, updateCursor]);
 
 	const handleKeyDown = useCallback(
-		e => {
+		(e: KeyboardEvent) => {
 			// Handles non-printable chars.
 			switch (e.keyCode) {
 				case 37:

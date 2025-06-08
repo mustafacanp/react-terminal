@@ -1,4 +1,16 @@
-const PromptLabel = ({ username, computerName, currentPath }) => {
+import React from 'react';
+
+interface PromptLabelProps {
+	username: string;
+	computerName: string;
+	currentPath: string;
+}
+
+const PromptLabel: React.FC<PromptLabelProps> = ({
+	username,
+	computerName,
+	currentPath
+}) => {
 	return (
 		<span>
 			<span className="prompt-user">

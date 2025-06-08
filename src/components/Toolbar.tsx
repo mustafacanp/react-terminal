@@ -1,6 +1,36 @@
 import React, { useEffect, useCallback } from 'react';
 
-const Toolbar = ({ settings, pwd }) => {
+interface ToolbarSettings {
+	userName: string;
+	computerName: string;
+}
+
+interface ToolbarProps {
+	settings: ToolbarSettings;
+	pwd: string;
+}
+
+// Extend Document interface for fullscreen API
+declare global {
+	interface Document {
+		webkitIsFullScreen?: boolean;
+		mozFullScreen?: boolean;
+		msFullscreenElement?: Element;
+		webkitFullscreenElement?: Element;
+		mozFullScreenElement?: Element;
+		webkitExitFullscreen?: () => void;
+		mozCancelFullScreen?: () => void;
+		msExitFullscreen?: () => void;
+	}
+
+	interface HTMLElement {
+		mozRequestFullScreen?: () => void;
+		webkitRequestFullScreen?: () => void;
+		msRequestFullscreen?: () => void;
+	}
+}
+
+const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
 	const { userName, computerName } = settings;
 
 	const exitFullscreen = useCallback(() => {
@@ -10,10 +40,19 @@ const Toolbar = ({ settings, pwd }) => {
 			!document.mozFullScreen &&
 			!document.msFullscreenElement
 		) {
-			document.querySelector('.terminal').style.height = '524px';
-			document.querySelector('.terminal').style.width = '818px';
-			document.querySelector('.terminal').style.top = 'auto';
-			document.querySelector('.terminal-body-container').style.height = '500px';
+			const terminal = document.querySelector('.terminal') as HTMLElement;
+			const terminalBody = document.querySelector(
+				'.terminal-body-container'
+			) as HTMLElement;
+
+			if (terminal) {
+				terminal.style.height = '524px';
+				terminal.style.width = '818px';
+				terminal.style.top = 'auto';
+			}
+			if (terminalBody) {
+				terminalBody.style.height = '500px';
+			}
 		}
 	}, []);
 
@@ -29,13 +68,19 @@ const Toolbar = ({ settings, pwd }) => {
 				document.msFullscreenElement;
 			const docElm = document.documentElement;
 			if (!isInFullScreen) {
-				document.querySelector('.terminal').style.height =
-					window.screen.height - 25 + 'px';
-				document.querySelector('.terminal').style.width =
-					window.innerWidth + 'px';
-				document.querySelector('.terminal').style.top = '0';
-				document.querySelector('.terminal-body-container').style.height =
-					window.screen.height - 25 + 'px';
+				const terminal = document.querySelector('.terminal') as HTMLElement;
+				const terminalBody = document.querySelector(
+					'.terminal-body-container'
+				) as HTMLElement;
+
+				if (terminal) {
+					terminal.style.height = window.screen.height - 25 + 'px';
+					terminal.style.width = window.innerWidth + 'px';
+					terminal.style.top = '0';
+				}
+				if (terminalBody) {
+					terminalBody.style.height = window.screen.height - 25 + 'px';
+				}
 				if (docElm.requestFullscreen) {
 					docElm.requestFullscreen();
 				} else if (docElm.mozRequestFullScreen) {
@@ -46,11 +91,19 @@ const Toolbar = ({ settings, pwd }) => {
 					docElm.msRequestFullscreen();
 				}
 			} else {
-				document.querySelector('.terminal').style.height = '524px';
-				document.querySelector('.terminal').style.width = '818px';
-				document.querySelector('.terminal').style.top = 'auto';
-				document.querySelector('.terminal-body-container').style.height =
-					'500px';
+				const terminal = document.querySelector('.terminal') as HTMLElement;
+				const terminalBody = document.querySelector(
+					'.terminal-body-container'
+				) as HTMLElement;
+
+				if (terminal) {
+					terminal.style.height = '524px';
+					terminal.style.width = '818px';
+					terminal.style.top = 'auto';
+				}
+				if (terminalBody) {
+					terminalBody.style.height = '500px';
+				}
 				if (document.exitFullscreen) {
 					document.exitFullscreen();
 				} else if (document.webkitExitFullscreen) {
