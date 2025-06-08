@@ -9,9 +9,8 @@ import {
 	trim,
 	removeSpaces,
 	isDir,
-	firstParameter,
-	secondParameter,
-	thirdParameter
+	getFirstParameter,
+	getSecondParameter
 } from '../../utils/utils';
 
 const App = () => {
@@ -110,7 +109,8 @@ const App = () => {
 	);
 
 	const createErrorLine = useCallback(
-		() => cout(firstParameter(_prompt.current.content) + ': command not found'),
+		() =>
+			cout(getFirstParameter(_prompt.current.content) + ': command not found'),
 		[cout]
 	);
 
@@ -123,21 +123,10 @@ const App = () => {
 		}
 	}, []);
 
-	const checkSecondParameter = useCallback(
-		(text, commandName) => {
-			if (secondParameter(text)) {
-				cout(`bash: ${commandName}: too many arguments`);
-				return true;
-			}
-			return false;
-		},
-		[cout]
-	);
-
-	const checkThirdParameter = useCallback(
-		(text, commandName) => {
-			if (thirdParameter(text)) {
-				cout(`bash: ${commandName}: too many arguments`);
+	const validateAndShowError = useCallback(
+		(hasExtraParams, commandName, errorType = 'too many arguments') => {
+			if (hasExtraParams) {
+				cout(`bash: ${commandName}: ${errorType}`);
 				return true;
 			}
 			return false;
@@ -220,8 +209,7 @@ const App = () => {
 			openLink,
 			printCommandLine,
 			pwdText,
-			checkSecondParameter,
-			checkThirdParameter,
+			validateAndShowError,
 			getCommands: () => commands.current
 		});
 
@@ -235,8 +223,7 @@ const App = () => {
 		openLink,
 		printCommandLine,
 		pwdText,
-		checkSecondParameter,
-		checkThirdParameter
+		validateAndShowError
 	]);
 
 	// Standalone functions that use commands
@@ -309,7 +296,7 @@ const App = () => {
 
 			if (matchingItems.length === 1) {
 				const inputWithoutSudo = originalInput.replace('sudo ', '');
-				const param2 = secondParameter(inputWithoutSudo);
+				const param2 = getSecondParameter(inputWithoutSudo);
 				const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
 				const dirSlash = isDir(childrenFS[matchingItems[0]]) ? '/' : '';
 
@@ -336,8 +323,8 @@ const App = () => {
 			const inputWithoutSudo = input.replace('sudo ', '');
 			const sudoString = input.startsWith('sudo ') ? 'sudo ' : '';
 
-			const command = firstParameter(inputWithoutSudo);
-			const param2 = secondParameter(inputWithoutSudo);
+			const command = getFirstParameter(inputWithoutSudo);
+			const param2 = getSecondParameter(inputWithoutSudo);
 
 			if (!['cd', 'cat', 'rm'].includes(command)) {
 				return;

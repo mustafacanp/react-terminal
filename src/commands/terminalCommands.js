@@ -2,7 +2,9 @@ import {
 	removeSpaces,
 	isDir,
 	isFile,
-	secondParameter,
+	getSecondParameter,
+	hasSecondParameter,
+	hasTooManyParameters,
 	resolveFileSystemPath
 } from '../utils/utils';
 
@@ -20,8 +22,7 @@ export const createTerminalCommands = context => {
 		openLink,
 		printCommandLine,
 		pwdText,
-		checkSecondParameter,
-		checkThirdParameter,
+		validateAndShowError,
 		getCommands
 	} = context;
 
@@ -53,7 +54,7 @@ export const createTerminalCommands = context => {
 		},
 		ls: (sudo, input) => {
 			const state = getState();
-			if (checkSecondParameter(input, 'ls')) return;
+			if (validateAndShowError(hasSecondParameter(input), 'ls')) return;
 			const dirs = Object.keys(state.cfs.children).map(key => {
 				const slash = isDir(state.cfs.children[key]) ? '/' : '';
 				return `<span class="type-${state.cfs.children[key].type}">${key}${slash}</span>`;
@@ -67,9 +68,9 @@ export const createTerminalCommands = context => {
 				return;
 			}
 
-			if (checkThirdParameter(input, 'cd')) return;
+			if (validateAndShowError(hasTooManyParameters(input), 'cd')) return;
 
-			const secondParam = secondParameter(input);
+			const secondParam = getSecondParameter(input);
 			if (!secondParam || secondParam === '.') {
 				printCommandLine();
 				return;
@@ -122,12 +123,12 @@ export const createTerminalCommands = context => {
 		},
 		cat: async (sudo, input) => {
 			const state = getState();
-			if (!secondParameter(input)) {
+			if (!getSecondParameter(input)) {
 				cout('cat: missing operand');
 				return;
 			}
-			const secondParam = secondParameter(input);
-			if (checkThirdParameter(input, 'cat')) return;
+			const secondParam = getSecondParameter(input);
+			if (validateAndShowError(hasTooManyParameters(input), 'cat')) return;
 
 			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,
@@ -154,12 +155,12 @@ export const createTerminalCommands = context => {
 		},
 		rm: (sudo, input) => {
 			const state = getState();
-			if (!secondParameter(input)) {
+			if (!getSecondParameter(input)) {
 				cout('rm: missing operand');
 				return;
 			}
-			const secondParam = secondParameter(input);
-			if (checkThirdParameter(input, 'rm')) return;
+			const secondParam = getSecondParameter(input);
+			if (validateAndShowError(hasTooManyParameters(input), 'rm')) return;
 
 			const selectedFileOrDir = resolveFileSystemPath(
 				state.fs,

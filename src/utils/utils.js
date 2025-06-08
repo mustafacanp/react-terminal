@@ -11,9 +11,12 @@ export const isFile = obj =>
 	!!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
 
 // Command parameter utilities
-export const firstParameter = str => trim(str).split(' ')[0];
-export const secondParameter = str => trim(str).split(' ')[1] || '';
-export const thirdParameter = str => trim(str).split(' ').length > 2 || '';
+export const getFirstParameter = str => trim(str).split(' ')[0];
+export const getSecondParameter = str => trim(str).split(' ')[1] || '';
+
+// Parameter validation utilities
+export const hasSecondParameter = str => !!getSecondParameter(str);
+export const hasTooManyParameters = str => trim(str).split(' ').length > 2;
 
 // File system navigation utility
 export const resolveFileSystemPath = (
