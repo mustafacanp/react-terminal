@@ -179,10 +179,12 @@ export const createTerminalCommands = (
 				const file = selectedFileOrDir;
 				if (!file.sudo || sudo) {
 					const promptInput = _prompt.current?.content || '';
-					const fileContent = await fetch(
-						(import.meta.env.VITE_PUBLIC_URL || '') + (file.src || '')
-					).then(res => res.text());
-					cout(fileContent, true, promptInput, true);
+					if (file.src) {
+						const fileContent = await fetch(file.src).then(res => res.text());
+						cout(fileContent, true, promptInput, true);
+					} else {
+						cout(`cat: ${secondParam}: No such file or directory`);
+					}
 				} else {
 					cout(`bash: ${secondParam}: permission denied`);
 				}

@@ -13,7 +13,6 @@ import {
 } from './utils/utils';
 
 import fs from './fs.json';
-import './App.css';
 
 // State type definitions
 interface Settings {
