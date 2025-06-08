@@ -1,6 +1,6 @@
 {
 	"name": "react-terminal",
-	"version": "2.0.0",
+	"version": "3.0.0",
 	"description": "A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser",
 	"keywords": [
 		"react",
