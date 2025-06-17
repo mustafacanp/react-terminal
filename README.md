@@ -2,7 +2,7 @@
 
 A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg) ![React](https://img.shields.io/badge/react-18.3.1-61dafb.svg) ![React Scripts](https://img.shields.io/badge/react--scripts-5.0.1-green.svg)
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg) ![React](https://img.shields.io/badge/react-19.1.0-61dafb.svg) ![Vite](https://img.shields.io/badge/vite-6.0.3-646CFF.svg)
 
 ## 📸 Screenshot
 
