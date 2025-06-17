@@ -8,6 +8,13 @@
 # testing
 /coverage
 
+# playwright
+/playwright-report
+/test-results
+
+# cursor
+.cursorrules
+
 # production
 /build
 
