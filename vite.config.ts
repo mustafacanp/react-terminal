@@ -6,7 +6,9 @@ export default defineConfig({
     plugins: [react()],
     server: {
         port: 3000,
-        open: true
+        host: true,
+        // Don't open browser automatically when running tests
+        open: !process.env.CI && !process.env.PLAYWRIGHT
     },
     build: {
         outDir: 'build'

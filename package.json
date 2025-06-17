@@ -1,53 +1,59 @@
 {
-	"name": "react-terminal",
-	"version": "3.0.0",
-	"description": "A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser",
-	"keywords": [
-		"react",
-		"terminal",
-		"simulator",
-		"cli",
-		"command-line",
-		"linux",
-		"unix",
-		"bash",
-		"web-terminal",
-		"interactive"
-	],
-	"bugs": {
-		"url": "https://github.com/mustafacanp/react-terminal/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/mustafacanp/react-terminal.git"
-	},
-	"author": {
-		"name": "Mustafa Can Palaz",
-		"url": "https://mustafacanpalaz.com"
-	},
-	"license": "MIT",
-	"private": true,
-	"engines": {
-		"node": ">=16.0.0",
-		"npm": ">=7.0.0"
-	},
-	"dependencies": {
-		"react": "^19.1.0",
-		"react-dom": "^19.1.0"
-	},
-	"devDependencies": {
-		"@types/react": "^19.1.6",
-		"@types/react-dom": "^19.1.6",
-		"@vitejs/plugin-react": "^4.5.1",
-		"prettier": "^3.5.3",
-		"typescript": "^5.7.2",
-		"vite": "^6.0.3"
-	},
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-		"format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\""
-	}
+    "name": "react-terminal",
+    "version": "3.0.0",
+    "description": "A web-based terminal simulator built with React that provides an interactive Linux/Unix-like command-line interface in the browser",
+    "keywords": [
+        "react",
+        "terminal",
+        "simulator",
+        "cli",
+        "command-line",
+        "linux",
+        "unix",
+        "bash",
+        "web-terminal",
+        "interactive"
+    ],
+    "bugs": {
+        "url": "https://github.com/mustafacanp/react-terminal/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mustafacanp/react-terminal.git"
+    },
+    "author": {
+        "name": "Mustafa Can Palaz",
+        "url": "https://mustafacanpalaz.com"
+    },
+    "license": "MIT",
+    "type": "module",
+    "private": true,
+    "engines": {
+        "node": ">=16.0.0",
+        "npm": ">=7.0.0"
+    },
+    "dependencies": {
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.50.0",
+        "@types/react": "^19.1.6",
+        "@types/react-dom": "^19.1.6",
+        "@vitejs/plugin-react": "^4.5.1",
+        "prettier": "^3.5.3",
+        "typescript": "^5.7.2",
+        "vite": "^6.0.3"
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+        "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:ui": "playwright test --ui",
+        "test:debug": "playwright test --debug"
+    }
 }
