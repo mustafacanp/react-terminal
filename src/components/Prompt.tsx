@@ -78,6 +78,9 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
                     currentPath={currentPath || '~'}
                 />
                 <input
+                    autoCorrect="off"
+                    autoComplete="off"
+                    autoCapitalize="off"
                     className="prompt-input"
                     ref={promptInputRef}
                     value={promptText}
