@@ -2,179 +2,179 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu');
 
 body {
-	margin: 0;
-	padding: 0;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	background: linear-gradient(45deg, #57003f 0%, #f57453 100%);
-	font-family: 'Ubuntu';
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(45deg, #57003f 0%, #f57453 100%);
+    font-family: 'Ubuntu';
 }
 
 .container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 .terminal {
-	width: 818px;
-	height: 524px;
-	box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
+    width: 818px;
+    height: 524px;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
 
-	position: absolute;
-	bottom: auto;
-	left: auto;
-	-webkit-transition: all 0.4s ease;
-	-moz-transition: all 0.4s ease;
-	-ms-transition: all 0.4s ease;
-	-o-transition: all 0.4s ease;
-	transition: all 0.4s ease;
+    position: absolute;
+    bottom: auto;
+    left: auto;
+    -webkit-transition: all 0.4s ease;
+    -moz-transition: all 0.4s ease;
+    -ms-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+    transition: all 0.4s ease;
 }
 
 .terminal-toolbar {
-	background: linear-gradient(#504b45 0%, #3c3b37 100%);
-	width: 100%;
-	padding: 0 8px;
-	box-sizing: border-box;
-	height: 25px;
-	display: flex;
-	align-items: center;
-	border-top-left-radius: 6px;
-	border-top-right-radius: 6px;
+    background: linear-gradient(#504b45 0%, #3c3b37 100%);
+    width: 100%;
+    padding: 0 8px;
+    box-sizing: border-box;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
 .toolbar-buttons {
-	display: flex;
-	align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .toolbar-button {
-	width: 12px;
-	height: 12px;
-	box-sizing: border-box;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 100%;
-	padding: 0;
-	font-size: 7px;
-	background: linear-gradient(#7d7871 0%, #595953 100%);
-	text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2);
-	box-shadow:
-		0px 0px 1px 0px #41403a,
-		0px 1px 1px 0px #474642;
-	border: none;
-	margin-right: 4px;
+    width: 12px;
+    height: 12px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100%;
+    padding: 0;
+    font-size: 7px;
+    background: linear-gradient(#7d7871 0%, #595953 100%);
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2);
+    box-shadow:
+        0px 0px 1px 0px #41403a,
+        0px 1px 1px 0px #474642;
+    border: none;
+    margin-right: 4px;
 }
 .toolbar-button:hover {
-	cursor: pointer;
+    cursor: pointer;
 }
 .toolbar-button--exit {
-	background: #f25d2b;
-	background: linear-gradient(#f37458 0%, #de4c12 100%);
-	background-clip: padding-box;
+    background: #f25d2b;
+    background: linear-gradient(#f37458 0%, #de4c12 100%);
+    background-clip: padding-box;
 }
 .toolbar-button:focus {
-	outline: none;
+    outline: none;
 }
 
 .toolbar-user {
-	color: #d5d0ce;
-	margin-left: 4px;
-	margin-top: 0;
-	font-size: 12px;
-	line-height: 14px;
-	margin-bottom: 1px;
+    color: #d5d0ce;
+    margin-left: 4px;
+    margin-top: 0;
+    font-size: 12px;
+    line-height: 14px;
+    margin-bottom: 1px;
 }
 
 .terminal-body-container {
-	height: 500px;
-	overflow-y: scroll;
-	background: rgba(56, 4, 40, 0.9);
+    height: 500px;
+    overflow-y: scroll;
+    background: rgba(56, 4, 40, 0.9);
 }
 .terminal-body-container::-webkit-scrollbar {
-	width: 12px;
-	border: none;
+    width: 12px;
+    border: none;
 }
 .terminal-body-container::-webkit-scrollbar-thumb {
-	background: linear-gradient(#504b45 0%, #3c3b37 100%);
+    background: linear-gradient(#504b45 0%, #3c3b37 100%);
 }
 .terminal-body {
-	font-family: 'Ubuntu mono';
-	padding: 5px 3px;
-	min-height: 491px;
+    font-family: 'Ubuntu mono';
+    padding: 5px 3px;
+    min-height: 491px;
 }
 
 .terminal-prompt {
-	display: flex;
+    display: flex;
 }
 
 .prompt-user {
-	font-weight: 600;
-	color: #87d441;
+    font-weight: 600;
+    color: #87d441;
 }
 .prompt-location {
-	font-weight: 600;
-	color: #6d85a9;
+    font-weight: 600;
+    color: #6d85a9;
 }
 .prompt-dollar {
-	color: #ddd;
+    color: #ddd;
 }
 .prompt-text {
-	color: white;
-	margin-left: 8px;
-	word-break: break-all;
-	white-space: pre-wrap;
+    color: white;
+    margin-left: 8px;
+    word-break: break-all;
+    white-space: pre-wrap;
 }
 .prompt-input {
-	width: 0;
-	height: 0;
-	border: 0;
-	padding: 0;
+    width: 0;
+    height: 0;
+    border: 0;
+    padding: 0;
 }
 .prompt-cursor {
-	height: 17px;
-	line-height: 17px;
-	text-align: center;
-	color: #420528;
-	width: 8px;
-	background: white;
-	display: block;
-	animation: 600ms ease infinite alternate blink;
+    height: 17px;
+    line-height: 17px;
+    text-align: center;
+    color: #420528;
+    width: 8px;
+    background: white;
+    display: block;
+    animation: 600ms ease infinite alternate blink;
 }
 
 .type-file {
 }
 
 .type-directory {
-	color: #38b8e7;
+    color: #38b8e7;
 }
 
 .ml-0 {
-	margin-left: 0;
+    margin-left: 0;
 }
 
 @keyframes blink {
-	0% {
-		opacity: 0;
-	}
-	49% {
-		opacity: 0;
-	}
-	50% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 1;
-	}
+    0% {
+        opacity: 0;
+    }
+    49% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 @media screen and (max-width: 991px) {
-	.terminal {
-		width: 100%;
-		height: 100%;
-	}
-	.terminal-body-container {
-		height: calc(100% - 25px);
-	}
+    .terminal {
+        width: 100%;
+        height: 100%;
+    }
+    .terminal-body-container {
+        height: calc(100% - 25px);
+    }
 }
