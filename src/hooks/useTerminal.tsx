@@ -10,6 +10,7 @@ import {
     hasSecondParameter,
     hasTooManyParameters,
     resolveFileSystemPath,
+    removeFileFromFileSystem,
     FileSystemEntry
 } from '../utils/utils';
 import fs from '../fs.json';
@@ -59,6 +60,10 @@ export const useTerminal = () => {
 
     const _prompt = useRef<PromptRef>(null);
     const commandIdCounter = useRef(0);
+    const stateRef = useRef(state);
+
+    // Keep stateRef current
+    stateRef.current = state;
 
     // Helper functions
     const pwdText = useCallback(() => {
@@ -158,7 +163,7 @@ export const useTerminal = () => {
         },
 
         pwd: () => {
-            const cwd = pwdText().replace('~', '/' + state.basePath);
+            const cwd = pwdText().replace('~', '/' + stateRef.current.basePath);
             cout(cwd);
         },
 
@@ -166,10 +171,14 @@ export const useTerminal = () => {
             if (validateAndShowError(hasSecondParameter(input || ''), 'ls'))
                 return;
 
-            const dirs = Object.keys(state.cfs.children || {}).map(key => {
-                const slash = isDir(state.cfs.children?.[key]) ? '/' : '';
-                return `<span class="type-${state.cfs.children?.[key]?.type}">${key}${slash}</span>`;
-            });
+            const dirs = Object.keys(stateRef.current.cfs.children || {}).map(
+                key => {
+                    const slash = isDir(stateRef.current.cfs.children?.[key])
+                        ? '/'
+                        : '';
+                    return `<span class="type-${stateRef.current.cfs.children?.[key]?.type}">${key}${slash}</span>`;
+                }
+            );
             cout(dirs.join('&#09;'), false);
         },
 
@@ -177,31 +186,35 @@ export const useTerminal = () => {
             if (validateAndShowError(hasTooManyParameters(input || ''), 'cd'))
                 return;
 
-            const secondParam = getSecondParameter(input || '');
-            if (!secondParam || secondParam === '.') {
+            const fileName = getSecondParameter(input || '');
+            if (!fileName || fileName === '.') {
                 cin(_prompt.current?.content || '');
                 return;
             }
 
-            if (secondParam === '/' || secondParam === '~') {
+            if (fileName === '/' || fileName === '~') {
                 cin(_prompt.current?.content || '');
-                setState(prev => ({ ...prev, cfs: state.fs, path: [] }));
+                setState(prev => ({
+                    ...prev,
+                    cfs: stateRef.current.fs,
+                    path: []
+                }));
                 return;
             }
 
             const selectedFileOrDir = resolveFileSystemPath(
-                state.fs,
-                state.cfs,
-                state.path,
-                secondParam
+                stateRef.current.fs,
+                stateRef.current.cfs,
+                stateRef.current.path,
+                fileName
             );
 
             if (isDir(selectedFileOrDir)) {
                 cin(_prompt.current?.content || '');
-                const pathParts = secondParam
+                const pathParts = fileName
                     .split('/')
                     .filter(part => part !== '');
-                let newPath = [...state.path];
+                let newPath = [...stateRef.current.path];
 
                 for (const part of pathParts) {
                     if (part === '..') {
@@ -217,27 +230,30 @@ export const useTerminal = () => {
                     cfs: selectedFileOrDir as FileSystemEntry
                 }));
             } else if (isFile(selectedFileOrDir)) {
-                cout(`bash: cd: ${secondParam}: Not a directory`);
+                cout(`bash: cd: ${fileName}: Not a directory`);
             } else {
-                cout(`bash: cd: ${secondParam}: No such file or directory`);
+                cout(`bash: cd: ${fileName}: No such file or directory`);
             }
         },
 
         cat: async (input?: string, sudo = false) => {
-            const secondParam = getSecondParameter(input || '');
-            if (!secondParam) {
+            const fileName = getSecondParameter(input || '');
+            if (!fileName) {
                 cout('cat: missing operand');
                 return;
             }
 
-            if (validateAndShowError(hasTooManyParameters(input || ''), 'cat'))
+            if (
+                validateAndShowError(hasTooManyParameters(input || ''), 'cat')
+            ) {
                 return;
+            }
 
             const selectedFileOrDir = resolveFileSystemPath(
-                state.fs,
-                state.cfs,
-                state.path,
-                secondParam
+                stateRef.current.fs,
+                stateRef.current.cfs,
+                stateRef.current.path,
+                fileName
             );
 
             if (isFile(selectedFileOrDir) && selectedFileOrDir) {
@@ -249,16 +265,70 @@ export const useTerminal = () => {
                         ).then(res => res.text());
                         cout(fileContent, true, input || '', true);
                     } else {
-                        cout(`cat: ${secondParam}: No such file or directory`);
+                        cout(`cat: ${fileName}: No such file or directory`);
                     }
                 } else {
-                    cout(`bash: ${secondParam}: permission denied`);
+                    cout(`bash: ${fileName}: permission denied`);
                 }
             } else if (isDir(selectedFileOrDir)) {
-                cout(`cat: ${secondParam}: Is a directory`);
+                cout(`cat: ${fileName}: Is a directory`);
             } else {
-                cout(`cat: ${secondParam}: No such file or directory`);
+                cout(`cat: ${fileName}: No such file or directory`);
             }
+        },
+
+        rm: (input?: string, sudo = false) => {
+            const fileName = getSecondParameter(input || '');
+            if (!fileName) {
+                cout('rm: missing operand');
+                return;
+            }
+
+            if (validateAndShowError(hasTooManyParameters(input || ''), 'rm')) {
+                return;
+            }
+
+            const fileEntry = resolveFileSystemPath(
+                stateRef.current.fs,
+                stateRef.current.cfs,
+                stateRef.current.path,
+                fileName
+            );
+
+            if (!fileEntry) {
+                cout(
+                    `rm: cannot remove '${fileName}': No such file or directory`
+                );
+                return;
+            }
+
+            if (isDir(fileEntry)) {
+                cout(`rm: cannot remove '${fileName}': Is a directory`);
+                return;
+            }
+
+            if (fileEntry.sudo && !sudo) {
+                cout(`rm: cannot remove '${fileName}': Permission denied`);
+                return;
+            }
+
+            // Remove file from file system
+            const baseFileName = fileName.split('/').pop() || fileName;
+            setState(prev => ({
+                ...prev,
+                fs: removeFileFromFileSystem(prev.fs, prev.path, baseFileName),
+                cfs: {
+                    ...prev.cfs,
+                    children: prev.cfs.children
+                        ? Object.fromEntries(
+                              Object.entries(prev.cfs.children).filter(
+                                  ([key]) => key !== baseFileName
+                              )
+                          )
+                        : {}
+                }
+            }));
+            cin(_prompt.current?.content || '');
         },
 
         sudo: (input?: string) => {

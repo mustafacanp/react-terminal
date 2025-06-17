@@ -85,6 +85,34 @@ export const getLastDir = (path: string): string => {
         : parts[parts.length - 2];
 };
 
+// File system modification utilities
+export const removeFileFromFileSystem = (
+    fs: FileSystemEntry,
+    path: string[],
+    fileToRemove: string
+): FileSystemEntry => {
+    if (path.length === 0) {
+        // We're at the target directory, remove the file
+        const newChildren = { ...fs.children };
+        delete newChildren[fileToRemove];
+        return { ...fs, children: newChildren };
+    }
+
+    // We need to go deeper
+    const [currentPath, ...remainingPath] = path;
+    const newChildren = { ...fs.children };
+
+    if (newChildren[currentPath]) {
+        newChildren[currentPath] = removeFileFromFileSystem(
+            newChildren[currentPath],
+            remainingPath,
+            fileToRemove
+        );
+    }
+
+    return { ...fs, children: newChildren };
+};
+
 // Browser utilities
 export const copy = (text: string): void => {
     if (navigator.clipboard) {
