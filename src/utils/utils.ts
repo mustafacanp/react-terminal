@@ -341,6 +341,37 @@ export const removeFileFromFileSystem = (
     return { ...fs, children: newChildren };
 };
 
+export const addDirectoryToFileSystem = (
+    fs: FileSystemEntry,
+    path: string[],
+    directoryName: string
+): FileSystemEntry => {
+    if (path.length === 0) {
+        // We're at the target directory, add the new directory
+        const newChildren = { ...fs.children };
+        newChildren[directoryName] = {
+            type: 'directory',
+            name: directoryName,
+            children: {}
+        };
+        return { ...fs, children: newChildren };
+    }
+
+    // We need to go deeper
+    const [currentPath, ...remainingPath] = path;
+    const newChildren = { ...fs.children };
+
+    if (newChildren[currentPath]) {
+        newChildren[currentPath] = addDirectoryToFileSystem(
+            newChildren[currentPath],
+            remainingPath,
+            directoryName
+        );
+    }
+
+    return { ...fs, children: newChildren };
+};
+
 // Browser utilities
 export const copy = (text: string): void => {
     if (navigator.clipboard) {

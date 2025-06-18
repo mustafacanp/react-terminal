@@ -7,6 +7,7 @@ import {
     hasTooManyParameters,
     resolveFileSystemPath,
     removeFileFromFileSystem,
+    addDirectoryToFileSystem,
     isDir,
     isFile,
     getFirstParameter,
@@ -39,6 +40,7 @@ export const AVAILABLE_COMMANDS = [
     'ls',
     'cd',
     'cat',
+    'mkdir',
     'rm',
     'textgame',
     'randomcolor'
@@ -114,6 +116,62 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
             } else {
                 handleFileNotFound(fileName, cout);
             }
+        },
+
+        mkdir: (input?: string) => {
+            const directoryName = getSecondParameter(input || '');
+            if (!validateFileName(directoryName, 'mkdir', cout)) {
+                return;
+            }
+
+            if (!validateCommand(hasTooManyParameters(input || ''), 'mkdir', cout)) {
+                return;
+            }
+
+            // Check if directory already exists
+            const existingEntry = resolveFileSystemPath(
+                state.fs,
+                state.cfs,
+                state.path,
+                directoryName
+            );
+
+            if (existingEntry) {
+                cout(`mkdir: cannot create directory '${directoryName}': File exists`);
+                return;
+            }
+
+            // Validate directory name (basic validation - no invalid characters)
+            if (directoryName.includes('/') || directoryName.includes('\\')) {
+                cout(`mkdir: cannot create directory '${directoryName}': Invalid directory name`);
+                return;
+            }
+
+            setState(prev => {
+                // Add directory to the file system
+                const newFs = addDirectoryToFileSystem(prev.fs, prev.path, directoryName);
+
+                // Update current directory children
+                const newCfs = {
+                    ...prev.cfs,
+                    children: {
+                        ...prev.cfs.children,
+                        [directoryName]: {
+                            type: 'directory',
+                            name: directoryName,
+                            children: {}
+                        }
+                    }
+                };
+
+                return {
+                    ...prev,
+                    fs: newFs,
+                    cfs: newCfs
+                };
+            });
+
+            cin(getPromptContent());
         },
 
         cat: async (input?: string, sudo = false) => {

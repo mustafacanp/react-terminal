@@ -16,6 +16,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
             'ls',
             'cd',
             'cat',
+            'mkdir',
             'rm',
             'textgame',
             'randomcolor'
@@ -436,5 +437,61 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         // Prompt should still be focused
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
+    test('should handle mkdir command error cases', async ({ page }) => {
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        // Test 1: mkdir without parameters (missing operand)
+        await page.keyboard.type('mkdir');
+        await page.keyboard.press('Enter');
+        await expect(lastCommandOutput).toContainText('mkdir: missing operand');
+
+        // Test 2: mkdir with too many parameters
+        await page.keyboard.type('mkdir dir1 dir2');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
+
+        // Test 3: mkdir with existing directory name
+        await page.keyboard.type('mkdir Documents');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('File exists');
+
+        // Test 4: mkdir with invalid directory name (contains slash)
+        await page.keyboard.type('mkdir dir/subdir');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Invalid directory name');
+    });
+
+    test('should successfully create directory with mkdir', async ({ page }) => {
+        // Create a new directory
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify the directory was created by listing contents
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('testdir/');
+
+        // Test that we can navigate into the new directory
+        await page.keyboard.type('cd testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify we're in the new directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/testdir');
+
+        // Verify the directory is empty
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // Should show empty directory (no files listed)
+        const emptyDirOutput = page.locator(SELECTORS.commandOutput).last();
+        const outputText = await emptyDirOutput.textContent();
+        // The output should be minimal (just whitespace or empty)
+        expect(outputText?.trim().length || 0).toEqual(0);
     });
 });
