@@ -184,22 +184,37 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
                 return;
             }
 
-            // Remove file from file system
+            // Calculate the actual path where the file exists
             const baseFileName = fileName.split('/').pop() || fileName;
-            setState(prev => ({
-                ...prev,
-                fs: removeFileFromFileSystem(prev.fs, prev.path, baseFileName),
-                cfs: {
-                    ...prev.cfs,
-                    children: prev.cfs.children
-                        ? Object.fromEntries(
-                              Object.entries(prev.cfs.children).filter(
-                                  ([key]) => key !== baseFileName
-                              )
-                          )
-                        : {}
-                }
-            }));
+            const isInCurrentDir = !fileName.includes('/') || fileName === `./${baseFileName}`;
+            const targetPath = isInCurrentDir
+                ? state.path
+                : calculateNewPath(state.path, fileName.substring(0, fileName.lastIndexOf('/')));
+
+            setState(prev => {
+                // Remove from the file system using the correct target path
+                const newFs = removeFileFromFileSystem(prev.fs, targetPath, baseFileName);
+
+                // Update current directory children only if file is in current directory
+                const newCfs = isInCurrentDir
+                    ? {
+                          ...prev.cfs,
+                          children: prev.cfs.children
+                              ? Object.fromEntries(
+                                    Object.entries(prev.cfs.children).filter(
+                                        ([key]) => key !== baseFileName
+                                    )
+                                )
+                              : {}
+                      }
+                    : prev.cfs;
+
+                return {
+                    ...prev,
+                    fs: newFs,
+                    cfs: newCfs
+                };
+            });
             cin(getPromptContent());
         },
 

@@ -292,9 +292,43 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // The ls command should not show the removed file anymore
-        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
-        const lastLsOutput = terminalContent?.split('ls').pop() || '';
-        expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
+    });
+
+    test('should successfully remove files from parent directory using rm with parent path', async ({
+        page
+    }) => {
+        // First, verify the file exists in the root directory
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('gta_sa_cheats.txt');
+
+        // Navigate to a subdirectory (Documents)
+        await page.keyboard.type('cd Documents');
+        await page.keyboard.press('Enter');
+
+        // Verify we're in the Documents directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
+
+        // Remove a file from the parent directory using "../"
+        await page.keyboard.type('rm ../gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+
+        // Navigate back to the parent directory to verify the file was removed
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+
+        // Verify we're back in the root directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
+
+        // List files to confirm the file was removed
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // The file should no longer be present in the listing
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
     });
 
     test('should maintain file system state after rm operations across navigation', async ({
@@ -316,9 +350,8 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.type('ls');
         await page.keyboard.press('Enter');
 
-        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
-        const lastLsOutput = terminalContent?.split('ls').pop() || '';
-        expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
     });
 
     test('should handle complex file paths correctly', async ({ page }) => {
