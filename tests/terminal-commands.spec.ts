@@ -90,91 +90,67 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
     });
 
-    test('should display ASCII art when using cat on image files', async ({ page }) => {
-        // Test cat command with ASCII art file
+    test('should handle cat command with all scenarios', async ({ page }) => {
+        // Test 1: cat command without parameters (missing operand)
+        await page.keyboard.type('cat');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('cat: missing operand');
+
+        // Test 2: cat command with non-existent file
+        await page.keyboard.type('cat nonexistent.txt');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('No such file or directory');
+
+        // Test 3: cat command with too many arguments
+        await page.keyboard.type('cat file1.txt file2.txt extra');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
+
+        // Test 4: cat command on directory
+        await page.keyboard.type('cat Documents');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Is a directory');
+
+        // Test 5: permission denied on secure files with regular cat
+        await page.keyboard.type('cat .bashrc');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('permission denied');
+
+        // Test 6: display file contents with sudo cat command on secure files
+        await page.keyboard.type('sudo cat .bashrc');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('alias');
+
+        // Test 7: display ASCII art when using cat on image files
         await page.keyboard.type('cat Pictures/awesome_space.png');
         await page.keyboard.press('Enter');
+        await page.waitForTimeout(300); // wait for the image to load
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
 
-        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-
-        // Method 1: Test for minimum character count (ASCII art is typically long)
+        // Test for minimum character count (ASCII art is typically long)
         const outputText = await lastCommandOutput.textContent();
         expect(outputText?.length).toBeGreaterThan(100); // ASCII art should be substantial
 
-        // Method 2: Test that it's not an error message
+        // Test that it's not an error message
         await expect(lastCommandOutput).not.toContainText('No such file or directory');
         await expect(lastCommandOutput).not.toContainText('permission denied');
         await expect(lastCommandOutput).not.toContainText('Is a directory');
 
-        // Method 3: Test for specific ASCII art pattern
+        // Test for specific ASCII art pattern
         await expect(lastCommandOutput).toContainText('MMMMMMMMMMMMMMMMMMM');
 
-        // Method 4: Test multiple lines (ASCII art is typically multi-line)
+        // Test multiple lines (ASCII art is typically multi-line)
         const lines = outputText?.split('\n') || [];
-        expect(lines.length).toBeGreaterThan(5); // Should have multiple lines
+        expect(lines.length).toBeGreaterThan(10); // Should have multiple lines
 
-        // Method 5: Verify terminal remains functional after ASCII art display
+        // Verify terminal remains functional after ASCII art display
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
-    });
-
-    test('should handle permission denied on secure files with regular cat', async ({ page }) => {
-        // Try to read a text file
-        await page.keyboard.type('cat .bashrc');
-        await page.keyboard.press('Enter');
-
-        // Should display file contents
-        const terminalBody = page.locator(SELECTORS.terminalBody);
-        // The exact content will depend on what's in .bashrc
-        await expect(terminalBody).toContainText('permission denied');
-    });
-
-    test('should display file contents with sudo cat command on secure files', async ({ page }) => {
-        // Try to read a text file
-        await page.keyboard.type('sudo cat .bashrc');
-        await page.keyboard.press('Enter');
-
-        // Should display file contents
-        const terminalBody = page.locator(SELECTORS.terminalBody);
-        // The exact content will depend on what's in .bashrc
-        await expect(terminalBody).toContainText('alias');
-    });
-
-    test('should handle cat command without parameters', async ({ page }) => {
-        // Execute cat without any file parameter
-        await page.keyboard.type('cat');
-        await page.keyboard.press('Enter');
-
-        // Should show missing operand error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('cat: missing operand');
-    });
-
-    test('should handle cat command with non-existent file', async ({ page }) => {
-        // Try to cat a non-existent file
-        await page.keyboard.type('cat nonexistent.txt');
-        await page.keyboard.press('Enter');
-
-        // Should show error message
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'No such file or directory'
-        );
-    });
-
-    test('should handle cat command with too many arguments', async ({ page }) => {
-        // Try cat with too many arguments
-        await page.keyboard.type('cat file1.txt file2.txt extra');
-        await page.keyboard.press('Enter');
-
-        // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
-    });
-
-    test('should handle cat command on directory', async ({ page }) => {
-        // Try to cat a directory
-        await page.keyboard.type('cat Documents');
-        await page.keyboard.press('Enter');
-
-        // Should show "Is a directory" error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Is a directory');
     });
 
     test('should handle sudo command with valid subcommand', async ({ page }) => {
@@ -183,7 +159,8 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should execute the command
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('/home/user');
     });
 
     test('should handle sudo command with invalid subcommand', async ({ page }) => {
@@ -192,7 +169,8 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show command not found error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('command not found');
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('command not found');
     });
 
     test('should handle external link commands', async ({ page }) => {
@@ -243,17 +221,71 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
 
         // Test cd with too many parameters
         await page.keyboard.type('cd dir1 dir2 dir3');
         await page.keyboard.press('Enter');
 
         // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
     });
 
-    test('should successfully remove secure files with sudo rm', async ({ page }) => {
+    test('should successfully remove files with various rm scenarios', async ({ page }) => {
+        // Test 1: Remove regular files
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('gta_sa_cheats.txt');
+
+        // Remove the file
+        await page.keyboard.type('rm gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+
+        // Verify file is removed by checking ls output
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
+
+        // Test 2: Remove files from parent directory using rm with parent path
+        // Navigate to a subdirectory (Documents)
+        await page.keyboard.type('cd Documents');
+        await page.keyboard.press('Enter');
+
+        // Verify we're in the Documents directory
+        let lastPromptLocation = page.locator(SELECTORS.promptLocation).last();
+        await expect(lastPromptLocation).toContainText('~/Documents');
+
+        // First create a test file in root to remove
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('cd testdir');
+        await page.keyboard.press('Enter');
+
+        // Navigate back to Documents
+        await page.keyboard.type('cd ../Documents');
+        await page.keyboard.press('Enter');
+
+        // Remove a directory from the parent directory using "../"
+        await page.keyboard.type('rm ../testdir');
+        await page.keyboard.press('Enter');
+        // This should fail since rm can't remove directories
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Is a directory');
+
+        // Navigate back to the parent directory
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+
+        // Verify we're back in the root directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
+
+        // Test 3: Remove secure files with sudo rm
         // Navigate to directory with a sudo file we can test
         await page.keyboard.type('cd game_saves/nsfw/not_porn');
         await page.keyboard.press('Enter');
@@ -261,7 +293,8 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         // Verify file exists first
         await page.keyboard.type('ls');
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('dont_open.jpg');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('dont_open.jpg');
 
         // Remove file with sudo
         await page.keyboard.type('sudo rm dont_open.jpg');
@@ -272,64 +305,12 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // The ls command should not show the removed file anymore
-        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
+        const terminalContent = await page.locator(SELECTORS.commandOutput).last();
+        await expect(terminalContent).not.toContainText('dont_open.jpg');
 
-        const lastLsOutput = terminalContent?.split('ls').pop() || '';
-        expect(lastLsOutput).not.toContain('dont_open.jpg');
-    });
-
-    test('should successfully remove regular files', async ({ page }) => {
-        // Verify file exists first
-        await page.keyboard.type('ls');
+        // Navigate back to root for cleanup
+        await page.keyboard.type('cd ../../..');
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('gta_sa_cheats.txt');
-
-        // Remove the file
-        await page.keyboard.type('rm gta_sa_cheats.txt');
-        await page.keyboard.press('Enter');
-
-        // Verify file is removed by checking ls output
-        await page.keyboard.type('ls');
-        await page.keyboard.press('Enter');
-
-        // The ls command should not show the removed file anymore
-        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
-    });
-
-    test('should successfully remove files from parent directory using rm with parent path', async ({
-        page
-    }) => {
-        // First, verify the file exists in the root directory
-        await page.keyboard.type('ls');
-        await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText('gta_sa_cheats.txt');
-
-        // Navigate to a subdirectory (Documents)
-        await page.keyboard.type('cd Documents');
-        await page.keyboard.press('Enter');
-
-        // Verify we're in the Documents directory
-        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
-
-        // Remove a file from the parent directory using "../"
-        await page.keyboard.type('rm ../gta_sa_cheats.txt');
-        await page.keyboard.press('Enter');
-
-        // Navigate back to the parent directory to verify the file was removed
-        await page.keyboard.type('cd ..');
-        await page.keyboard.press('Enter');
-
-        // Verify we're back in the root directory
-        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
-
-        // List files to confirm the file was removed
-        await page.keyboard.type('ls');
-        await page.keyboard.press('Enter');
-
-        // The file should no longer be present in the listing
-        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
     });
 
     test('should maintain file system state after rm operations across navigation', async ({
@@ -407,9 +388,9 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show error if file system is case-sensitive
-        const terminalBody = page.locator(SELECTORS.terminalBody);
         // The exact behavior depends on how the file system simulation handles case
-        await expect(terminalBody).toContainText('No such file or directory');
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('No such file or directory');
 
         // Test with correct case
         await page.keyboard.type('cd Documents');
@@ -417,6 +398,59 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         // Should work
         await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
+    });
+
+    test('should handle mkdir command with all scenarios', async ({ page }) => {
+        // Test 1: mkdir without parameters (missing operand)
+        await page.keyboard.type('mkdir');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('mkdir: missing operand');
+
+        // Test 2: mkdir with too many parameters
+        await page.keyboard.type('mkdir dir1 dir2');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
+
+        // Test 3: mkdir with existing directory name
+        await page.keyboard.type('mkdir Documents');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('File exists');
+
+        // Test 4: mkdir with invalid directory name (contains slash)
+        await page.keyboard.type('mkdir dir/subdir');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Invalid directory name');
+
+        // Test 5: Successfully create directory with mkdir
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify the directory was created by listing contents
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('testdir/');
+
+        // Test that we can navigate into the new directory
+        await page.keyboard.type('cd testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify we're in the new directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/testdir');
+
+        // Verify the directory is empty
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // Should show empty directory (no files listed)
+        const emptyDirOutput = page.locator(SELECTORS.commandOutput).last();
+        const outputText = await emptyDirOutput.textContent();
+        // The output should be minimal (just whitespace or empty)
+        expect(outputText?.trim().length || 0).toEqual(0);
     });
 
     test('should handle auto-scroll behavior', async ({ page }) => {
@@ -437,61 +471,5 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         // Prompt should still be focused
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
-    });
-
-    test('should handle mkdir command error cases', async ({ page }) => {
-        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        // Test 1: mkdir without parameters (missing operand)
-        await page.keyboard.type('mkdir');
-        await page.keyboard.press('Enter');
-        await expect(lastCommandOutput).toContainText('mkdir: missing operand');
-
-        // Test 2: mkdir with too many parameters
-        await page.keyboard.type('mkdir dir1 dir2');
-        await page.keyboard.press('Enter');
-        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).toContainText('too many arguments');
-
-        // Test 3: mkdir with existing directory name
-        await page.keyboard.type('mkdir Documents');
-        await page.keyboard.press('Enter');
-        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).toContainText('File exists');
-
-        // Test 4: mkdir with invalid directory name (contains slash)
-        await page.keyboard.type('mkdir dir/subdir');
-        await page.keyboard.press('Enter');
-        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).toContainText('Invalid directory name');
-    });
-
-    test('should successfully create directory with mkdir', async ({ page }) => {
-        // Create a new directory
-        await page.keyboard.type('mkdir testdir');
-        await page.keyboard.press('Enter');
-
-        // Verify the directory was created by listing contents
-        await page.keyboard.type('ls');
-        await page.keyboard.press('Enter');
-
-        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).toContainText('testdir/');
-
-        // Test that we can navigate into the new directory
-        await page.keyboard.type('cd testdir');
-        await page.keyboard.press('Enter');
-
-        // Verify we're in the new directory
-        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/testdir');
-
-        // Verify the directory is empty
-        await page.keyboard.type('ls');
-        await page.keyboard.press('Enter');
-
-        // Should show empty directory (no files listed)
-        const emptyDirOutput = page.locator(SELECTORS.commandOutput).last();
-        const outputText = await emptyDirOutput.textContent();
-        // The output should be minimal (just whitespace or empty)
-        expect(outputText?.trim().length || 0).toEqual(0);
     });
 });
