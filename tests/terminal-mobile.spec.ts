@@ -49,9 +49,7 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         await page.keyboard.press('Enter');
 
         // Command should execute correctly
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            '/home/user'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
     });
 
     test('should handle virtual keyboard on mobile', async ({ page }) => {
@@ -70,9 +68,7 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         await page.keyboard.press('Enter');
 
         // Verify command executed correctly
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Usable Commands:'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Usable Commands:');
     });
 
     test('should maintain proper scrolling on mobile', async ({ page }) => {
@@ -87,12 +83,8 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         // Terminal should auto-scroll to show the latest content
         const terminalContainer = page.locator(SELECTORS.terminalBodyContainer);
         const scrollTop = await terminalContainer.evaluate(el => el.scrollTop);
-        const scrollHeight = await terminalContainer.evaluate(
-            el => el.scrollHeight
-        );
-        const clientHeight = await terminalContainer.evaluate(
-            el => el.clientHeight
-        );
+        const scrollHeight = await terminalContainer.evaluate(el => el.scrollHeight);
+        const clientHeight = await terminalContainer.evaluate(el => el.clientHeight);
 
         // Should be scrolled near the bottom
         expect(scrollTop + clientHeight).toBeGreaterThan(scrollHeight * 0.8);
@@ -120,24 +112,17 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         await page.keyboard.press('Enter');
 
         // Command should execute correctly
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Documents'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Documents');
     });
 
-    test('should prevent context menu on mobile long press', async ({
-        page
-    }) => {
+    test('should prevent context menu on mobile long press', async ({ page }) => {
         const terminal = page.locator(SELECTORS.terminal);
 
         // Simulate long press (which might trigger context menu on mobile)
         // Use touchscreen for long press simulation
         const box = await terminal.boundingBox();
         if (box) {
-            await page.touchscreen.tap(
-                box.x + box.width / 2,
-                box.y + box.height / 2
-            );
+            await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
         }
 
         // Terminal should remain functional
@@ -166,9 +151,7 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         await expect(promptInput).toHaveValue('help');
 
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Usable Commands:'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Usable Commands:');
     });
 
     test('should handle copy functionality on mobile', async ({ page }) => {
@@ -200,9 +183,7 @@ test.describe('React Terminal Emulator - Mobile Responsiveness', () => {
         await page.keyboard.press('Enter');
 
         // Wait for command output to appear
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Usable Commands:'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Usable Commands:');
 
         const endTime = Date.now();
         const responseTime = endTime - startTime;

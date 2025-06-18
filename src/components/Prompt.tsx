@@ -1,10 +1,4 @@
-import React, {
-    useState,
-    useEffect,
-    useRef,
-    useImperativeHandle,
-    forwardRef
-} from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import Cursor from './Cursor';
 import PromptLabel from './PromptLabel';
 

@@ -39,9 +39,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
             !document.msFullscreenElement
         ) {
             const terminal = document.querySelector('.terminal') as HTMLElement;
-            const terminalBody = document.querySelector(
-                '.terminal-body-container'
-            ) as HTMLElement;
+            const terminalBody = document.querySelector('.terminal-body-container') as HTMLElement;
 
             if (terminal) {
                 terminal.style.height = '524px';
@@ -55,9 +53,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
     }, []);
 
     const requestFullScreen = () => {
-        const isMobileOrTablet = window.matchMedia(
-            'screen and (max-width: 991px)'
-        ).matches;
+        const isMobileOrTablet = window.matchMedia('screen and (max-width: 991px)').matches;
         if (!isMobileOrTablet) {
             const isInFullScreen =
                 document.fullscreenElement ||
@@ -66,9 +62,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                 document.msFullscreenElement;
             const docElm = document.documentElement;
             if (!isInFullScreen) {
-                const terminal = document.querySelector(
-                    '.terminal'
-                ) as HTMLElement;
+                const terminal = document.querySelector('.terminal') as HTMLElement;
                 const terminalBody = document.querySelector(
                     '.terminal-body-container'
                 ) as HTMLElement;
@@ -79,8 +73,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                     terminal.style.top = '0';
                 }
                 if (terminalBody) {
-                    terminalBody.style.height =
-                        window.screen.height - 25 + 'px';
+                    terminalBody.style.height = window.screen.height - 25 + 'px';
                 }
                 if (docElm.requestFullscreen) {
                     docElm.requestFullscreen();
@@ -92,9 +85,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                     docElm.msRequestFullscreen();
                 }
             } else {
-                const terminal = document.querySelector(
-                    '.terminal'
-                ) as HTMLElement;
+                const terminal = document.querySelector('.terminal') as HTMLElement;
                 const terminalBody = document.querySelector(
                     '.terminal-body-container'
                 ) as HTMLElement;
@@ -128,10 +119,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
 
         return () => {
             document.removeEventListener('fullscreenchange', exitFullscreen);
-            document.removeEventListener(
-                'webkitfullscreenchange',
-                exitFullscreen
-            );
+            document.removeEventListener('webkitfullscreenchange', exitFullscreen);
             document.removeEventListener('mozfullscreenchange', exitFullscreen);
             document.removeEventListener('MSFullscreenChange', exitFullscreen);
         };

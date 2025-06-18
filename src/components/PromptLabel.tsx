@@ -6,11 +6,7 @@ interface PromptLabelProps {
     currentPath: string;
 }
 
-const PromptLabel: React.FC<PromptLabelProps> = ({
-    username,
-    computerName,
-    currentPath
-}) => {
+const PromptLabel: React.FC<PromptLabelProps> = ({ username, computerName, currentPath }) => {
     return (
         <span>
             <span className="prompt-user">

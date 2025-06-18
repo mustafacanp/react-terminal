@@ -10,8 +10,7 @@ declare global {
 }
 
 window.isTouchDevice = () =>
-    Boolean(navigator.maxTouchPoints) ||
-    'ontouchstart' in document.documentElement;
+    Boolean(navigator.maxTouchPoints) || 'ontouchstart' in document.documentElement;
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element not found');

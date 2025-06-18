@@ -89,9 +89,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
     });
 
-    test('should display ASCII art when using cat on image files', async ({
-        page
-    }) => {
+    test('should display ASCII art when using cat on image files', async ({ page }) => {
         // Test cat command with ASCII art file
         await page.keyboard.type('cat Pictures/awesome_space.png');
         await page.keyboard.press('Enter');
@@ -103,9 +101,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         expect(outputText?.length).toBeGreaterThan(100); // ASCII art should be substantial
 
         // Method 2: Test that it's not an error message
-        await expect(lastCommandOutput).not.toContainText(
-            'No such file or directory'
-        );
+        await expect(lastCommandOutput).not.toContainText('No such file or directory');
         await expect(lastCommandOutput).not.toContainText('permission denied');
         await expect(lastCommandOutput).not.toContainText('Is a directory');
 
@@ -120,9 +116,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
     });
 
-    test('should handle permission denied on secure files with regular cat', async ({
-        page
-    }) => {
+    test('should handle permission denied on secure files with regular cat', async ({ page }) => {
         // Try to read a text file
         await page.keyboard.type('cat .bashrc');
         await page.keyboard.press('Enter');
@@ -133,9 +127,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await expect(terminalBody).toContainText('permission denied');
     });
 
-    test('should display file contents with sudo cat command on secure files', async ({
-        page
-    }) => {
+    test('should display file contents with sudo cat command on secure files', async ({ page }) => {
         // Try to read a text file
         await page.keyboard.type('sudo cat .bashrc');
         await page.keyboard.press('Enter');
@@ -152,14 +144,10 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show missing operand error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'cat: missing operand'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('cat: missing operand');
     });
 
-    test('should handle cat command with non-existent file', async ({
-        page
-    }) => {
+    test('should handle cat command with non-existent file', async ({ page }) => {
         // Try to cat a non-existent file
         await page.keyboard.type('cat nonexistent.txt');
         await page.keyboard.press('Enter');
@@ -170,17 +158,13 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         );
     });
 
-    test('should handle cat command with too many arguments', async ({
-        page
-    }) => {
+    test('should handle cat command with too many arguments', async ({ page }) => {
         // Try cat with too many arguments
         await page.keyboard.type('cat file1.txt file2.txt extra');
         await page.keyboard.press('Enter');
 
         // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'too many arguments'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
     });
 
     test('should handle cat command on directory', async ({ page }) => {
@@ -189,35 +173,25 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show "Is a directory" error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Is a directory'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Is a directory');
     });
 
-    test('should handle sudo command with valid subcommand', async ({
-        page
-    }) => {
+    test('should handle sudo command with valid subcommand', async ({ page }) => {
         // Test sudo with a valid command
         await page.keyboard.type('sudo pwd');
         await page.keyboard.press('Enter');
 
         // Should execute the command
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            '/home/user'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
     });
 
-    test('should handle sudo command with invalid subcommand', async ({
-        page
-    }) => {
+    test('should handle sudo command with invalid subcommand', async ({ page }) => {
         // Test sudo with an invalid command
         await page.keyboard.type('sudo invalidcommand');
         await page.keyboard.press('Enter');
 
         // Should show command not found error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'command not found'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('command not found');
     });
 
     test('should handle external link commands', async ({ page }) => {
@@ -231,11 +205,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.evaluate(() => {
             // Store original window.open calls for verification
             (window as any).openCalls = [];
-            window.open = (
-                url?: string | URL,
-                target?: string,
-                features?: string
-            ) => {
+            window.open = (url?: string | URL, target?: string, features?: string) => {
                 if (url) (window as any).openCalls.push(url.toString());
                 return null;
             };
@@ -256,9 +226,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Verify randomcolor URL was also called
-        const updatedOpenCalls = await page.evaluate(
-            () => (window as any).openCalls
-        );
+        const updatedOpenCalls = await page.evaluate(() => (window as any).openCalls);
         expect(updatedOpenCalls).toContain('https://randomcolor2.netlify.app');
 
         // Should execute without error (command will be recorded in history)
@@ -274,23 +242,17 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'too many arguments'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
 
         // Test cd with too many parameters
         await page.keyboard.type('cd dir1 dir2 dir3');
         await page.keyboard.press('Enter');
 
         // Should show too many arguments error
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'too many arguments'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('too many arguments');
     });
 
-    test('should successfully remove secure files with sudo rm', async ({
-        page
-    }) => {
+    test('should successfully remove secure files with sudo rm', async ({ page }) => {
         // Navigate to directory with a sudo file we can test
         await page.keyboard.type('cd game_saves/nsfw/not_porn');
         await page.keyboard.press('Enter');
@@ -298,9 +260,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         // Verify file exists first
         await page.keyboard.type('ls');
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'dont_open.jpg'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('dont_open.jpg');
 
         // Remove file with sudo
         await page.keyboard.type('sudo rm dont_open.jpg');
@@ -311,9 +271,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // The ls command should not show the removed file anymore
-        const terminalContent = await page
-            .locator(SELECTORS.terminalBody)
-            .textContent();
+        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
 
         const lastLsOutput = terminalContent?.split('ls').pop() || '';
         expect(lastLsOutput).not.toContain('dont_open.jpg');
@@ -323,9 +281,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         // Verify file exists first
         await page.keyboard.type('ls');
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'gta_sa_cheats.txt'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('gta_sa_cheats.txt');
 
         // Remove the file
         await page.keyboard.type('rm gta_sa_cheats.txt');
@@ -336,9 +292,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // The ls command should not show the removed file anymore
-        const terminalContent = await page
-            .locator(SELECTORS.terminalBody)
-            .textContent();
+        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
         const lastLsOutput = terminalContent?.split('ls').pop() || '';
         expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
     });
@@ -362,9 +316,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.type('ls');
         await page.keyboard.press('Enter');
 
-        const terminalContent = await page
-            .locator(SELECTORS.terminalBody)
-            .textContent();
+        const terminalContent = await page.locator(SELECTORS.terminalBody).textContent();
         const lastLsOutput = terminalContent?.split('ls').pop() || '';
         expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
     });
@@ -375,9 +327,9 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Check if we're in the correct location
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~/game_saves/nsfw/not_porn');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText(
+            '~/game_saves/nsfw/not_porn'
+        );
 
         // List contents
         await page.keyboard.type('ls');
@@ -388,14 +340,10 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should be back at home
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
     });
 
-    test('should maintain terminal responsiveness during file operations', async ({
-        page
-    }) => {
+    test('should maintain terminal responsiveness during file operations', async ({ page }) => {
         const promptInput = page.locator(SELECTORS.promptInput);
 
         // Execute multiple commands in succession
@@ -434,9 +382,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
 
         // Should work
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~/Documents');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
     });
 
     test('should handle auto-scroll behavior', async ({ page }) => {
@@ -449,12 +395,8 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         // Terminal should auto-scroll to bottom
         const terminalContainer = page.locator(SELECTORS.terminalBodyContainer);
         const scrollTop = await terminalContainer.evaluate(el => el.scrollTop);
-        const scrollHeight = await terminalContainer.evaluate(
-            el => el.scrollHeight
-        );
-        const clientHeight = await terminalContainer.evaluate(
-            el => el.clientHeight
-        );
+        const scrollHeight = await terminalContainer.evaluate(el => el.scrollHeight);
+        const clientHeight = await terminalContainer.evaluate(el => el.clientHeight);
 
         // Should be scrolled to bottom (or very close to it)
         expect(scrollTop + clientHeight).toBeCloseTo(scrollHeight, -1);

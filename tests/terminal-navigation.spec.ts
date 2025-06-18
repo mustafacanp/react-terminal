@@ -17,9 +17,7 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await page.keyboard.press('Enter');
 
         // Check if the path changed in the prompt
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~/Documents');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
 
         // List contents of the new directory
         await page.keyboard.type('ls');
@@ -30,41 +28,29 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await page.keyboard.press('Enter');
 
         // Check if we're back to home
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
     });
 
-    test('should handle cd command with various parameters', async ({
-        page
-    }) => {
+    test('should handle cd command with various parameters', async ({ page }) => {
         // Test cd without parameters (should stay in current directory)
         await page.keyboard.type('cd');
         await page.keyboard.press('Enter');
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
 
         // Test cd with . (current directory)
         await page.keyboard.type('cd .');
         await page.keyboard.press('Enter');
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
 
         // Test cd with ~ (home directory)
         await page.keyboard.type('cd ~');
         await page.keyboard.press('Enter');
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
 
         // Test cd with / (root)
         await page.keyboard.type('cd /');
         await page.keyboard.press('Enter');
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
     });
 
     test('should show error for non-existent directories', async ({ page }) => {
@@ -78,9 +64,7 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         );
     });
 
-    test('should show error when trying to cd into a file', async ({
-        page
-    }) => {
+    test('should show error when trying to cd into a file', async ({ page }) => {
         // Navigate to files directory and try to cd into a file
         await page.keyboard.type('cd Documents');
         await page.keyboard.press('Enter');
@@ -105,9 +89,7 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await expect(promptInput).toHaveValue('cd Documents/');
     });
 
-    test('should navigate command history with arrow keys', async ({
-        page
-    }) => {
+    test('should navigate command history with arrow keys', async ({ page }) => {
         const promptInput = page.locator(SELECTORS.promptInput);
 
         // Execute several commands to build history
@@ -148,9 +130,7 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await expect(promptInput).toHaveValue('cat .bashrc');
     });
 
-    test('should handle tab completion for inner directories', async ({
-        page
-    }) => {
+    test('should handle tab completion for inner directories', async ({ page }) => {
         const promptInput = page.locator(SELECTORS.promptInput);
         // Try tab completion for cat command
         await page.keyboard.type('cd gam');
@@ -162,14 +142,10 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await page.keyboard.press('Tab');
 
         // Should complete to .bashrc
-        await expect(promptInput).toHaveValue(
-            'cd game_saves/nsfw/not_porn/dont_open.jpg'
-        );
+        await expect(promptInput).toHaveValue('cd game_saves/nsfw/not_porn/dont_open.jpg');
     });
 
-    test('should handle tab completion and back navigation', async ({
-        page
-    }) => {
+    test('should handle tab completion and back navigation', async ({ page }) => {
         const promptLocation = page.locator(SELECTORS.promptLocation);
 
         // Try tab completion for cat command
@@ -186,9 +162,7 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await expect(promptLocation.last()).toContainText('~/game_saves');
     });
 
-    test('should show multiple matches for ambiguous tab completion', async ({
-        page
-    }) => {
+    test('should show multiple matches for ambiguous tab completion', async ({ page }) => {
         // Navigate to a directory with multiple files starting with same prefix
         await page.keyboard.type('cd Documents/');
         await page.keyboard.press('Enter');
@@ -201,15 +175,10 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
 
         // Should show available options if there are multiple matches
         // (This will depend on what files exist in the fs.json)
-        await expect(page.locator(SELECTORS.commandInput)).toHaveText([
-            'cd Documents/',
-            'cat g'
-        ]);
+        await expect(page.locator(SELECTORS.commandInput)).toHaveText(['cd Documents/', 'cat g']);
     });
 
-    test('should maintain command history across multiple interactions', async ({
-        page
-    }) => {
+    test('should maintain command history across multiple interactions', async ({ page }) => {
         const promptInput = page.locator(SELECTORS.promptInput);
 
         // Build a longer command history
@@ -241,17 +210,13 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
         await page.keyboard.press('Enter');
 
         // Should still execute correctly
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            '/home/user'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
 
         // Test multiple spaces between command and argument
         await page.keyboard.type('cd    Documents');
         await page.keyboard.press('Enter');
 
         // Should navigate correctly
-        await expect(
-            page.locator(SELECTORS.promptLocation).last()
-        ).toContainText('~/Documents');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Documents');
     });
 });

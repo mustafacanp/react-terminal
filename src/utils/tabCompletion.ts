@@ -31,8 +31,7 @@ const handleTabCompletion = (
         const selectedDir = targetPath.split('/').pop() || '';
         const dir = childrenFS[selectedDir];
         if (isDir(dir)) {
-            const newTargetPath =
-                targetPath.split('/').pop()?.toLowerCase() || '';
+            const newTargetPath = targetPath.split('/').pop()?.toLowerCase() || '';
             const children = Object.keys(dir.children || {});
             const newMatchingItems = children.filter(item =>
                 item.toLowerCase().startsWith(newTargetPath.toLowerCase())
@@ -61,9 +60,7 @@ const handleTabCompletion = (
         const parentFolders = param2.substring(0, param2.lastIndexOf('/') + 1);
         const dirSlash = isDir(childrenFS[matchingItems[0]]) ? '/' : '';
 
-        setPromptValue(
-            `${sudoPrefix + command} ${parentFolders}${matchingItems[0]}${dirSlash}`
-        );
+        setPromptValue(`${sudoPrefix + command} ${parentFolders}${matchingItems[0]}${dirSlash}`);
     } else if (matchingItems.length > 1) {
         setState(prev => ({ ...prev, tabPressed: true }));
         cout(matchingItems.join('&#09;'), false);
@@ -92,10 +89,7 @@ export const handleTab = (
         return;
     }
 
-    const { targetFS, searchTerm } = navigateToTargetDirectory(
-        context.state,
-        param2
-    );
+    const { targetFS, searchTerm } = navigateToTargetDirectory(context.state, param2);
     const matchingItems = getMatchingItems(targetFS.children || {}, searchTerm);
 
     handleTabCompletion(

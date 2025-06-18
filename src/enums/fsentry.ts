@@ -14,9 +14,7 @@ const toEnum = (name: string): FSEntryType =>
 export const FSEntry = Object.freeze({
     DIRECTORY: toEnum('directory'),
     FILE: toEnum('file'),
-    parse(
-        value: string | { name: string } | undefined
-    ): FSEntryType | undefined {
+    parse(value: string | { name: string } | undefined): FSEntryType | undefined {
         if (!value) return;
         const key = typeof value === 'string' ? value : value.name;
         const upperKey = key.toUpperCase();

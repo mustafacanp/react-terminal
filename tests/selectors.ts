@@ -45,14 +45,11 @@ export const selectorHelpers = {
     withText: (text: string) => `text=${text}`,
 
     // Get selector for command output
-    commandOutput: (command: string) =>
-        `${SELECTORS.terminalBody} >> text=${command}`,
+    commandOutput: (command: string) => `${SELECTORS.terminalBody} >> text=${command}`,
 
     // Get selector for error messages
-    errorMessage: (error: string) =>
-        `${SELECTORS.terminalBody} >> text=${error}`,
+    errorMessage: (error: string) => `${SELECTORS.terminalBody} >> text=${error}`,
 
     // Get nth element of a type
-    nthElement: (selector: string, index: number) =>
-        `${selector}:nth-child(${index})`
+    nthElement: (selector: string, index: number) => `${selector}:nth-child(${index})`
 };

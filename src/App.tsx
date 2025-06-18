@@ -1,10 +1,4 @@
-import React, {
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useCallback,
-    useState
-} from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useCallback, useState } from 'react';
 import { Line, Toolbar, Prompt } from './components';
 import { PromptRef } from './components/Prompt';
 import {
@@ -216,30 +210,21 @@ const App: React.FC = () => {
 
     const renderPreviousLines = useCallback(() => {
         return state.previousLines.map((previousCommand: CommandLine) => (
-            <Line
-                settings={state.settings}
-                key={previousCommand.id}
-                command={previousCommand}
-            />
+            <Line settings={state.settings} key={previousCommand.id} command={previousCommand} />
         ));
     }, [state.previousLines, state.settings]);
 
     // Auto-scroll to bottom when new lines are added
     useLayoutEffect(() => {
         if (_terminalBodyContainer.current && _terminalBody.current) {
-            _terminalBodyContainer.current.scrollTop =
-                _terminalBody.current.scrollHeight;
+            _terminalBodyContainer.current.scrollTop = _terminalBody.current.scrollHeight;
         }
     }, [state.previousLines]);
 
     // Setup event listeners
     useEffect(() => {
-        _terminalBodyContainer.current = document.querySelector(
-            '.terminal-body-container'
-        );
-        _terminalBody.current = document.querySelector(
-            '.terminal-body-container'
-        );
+        _terminalBodyContainer.current = document.querySelector('.terminal-body-container');
+        _terminalBody.current = document.querySelector('.terminal-body-container');
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);

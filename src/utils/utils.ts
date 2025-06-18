@@ -38,18 +38,12 @@ export interface AppState {
 
 export interface TerminalOutput {
     cin: (text?: string, breakWord?: boolean) => void;
-    cout: (
-        text?: string,
-        breakWord?: boolean,
-        input?: string,
-        noTrim?: boolean
-    ) => void;
+    cout: (text?: string, breakWord?: boolean, input?: string, noTrim?: boolean) => void;
 }
 
 // String manipulation utilities
 export const trim = (str: string): string => str.trimStart().trimEnd();
-export const removeSpaces = (text: string): string =>
-    text.replace(/\s+/g, ' ').trim();
+export const removeSpaces = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
 // File system utilities
 export const isDir = (obj: FileSystemEntry | null | undefined): boolean =>
@@ -58,16 +52,12 @@ export const isFile = (obj: FileSystemEntry | null | undefined): boolean =>
     !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
 
 // Command parameter utilities
-export const getFirstParameter = (str: string): string =>
-    trim(str).split(' ')[0];
-export const getSecondParameter = (str: string): string =>
-    trim(str).split(' ')[1] || '';
+export const getFirstParameter = (str: string): string => trim(str).split(' ')[0];
+export const getSecondParameter = (str: string): string => trim(str).split(' ')[1] || '';
 
 // Parameter validation utilities
-export const hasSecondParameter = (str: string): boolean =>
-    !!getSecondParameter(str);
-export const hasTooManyParameters = (str: string): boolean =>
-    trim(str).split(' ').length > 2;
+export const hasSecondParameter = (str: string): boolean => !!getSecondParameter(str);
+export const hasTooManyParameters = (str: string): boolean => trim(str).split(' ').length > 2;
 
 // Path display utility
 export const buildPwdText = (path: string[], basePath: string): string => {
@@ -95,12 +85,7 @@ export const createCommandLine = (
 // Terminal I/O utilities
 export const createTerminalOutput = (
     addLine: (line: CommandLine) => void,
-    createCommand: (
-        type: string,
-        text: string,
-        breakWord: boolean,
-        noTrim: boolean
-    ) => CommandLine,
+    createCommand: (type: string, text: string, breakWord: boolean, noTrim: boolean) => CommandLine,
     getPromptContent: () => string
 ): TerminalOutput => {
     const cin = (text = '', breakWord = true) => {
@@ -145,17 +130,11 @@ export const validateFileName = (
 };
 
 // File system operations utilities
-export const handleFileNotFound = (
-    fileName: string,
-    cout: (text: string) => void
-) => {
+export const handleFileNotFound = (fileName: string, cout: (text: string) => void) => {
     cout(`bash: ${fileName}: No such file or directory`);
 };
 
-export const handlePermissionDenied = (
-    fileName: string,
-    cout: (text: string) => void
-) => {
+export const handlePermissionDenied = (fileName: string, cout: (text: string) => void) => {
     cout(`bash: ${fileName}: permission denied`);
 };
 
@@ -171,10 +150,7 @@ export const handleIsDirectory = (
     }
 };
 
-export const handleNotDirectory = (
-    fileName: string,
-    cout: (text: string) => void
-) => {
+export const handleNotDirectory = (fileName: string, cout: (text: string) => void) => {
     cout(`bash: cd: ${fileName}: Not a directory`);
 };
 
@@ -242,10 +218,7 @@ export const navigateToTargetDirectory = (
                     workingPath.pop();
                     targetFS = state.fs;
                     for (const pathSegment of workingPath) {
-                        if (
-                            targetFS.children &&
-                            targetFS.children[pathSegment]
-                        ) {
+                        if (targetFS.children && targetFS.children[pathSegment]) {
                             targetFS = targetFS.children[pathSegment];
                         } else {
                             return {
@@ -290,9 +263,7 @@ export const getMatchingItems = (
     );
 };
 
-export const formatDirectoryListing = (children: {
-    [key: string]: FileSystemEntry;
-}): string => {
+export const formatDirectoryListing = (children: { [key: string]: FileSystemEntry }): string => {
     const dirs = Object.keys(children).map(key => {
         const slash = isDir(children[key]) ? '/' : '';
         return `<span class="type-${children[key]?.type}">${key}${slash}</span>`;
@@ -301,10 +272,7 @@ export const formatDirectoryListing = (children: {
 };
 
 // Path calculation for navigation
-export const calculateNewPath = (
-    currentPath: string[],
-    fileName: string
-): string[] => {
+export const calculateNewPath = (currentPath: string[], fileName: string): string[] => {
     const pathParts = fileName.split('/').filter(part => part !== '');
     let newPath = [...currentPath];
 

@@ -21,17 +21,13 @@ test.describe('React Terminal Emulator - Tablet Responsiveness', () => {
         await page.keyboard.press('Enter');
 
         // Help content should be visible
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            'Usable Commands:'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('Usable Commands:');
 
         // Terminal should remain fully functional
         await expect(promptInput).toBeFocused();
     });
 
-    test('should handle both touch and keyboard input on tablet', async ({
-        page
-    }) => {
+    test('should handle both touch and keyboard input on tablet', async ({ page }) => {
         const terminal = page.locator(SELECTORS.terminal);
         const promptInput = page.locator(SELECTORS.promptInput);
 
@@ -45,9 +41,7 @@ test.describe('React Terminal Emulator - Tablet Responsiveness', () => {
 
         // Execute command
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            '/home/user'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
 
         // Should be ready for next command
         await expect(promptInput).toBeFocused();
@@ -65,9 +59,7 @@ test.describe('React Terminal Emulator - Tablet Responsiveness', () => {
         // Execute a command to ensure functionality
         await page.keyboard.type('pwd');
         await page.keyboard.press('Enter');
-        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
-            '/home/user'
-        );
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText('/home/user');
     });
 
     test('should maintain performance on tablet', async ({ page }) => {
@@ -84,10 +76,7 @@ test.describe('React Terminal Emulator - Tablet Responsiveness', () => {
             // Wait for command to complete
             if (command !== 'clear') {
                 await expect(
-                    page
-                        .locator(SELECTORS.terminalBody)
-                        .locator(SELECTORS.commandOutput)
-                        .last()
+                    page.locator(SELECTORS.terminalBody).locator(SELECTORS.commandOutput).last()
                 ).toBeVisible();
             }
 

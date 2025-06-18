@@ -42,15 +42,13 @@ class TerminalPage {
     }
 
     async expectDirectoriesListed() {
-        await expect(
-            this.terminalBody.locator(SELECTORS.typeDirectory).first()
-        ).toBeVisible();
+        await expect(this.terminalBody.locator(SELECTORS.typeDirectory).first()).toBeVisible();
     }
 
     async expectCommandInHistory(command: string) {
-        await expect(
-            this.page.locator(COMPOUND_SELECTORS.commandHistory).first()
-        ).toContainText(command);
+        await expect(this.page.locator(COMPOUND_SELECTORS.commandHistory).first()).toContainText(
+            command
+        );
     }
 }
 
@@ -97,9 +95,7 @@ test.describe('React Terminal Emulator - Basic Functionality', () => {
         await terminal.expectCommandOutput('/home/user');
     });
 
-    test('should execute ls command and show directory contents', async ({
-        page
-    }) => {
+    test('should execute ls command and show directory contents', async ({ page }) => {
         await terminal.typeCommand('ls');
         await terminal.expectDirectoriesListed();
     });
@@ -113,9 +109,7 @@ test.describe('React Terminal Emulator - Basic Functionality', () => {
         await terminal.typeCommand('clear');
 
         // Check that the terminal is cleared
-        await expect(terminal.terminalBody).not.toContainText(
-            'Usable Commands:'
-        );
+        await expect(terminal.terminalBody).not.toContainText('Usable Commands:');
         await expect(terminal.promptInput).toBeAttached();
     });
 
@@ -140,18 +134,14 @@ test.describe('React Terminal Emulator - Basic Functionality', () => {
         await expect(terminal.promptInput).toHaveValue('pwd');
     });
 
-    test('should handle right-click context menu prevention', async ({
-        page
-    }) => {
+    test('should handle right-click context menu prevention', async ({ page }) => {
         await terminal.terminal.click({ button: 'right' });
         await page.waitForTimeout(100);
         await page.keyboard.type('pwd');
         await expect(terminal.promptInput).toHaveValue('pwd');
     });
 
-    test('should display command input in terminal history', async ({
-        page
-    }) => {
+    test('should display command input in terminal history', async ({ page }) => {
         await terminal.typeCommand('pwd');
         await terminal.expectCommandInHistory('pwd');
     });

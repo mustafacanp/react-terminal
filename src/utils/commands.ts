@@ -22,10 +22,7 @@ import {
     openExternalLink
 } from './utils';
 
-export type CommandFunction = (
-    input?: string,
-    sudo?: boolean
-) => void | Promise<void>;
+export type CommandFunction = (input?: string, sudo?: boolean) => void | Promise<void>;
 
 export interface CommandContext {
     state: AppState;
@@ -48,18 +45,13 @@ export const AVAILABLE_COMMANDS = [
 ];
 
 // Command implementations
-export const createCommands = (
-    context: CommandContext
-): Record<string, CommandFunction> => {
+export const createCommands = (context: CommandContext): Record<string, CommandFunction> => {
     const { state, setState, io, getPromptContent } = context;
     const { cin, cout } = io;
 
     return {
         help: async () => {
-            cout(
-                ['Usable Commands:', ...AVAILABLE_COMMANDS].join('&#09;'),
-                false
-            );
+            cout(['Usable Commands:', ...AVAILABLE_COMMANDS].join('&#09;'), false);
         },
 
         clear: () => {
@@ -67,10 +59,7 @@ export const createCommands = (
         },
 
         pwd: () => {
-            const cwd = buildPwdText(state.path, state.basePath).replace(
-                '~',
-                '/' + state.basePath
-            );
+            const cwd = buildPwdText(state.path, state.basePath).replace('~', '/' + state.basePath);
             cout(cwd);
         },
 
@@ -84,9 +73,7 @@ export const createCommands = (
         },
 
         cd: (input?: string) => {
-            if (
-                !validateCommand(hasTooManyParameters(input || ''), 'cd', cout)
-            ) {
+            if (!validateCommand(hasTooManyParameters(input || ''), 'cd', cout)) {
                 return;
             }
 
@@ -135,9 +122,7 @@ export const createCommands = (
                 return;
             }
 
-            if (
-                !validateCommand(hasTooManyParameters(input || ''), 'cat', cout)
-            ) {
+            if (!validateCommand(hasTooManyParameters(input || ''), 'cat', cout)) {
                 return;
             }
 
@@ -152,9 +137,9 @@ export const createCommands = (
                 if (!selectedFileOrDir.sudo || sudo) {
                     if (selectedFileOrDir.src) {
                         try {
-                            const fileContent = await fetch(
-                                selectedFileOrDir.src
-                            ).then(res => res.text());
+                            const fileContent = await fetch(selectedFileOrDir.src).then(res =>
+                                res.text()
+                            );
                             cout(fileContent, true, getPromptContent(), true);
                         } catch {
                             handleFileNotFound(fileName, cout);
@@ -178,23 +163,14 @@ export const createCommands = (
                 return;
             }
 
-            if (
-                !validateCommand(hasTooManyParameters(input || ''), 'rm', cout)
-            ) {
+            if (!validateCommand(hasTooManyParameters(input || ''), 'rm', cout)) {
                 return;
             }
 
-            const fileEntry = resolveFileSystemPath(
-                state.fs,
-                state.cfs,
-                state.path,
-                fileName
-            );
+            const fileEntry = resolveFileSystemPath(state.fs, state.cfs, state.path, fileName);
 
             if (!fileEntry) {
-                cout(
-                    `rm: cannot remove '${fileName}': No such file or directory`
-                );
+                cout(`rm: cannot remove '${fileName}': No such file or directory`);
                 return;
             }
 
@@ -228,9 +204,7 @@ export const createCommands = (
         },
 
         sudo: (input?: string) => {
-            const inputWithoutSudo = (input || '').substring(
-                (input || '').indexOf(' ') + 1
-            );
+            const inputWithoutSudo = (input || '').substring((input || '').indexOf(' ') + 1);
             const command = getFirstParameter(inputWithoutSudo);
             const commands = createCommands(context);
 
