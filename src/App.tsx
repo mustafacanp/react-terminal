@@ -164,6 +164,16 @@ const App: React.FC = () => {
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent) => {
+            // Handle Ctrl+C for copying selected text
+            if (e.ctrlKey && e.key === 'c') {
+                const selection = window.getSelection();
+                if (selection && selection.toString() !== '') {
+                    copy(selection.toString());
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
             if (e.ctrlKey || e.altKey) {
                 _prompt.current?.blurPrompt();
                 e.preventDefault();
@@ -192,14 +202,20 @@ const App: React.FC = () => {
         [handleTabKey, handleEnter, handleUpArrow, handleDownArrow]
     );
 
-    const handleMouseInteraction = useCallback((e: React.MouseEvent) => {
+    const handleMouseInteraction = useCallback(async (e: React.MouseEvent) => {
         if (e.buttons === 2) {
-            // right click
+            // right click - paste
             e.preventDefault();
-            const selection = window.getSelection();
-            if (selection && selection.toString() !== '') {
-                copy(selection.toString());
-                selection.empty();
+            try {
+                if (navigator.clipboard) {
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText) {
+                        const currentContent = _prompt.current?.content || '';
+                        _prompt.current?.setValue(currentContent + clipboardText);
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not read from clipboard:', err);
             }
         } else if (e.type === 'click') {
             if ((window as any).isTouchDevice?.()) {

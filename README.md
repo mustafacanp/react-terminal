@@ -12,7 +12,7 @@ A web-based terminal simulator built with React that provides an interactive Lin
 
 - Interactive terminal with command history and tab completion
 - File system navigation (`ls`, `cd`, `pwd`, `cat`, `rm`, `clear`, `help`, `sudo`)
-- Right-click to copy selected text
+- Right-click to paste
 - Touch device support
 - Realistic bash-like behavior
 
@@ -51,13 +51,7 @@ To add a new command, extend the commands object in the `useTerminal` hook at `s
 const commands = {
     // ... existing commands
     yourcommand: (input?: string) => {
-        if (
-            validateAndShowError(
-                hasTooManyParameters(input || ''),
-                'yourcommand'
-            )
-        )
-            return;
+        if (validateAndShowError(hasTooManyParameters(input || ''), 'yourcommand')) return;
 
         const param = getSecondParameter(input || '');
         // Command implementation using hook's state and helper functions
@@ -209,9 +203,7 @@ test.describe('Feature Category', () => {
         const promptInput = page.locator('.prompt-input');
         await promptInput.fill('command');
         await promptInput.press('Enter');
-        await expect(page.locator('.terminal-body')).toContainText(
-            'expected output'
-        );
+        await expect(page.locator('.terminal-body')).toContainText('expected output');
     });
 });
 ```
