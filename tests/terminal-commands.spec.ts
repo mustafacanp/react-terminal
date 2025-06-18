@@ -7,6 +7,119 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.waitForLoadState('networkidle');
     });
 
+    test('run all commands at once', async ({ page }) => {
+        // Type help command
+        const expectedCommands = [
+            'help',
+            'clear',
+            'pwd',
+            'ls',
+            'cd',
+            'cat',
+            'rm',
+            'textgame',
+            'randomcolor'
+        ];
+
+        await page.keyboard.type('help');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Usable Commands:');
+        for (const command of expectedCommands) {
+            await expect(lastCommandOutput).toContainText(command);
+        }
+
+        // Type ls command
+        const expectedFiles = [
+            'Documents/',
+            'Downloads/',
+            'game_saves/',
+            'gta_sa_cheats.txt',
+            'Music/',
+            'Pictures/',
+            '.bashrc'
+        ];
+
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        for (const file of expectedFiles) {
+            await expect(lastCommandOutput).toContainText(file);
+        }
+
+        // Type pwd command
+        await page.keyboard.type('pwd');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toHaveText('/home/user/');
+
+        // Type rm command
+        await page.keyboard.type('rm gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
+
+        // Type cd command
+        // Go to the /game_saves/nsfw/not_porn directory
+        await page.keyboard.type('cd ga');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+
+        // Type rm command, but it wont remove since the file is in a secure file
+        await page.keyboard.type('rm d');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Permission denied');
+
+        // Type sudo rm command
+        await page.keyboard.type('sudo rm dont_open.jpg');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // Type cd command
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('cd ../..');
+        await page.keyboard.press('Enter');
+    });
+
+    test('should display ASCII art when using cat on image files', async ({
+        page
+    }) => {
+        // Test cat command with ASCII art file
+        await page.keyboard.type('cat Pictures/awesome_space.png');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+
+        // Method 1: Test for minimum character count (ASCII art is typically long)
+        const outputText = await lastCommandOutput.textContent();
+        expect(outputText?.length).toBeGreaterThan(100); // ASCII art should be substantial
+
+        // Method 2: Test that it's not an error message
+        await expect(lastCommandOutput).not.toContainText(
+            'No such file or directory'
+        );
+        await expect(lastCommandOutput).not.toContainText('permission denied');
+        await expect(lastCommandOutput).not.toContainText('Is a directory');
+
+        // Method 3: Test for specific ASCII art pattern
+        await expect(lastCommandOutput).toContainText('MMMMMMMMMMMMMMMMMMM');
+
+        // Method 4: Test multiple lines (ASCII art is typically multi-line)
+        const lines = outputText?.split('\n') || [];
+        expect(lines.length).toBeGreaterThan(5); // Should have multiple lines
+
+        // Method 5: Verify terminal remains functional after ASCII art display
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
     test('should handle permission denied on secure files with regular cat', async ({
         page
     }) => {
@@ -114,15 +227,42 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         });
 
         // Test textgame command
+        // Mock window.open and capture calls to verify external links
+        await page.evaluate(() => {
+            // Store original window.open calls for verification
+            (window as any).openCalls = [];
+            window.open = (
+                url?: string | URL,
+                target?: string,
+                features?: string
+            ) => {
+                if (url) (window as any).openCalls.push(url.toString());
+                return null;
+            };
+        });
+
         await page.keyboard.type('textgame');
         await page.keyboard.press('Enter');
 
-        // Should execute without error (command will be recorded in history)
-        await expect(page.locator(SELECTORS.promptInput)).toBeAttached();
+        // Verify that window.open was called with the correct URL
+        const openCalls = await page.evaluate(() => (window as any).openCalls);
+        expect(openCalls).toContain('https://rpgtextgame.netlify.app');
 
-        // Test randomcolor command
+        // Verify terminal is still functional after the command
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+
+        // Test randomcolor command as well
         await page.keyboard.type('randomcolor');
         await page.keyboard.press('Enter');
+
+        // Verify randomcolor URL was also called
+        const updatedOpenCalls = await page.evaluate(
+            () => (window as any).openCalls
+        );
+        expect(updatedOpenCalls).toContain('https://randomcolor2.netlify.app');
+
+        // Should execute without error (command will be recorded in history)
+        await expect(page.locator(SELECTORS.promptInput)).toBeAttached();
 
         // Should execute without error
         await expect(page.locator(SELECTORS.promptInput)).toBeAttached();
@@ -146,6 +286,87 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await expect(page.locator(SELECTORS.terminalBody)).toContainText(
             'too many arguments'
         );
+    });
+
+    test('should successfully remove secure files with sudo rm', async ({
+        page
+    }) => {
+        // Navigate to directory with a sudo file we can test
+        await page.keyboard.type('cd game_saves/nsfw/not_porn');
+        await page.keyboard.press('Enter');
+
+        // Verify file exists first
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
+            'dont_open.jpg'
+        );
+
+        // Remove file with sudo
+        await page.keyboard.type('sudo rm dont_open.jpg');
+        await page.keyboard.press('Enter');
+
+        // Verify file is removed
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // The ls command should not show the removed file anymore
+        const terminalContent = await page
+            .locator(SELECTORS.terminalBody)
+            .textContent();
+
+        const lastLsOutput = terminalContent?.split('ls').pop() || '';
+        expect(lastLsOutput).not.toContain('dont_open.jpg');
+    });
+
+    test('should successfully remove regular files', async ({ page }) => {
+        // Verify file exists first
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        await expect(page.locator(SELECTORS.terminalBody)).toContainText(
+            'gta_sa_cheats.txt'
+        );
+
+        // Remove the file
+        await page.keyboard.type('rm gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+
+        // Verify file is removed by checking ls output
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // The ls command should not show the removed file anymore
+        const terminalContent = await page
+            .locator(SELECTORS.terminalBody)
+            .textContent();
+        const lastLsOutput = terminalContent?.split('ls').pop() || '';
+        expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
+    });
+
+    test('should maintain file system state after rm operations across navigation', async ({
+        page
+    }) => {
+        // Remove a file from root
+        await page.keyboard.type('rm gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+
+        // Navigate to another directory
+        await page.keyboard.type('cd Documents');
+        await page.keyboard.press('Enter');
+
+        // Navigate back to root
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+
+        // Verify the file is still removed
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        const terminalContent = await page
+            .locator(SELECTORS.terminalBody)
+            .textContent();
+        const lastLsOutput = terminalContent?.split('ls').pop() || '';
+        expect(lastLsOutput).not.toContain('gta_sa_cheats.txt');
     });
 
     test('should handle complex file paths correctly', async ({ page }) => {

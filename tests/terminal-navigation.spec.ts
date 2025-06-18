@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SELECTORS, COMPOUND_SELECTORS } from './selectors';
+import { SELECTORS } from './selectors';
 
 test.describe('React Terminal Emulator - Navigation Features', () => {
     test.beforeEach(async ({ page }) => {

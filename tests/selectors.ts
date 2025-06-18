@@ -36,24 +36,7 @@ export const SELECTORS = {
 // Compound selectors for common operations
 export const COMPOUND_SELECTORS = {
     // Command history
-    commandHistory: `${SELECTORS.terminalBody} ${SELECTORS.terminalPrompt} ${SELECTORS.promptText}`,
-
-    // First directory in listing
-    firstDirectory: `${SELECTORS.terminalBody} ${SELECTORS.typeDirectory}:first-child`,
-
-    // Current prompt input area
-    currentPrompt: `${SELECTORS.terminalPrompt}:last-child ${SELECTORS.promptInput}`,
-
-    // Current/latest prompt location (avoids strict mode violations)
-    currentPromptLocation: `${SELECTORS.terminalPrompt}:last-child ${SELECTORS.promptLocation}`,
-
-    // Command output selectors
-    lastCommandOutput: `${SELECTORS.terminalBody} ${SELECTORS.commandOutput}:last-child`,
-    anyCommandOutput: `${SELECTORS.terminalBody} ${SELECTORS.commandOutput}`,
-
-    // User info in prompt
-    userInfo: `${SELECTORS.promptUser}`,
-    pathInfo: `${SELECTORS.promptLocation}`
+    commandHistory: `${SELECTORS.terminalBody} ${SELECTORS.terminalPrompt} ${SELECTORS.promptText}`
 } as const;
 
 // Helper functions for dynamic selectors
