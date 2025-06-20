@@ -13,10 +13,11 @@ A web-based terminal simulator built with React that provides an interactive Lin
 - Interactive terminal with command history and tab completion
 - File system navigation (`ls`, `cd`, `pwd`, `cat`, `rm`, `clear`, `help`, `sudo`)
 - File operations (`mkdir`, `rmdir`, `touch`, `echo`)
-- System commands (`whoami`, `reset`, `history`)
+- System commands (`whoami`, `reset`, `history`, `theme`)
 - External utilities (`textgame`, `randomcolor`)
 - **Persistent file system** - Changes saved to localStorage across sessions
 - **Command history** - Navigate with ↑/↓ arrow keys
+- **Theming** - Customizable themes with the `theme` command
 - **Fullscreen mode** - Click toolbar button or double-click to expand
 - **Clipboard support** - Ctrl+C to copy, right-click to paste
 - **Environment variables** - Basic substitution support ($USER, $HOSTNAME, $PWD)
