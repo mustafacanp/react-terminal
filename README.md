@@ -15,7 +15,11 @@ A web-based terminal simulator built with React that provides an interactive Lin
 - File operations (`mkdir`, `rmdir`, `touch`, `echo`)
 - System commands (`whoami`, `reset`)
 - External utilities (`textgame`, `randomcolor`)
-- Right-click to paste
+- **Persistent file system** - Changes saved to localStorage across sessions
+- **Command history** - Navigate with ↑/↓ arrow keys
+- **Fullscreen mode** - Click toolbar button or double-click to expand
+- **Clipboard support** - Ctrl+C to copy, right-click to paste
+- **Environment variables** - Basic substitution support ($USER, $HOSTNAME, $PWD)
 - Touch device support
 - Realistic bash-like behavior
 
