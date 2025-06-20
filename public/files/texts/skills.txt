@@ -1,0 +1,11 @@
+JavaScript/HTML/CSS
+React.js
+Vue.js
+Node.js
+Java
+SQL
+Git
+Docker
+Blockchain
+JIRA
+AI (LLMs & GPT)

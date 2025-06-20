@@ -1,41 +1,22 @@
 {
     "type": "directory",
     "children": {
-        "Documents": {
-            "type": "directory",
-            "children": {}
+        ".bashrc": {
+            "type": "file",
+            "src": "/files/bashrc.txt",
+            "sudo": true
         },
-        "Downloads": {
-            "type": "directory",
-            "children": {}
+        "contact.txt": {
+            "type": "file",
+            "src": "/files/texts/contact.txt"
         },
-        "game_saves": {
-            "type": "directory",
-            "children": {
-                "nsfw": {
-                    "type": "directory",
-                    "children": {
-                        "not_porn": {
-                            "type": "directory",
-                            "children": {
-                                "dont_open.jpg": {
-                                    "type": "file",
-                                    "src": "/files/images/boobs.txt",
-                                    "sudo": true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        "experience.txt": {
+            "type": "file",
+            "src": "/files/texts/experience.txt"
         },
         "gta_sa_cheats.txt": {
             "type": "file",
             "src": "/files/texts/gta_sa_cheats.txt"
-        },
-        "Music": {
-            "type": "directory",
-            "children": {}
         },
         "Links": {
             "type": "directory",
@@ -43,6 +24,10 @@
                 "github": {
                     "type": "link",
                     "target": "https://github.com/mustafacanp"
+                },
+                "linkedin": {
+                    "type": "link",
+                    "target": "https://www.linkedin.com/in/mustafa-can-palaz"
                 }
             }
         },
@@ -63,10 +48,13 @@
                 }
             }
         },
-        ".bashrc": {
+        "projects.txt": {
             "type": "file",
-            "src": "/files/bashrc.txt",
-            "sudo": true
+            "src": "/files/texts/projects.txt"
+        },
+        "skills.txt": {
+            "type": "file",
+            "src": "/files/texts/skills.txt"
         }
     }
 }
