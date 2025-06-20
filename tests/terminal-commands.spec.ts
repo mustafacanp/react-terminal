@@ -513,7 +513,9 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         // Should show reset message
         lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
-        await expect(lastCommandOutput).toContainText('Resetting file system to default state...');
+        await expect(lastCommandOutput).toContainText(
+            'Resetting file system and theme to default state...'
+        );
 
         // Wait for page reload (reset command reloads the page after 1000ms)
         await page.waitForTimeout(2000);

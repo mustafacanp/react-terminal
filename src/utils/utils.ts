@@ -480,6 +480,14 @@ export const loadThemeFromStorage = (): string | null => {
     return null;
 };
 
+export const clearThemeStorage = (): void => {
+    try {
+        localStorage.removeItem(THEME_STORAGE_KEY);
+    } catch (error) {
+        console.warn('Failed to clear theme from localStorage:', error);
+    }
+};
+
 export const saveCommandHistoryToStorage = (history: string[]): void => {
     try {
         const serialized = JSON.stringify(history);

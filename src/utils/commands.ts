@@ -25,7 +25,8 @@ import {
     saveFileSystemToStorage,
     clearFileSystemStorage,
     removeDirectoryFromFileSystem,
-    clearCommandHistoryStorage
+    clearCommandHistoryStorage,
+    clearThemeStorage
 } from './utils';
 
 export type CommandFunction = (input?: string, sudo?: boolean) => void | Promise<void>;
@@ -369,8 +370,9 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
         },
 
         reset: () => {
-            cout('Resetting file system to default state...');
+            cout('Resetting file system and theme to default state...');
             clearFileSystemStorage();
+            clearThemeStorage();
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
