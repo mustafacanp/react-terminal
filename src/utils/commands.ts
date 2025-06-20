@@ -52,7 +52,8 @@ export const AVAILABLE_COMMANDS = [
     'touch',
     'whoami',
     'textgame',
-    'randomcolor'
+    'randomcolor',
+    'history'
 ];
 
 // Command implementations
@@ -398,6 +399,17 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
             }
 
             cout(processedText, true);
+        },
+
+        history: () => {
+            const history = state.previousCommands;
+            if (history.length === 0) {
+                cout('No commands in history.');
+                return;
+            }
+
+            const historyOutput = history.map((cmd, i) => `${i + 1}: ${cmd}`).join('<br/>');
+            cout(historyOutput, false);
         },
 
         touch: (input?: string) => {

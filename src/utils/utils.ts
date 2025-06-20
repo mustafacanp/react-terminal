@@ -457,6 +457,28 @@ export const openExternalLink = (link: string): void => {
 
 // localStorage utilities for file system persistence
 const FILESYSTEM_STORAGE_KEY = 'react-terminal-filesystem';
+const COMMAND_HISTORY_KEY = 'react-terminal-command-history';
+
+export const saveCommandHistoryToStorage = (history: string[]): void => {
+    try {
+        const serialized = JSON.stringify(history);
+        localStorage.setItem(COMMAND_HISTORY_KEY, serialized);
+    } catch (error) {
+        console.warn('Failed to save command history to localStorage:', error);
+    }
+};
+
+export const loadCommandHistoryFromStorage = (): string[] | null => {
+    try {
+        const serialized = localStorage.getItem(COMMAND_HISTORY_KEY);
+        if (serialized) {
+            return JSON.parse(serialized) as string[];
+        }
+    } catch (error) {
+        console.warn('Failed to load command history from localStorage:', error);
+    }
+    return null;
+};
 
 export const saveFileSystemToStorage = (fileSystem: FileSystemEntry): void => {
     try {

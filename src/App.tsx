@@ -12,7 +12,9 @@ import {
     createTerminalOutput,
     getCommandFromHistory,
     loadFileSystemFromStorage,
-    saveFileSystemToStorage
+    saveFileSystemToStorage,
+    loadCommandHistoryFromStorage,
+    saveCommandHistoryToStorage
 } from './utils/utils';
 import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
@@ -56,7 +58,15 @@ const App: React.FC = () => {
             }
         };
 
+        const initializeHistory = () => {
+            const storedHistory = loadCommandHistoryFromStorage();
+            if (storedHistory) {
+                setState(prev => ({ ...prev, previousCommands: storedHistory }));
+            }
+        };
+
         initializeFileSystem();
+        initializeHistory();
     }, []);
 
     const _prompt = useRef<PromptRef>(null);
@@ -116,10 +126,14 @@ const App: React.FC = () => {
     const commands = createCommands(commandContext);
 
     const addToHistory = useCallback((command: string) => {
-        setState(prev => ({
-            ...prev,
-            previousCommands: [...prev.previousCommands, command]
-        }));
+        setState(prev => {
+            const newHistory = [...prev.previousCommands, command];
+            saveCommandHistoryToStorage(newHistory);
+            return {
+                ...prev,
+                previousCommands: newHistory
+            };
+        });
     }, []);
 
     const handleCommandExecution = useCallback(
