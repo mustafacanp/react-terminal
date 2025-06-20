@@ -210,7 +210,7 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
                             const fileContent = await fetch(selectedFileOrDir.src).then(res =>
                                 res.text()
                             );
-                            cout(fileContent, true, getPromptContent(), true);
+                            cout(fileContent, true, input || '', true);
                         } catch {
                             handleFileNotFound(fileName, cout);
                         }
