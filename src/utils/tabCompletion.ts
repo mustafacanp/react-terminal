@@ -82,9 +82,13 @@ export const handleTab = (
     const command = getFirstParameter(inputWithoutSudo);
     const param2 = getSecondParameter(inputWithoutSudo);
 
-    if (!['cd', 'cat', 'rm'].includes(command)) return;
+    // if the command is not a command that supports tab completion, return
+    if (!['cd', 'cat', 'rm', 'rmdir', 'touch', 'mkdir'].includes(command)) {
+        return;
+    }
 
-    if (input === 'cd') {
+    // if the input is a command, set the prompt value to the input + space to make it easier to type the next command
+    if (['cd', 'cat', 'rm', 'rmdir', 'touch', 'mkdir'].includes(input)) {
         context.setPromptValue(input + ' ');
         return;
     }

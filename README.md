@@ -12,6 +12,9 @@ A web-based terminal simulator built with React that provides an interactive Lin
 
 - Interactive terminal with command history and tab completion
 - File system navigation (`ls`, `cd`, `pwd`, `cat`, `rm`, `clear`, `help`, `sudo`)
+- File operations (`mkdir`, `rmdir`, `touch`, `echo`)
+- System commands (`whoami`, `reset`)
+- External utilities (`textgame`, `randomcolor`)
 - Right-click to paste
 - Touch device support
 - Realistic bash-like behavior

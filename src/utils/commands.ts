@@ -8,6 +8,7 @@ import {
     resolveFileSystemPath,
     removeFileFromFileSystem,
     addDirectoryToFileSystem,
+    addFileToFileSystem,
     isDir,
     isFile,
     getFirstParameter,
@@ -22,7 +23,8 @@ import {
     buildPwdText,
     openExternalLink,
     saveFileSystemToStorage,
-    clearFileSystemStorage
+    clearFileSystemStorage,
+    removeDirectoryFromFileSystem
 } from './utils';
 
 export type CommandFunction = (input?: string, sudo?: boolean) => void | Promise<void>;
@@ -44,7 +46,11 @@ export const AVAILABLE_COMMANDS = [
     'cat',
     'mkdir',
     'rm',
+    'rmdir',
     'reset',
+    'echo',
+    'touch',
+    'whoami',
     'textgame',
     'randomcolor'
 ];
@@ -285,12 +291,165 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
             cin(getPromptContent());
         },
 
+        rmdir: (input?: string) => {
+            const directoryName = getSecondParameter(input || '');
+            if (!validateFileName(directoryName, 'rmdir', cout)) {
+                return;
+            }
+
+            if (!validateCommand(hasTooManyParameters(input || ''), 'rmdir', cout)) {
+                return;
+            }
+
+            const directoryEntry = resolveFileSystemPath(
+                state.fs,
+                state.cfs,
+                state.path,
+                directoryName
+            );
+
+            if (!directoryEntry) {
+                cout(`rmdir: cannot remove '${directoryName}': No such file or directory`);
+                return;
+            }
+
+            if (!isDir(directoryEntry)) {
+                cout(`rmdir: cannot remove '${directoryName}': Not a directory`);
+                return;
+            }
+
+            // Check if directory is empty
+            if (directoryEntry.children && Object.keys(directoryEntry.children).length > 0) {
+                cout(`rmdir: cannot remove '${directoryName}': Directory not empty`);
+                return;
+            }
+
+            // Calculate the actual path where the directory exists
+            const baseDirName = directoryName.split('/').pop() || directoryName;
+            const isInCurrentDir =
+                !directoryName.includes('/') || directoryName === `./${baseDirName}`;
+            const targetPath = isInCurrentDir
+                ? state.path
+                : calculateNewPath(
+                      state.path,
+                      directoryName.substring(0, directoryName.lastIndexOf('/'))
+                  );
+
+            setState(prev => {
+                // Remove from the file system using the correct target path
+                const newFs = removeDirectoryFromFileSystem(prev.fs, targetPath, baseDirName);
+
+                // Update current directory children only if directory is in current directory
+                const newCfs = isInCurrentDir
+                    ? {
+                          ...prev.cfs,
+                          children: prev.cfs.children
+                              ? Object.fromEntries(
+                                    Object.entries(prev.cfs.children).filter(
+                                        ([key]) => key !== baseDirName
+                                    )
+                                )
+                              : {}
+                      }
+                    : prev.cfs;
+
+                // Save updated file system to localStorage
+                saveFileSystemToStorage(newFs);
+
+                return {
+                    ...prev,
+                    fs: newFs,
+                    cfs: newCfs
+                };
+            });
+            cin(getPromptContent());
+        },
+
         reset: () => {
             cout('Resetting file system to default state...');
             clearFileSystemStorage();
             setTimeout(() => {
                 window.location.reload();
-            }, 500);
+            }, 1000);
+        },
+
+        echo: (input?: string) => {
+            const text = input?.substring(input.indexOf(' ') + 1) || '';
+
+            if (!text || text === 'echo') {
+                cin(getPromptContent());
+                return;
+            }
+
+            // Handle special characters and basic variable substitution
+            const processedText = text
+                .replace(/\\n/g, '\n')
+                .replace(/\\t/g, '\t')
+                .replace(/\$USER/g, state.settings.userName)
+                .replace(/\$HOSTNAME/g, state.settings.computerName)
+                .replace(/\$PWD/g, buildPwdText(state.path, state.basePath));
+
+            cout(processedText, true);
+        },
+
+        touch: (input?: string) => {
+            const fileName = getSecondParameter(input || '');
+            if (!validateFileName(fileName, 'touch', cout)) {
+                return;
+            }
+
+            if (!validateCommand(hasTooManyParameters(input || ''), 'touch', cout)) {
+                return;
+            }
+
+            // Check if file already exists
+            const existingEntry = resolveFileSystemPath(state.fs, state.cfs, state.path, fileName);
+
+            if (existingEntry) {
+                // File exists - in real touch, this would update timestamp
+                // For simplicity, we'll just report success
+                cin(getPromptContent());
+                return;
+            }
+
+            // Validate file name (basic validation - no invalid characters)
+            if (fileName.includes('/') || fileName.includes('\\')) {
+                cout(`touch: cannot create file '${fileName}': Invalid file name`);
+                return;
+            }
+
+            setState(prev => {
+                // Add file to the file system
+                const newFs = addFileToFileSystem(prev.fs, prev.path, fileName, '');
+
+                // Update current directory children
+                const newCfs = {
+                    ...prev.cfs,
+                    children: {
+                        ...prev.cfs.children,
+                        [fileName]: {
+                            type: 'file',
+                            name: fileName,
+                            content: ''
+                        }
+                    }
+                };
+
+                // Save updated file system to localStorage
+                saveFileSystemToStorage(newFs);
+
+                return {
+                    ...prev,
+                    fs: newFs,
+                    cfs: newCfs
+                };
+            });
+
+            cin(getPromptContent());
+        },
+
+        whoami: () => {
+            cout(state.settings.userName);
         },
 
         sudo: (input?: string) => {

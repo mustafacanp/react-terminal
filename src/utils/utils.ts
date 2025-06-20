@@ -372,6 +372,66 @@ export const addDirectoryToFileSystem = (
     return { ...fs, children: newChildren };
 };
 
+export const addFileToFileSystem = (
+    fs: FileSystemEntry,
+    path: string[],
+    fileName: string,
+    content: string = ''
+): FileSystemEntry => {
+    if (path.length === 0) {
+        // We're at the target directory, add the new file
+        const newChildren = { ...fs.children };
+        newChildren[fileName] = {
+            type: 'file',
+            name: fileName,
+            content: content
+        };
+        return { ...fs, children: newChildren };
+    }
+
+    // We need to go deeper
+    const [currentPath, ...remainingPath] = path;
+    const newChildren = { ...fs.children };
+
+    if (newChildren[currentPath]) {
+        newChildren[currentPath] = addFileToFileSystem(
+            newChildren[currentPath],
+            remainingPath,
+            fileName,
+            content
+        );
+    }
+
+    return { ...fs, children: newChildren };
+};
+
+export const removeDirectoryFromFileSystem = (
+    fs: FileSystemEntry,
+    path: string[],
+    directoryToRemove: string
+): FileSystemEntry => {
+    if (path.length === 0) {
+        // We're at the target directory, remove the directory
+        const newChildren = { ...fs.children };
+        delete newChildren[directoryToRemove];
+        return { ...fs, children: newChildren };
+    }
+
+    // We need to go deeper
+    const [currentPath, ...remainingPath] = path;
+    const newChildren = { ...fs.children };
+
+    if (newChildren[currentPath]) {
+        newChildren[currentPath] = removeDirectoryFromFileSystem(
+            newChildren[currentPath],
+            remainingPath,
+            directoryToRemove
+        );
+    }
+
+    return { ...fs, children: newChildren };
+};
+
 // Browser utilities
 export const copy = (text: string): void => {
     if (navigator.clipboard) {
