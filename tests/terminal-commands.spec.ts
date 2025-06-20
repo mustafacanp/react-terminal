@@ -672,4 +672,49 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         // Prompt should still be focused
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
     });
+
+    test('should display command history correctly', async ({ page }) => {
+        // Execute a few commands to populate history
+        await page.keyboard.type('pwd');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('whoami');
+        await page.keyboard.press('Enter');
+
+        // Execute history command
+        await page.keyboard.type('history');
+        await page.keyboard.press('Enter');
+
+        // Verify history output
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('1 pwd');
+        await expect(lastCommandOutput).toContainText('2 ls');
+        await expect(lastCommandOutput).toContainText('3 whoami');
+    });
+
+    test('should clear command history with history -c', async ({ page }) => {
+        // Execute a few commands to populate history
+        await page.keyboard.type('pwd');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // Clear history
+        await page.keyboard.type('history -c');
+        await page.keyboard.press('Enter');
+
+        // Execute history command again
+        await page.keyboard.type('history');
+        await page.keyboard.press('Enter');
+
+        // Verify history is empty (or only contains 'history')
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        const outputText = await lastCommandOutput.textContent();
+
+        // After clearing, the new history will just contain 'history'
+        expect(outputText?.trim()).toContain('No commands in history.');
+        expect(outputText?.trim()).not.toContain('pwd');
+        expect(outputText?.trim()).not.toContain('ls');
+    });
 });
