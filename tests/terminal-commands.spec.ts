@@ -718,3 +718,63 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         expect(outputText?.trim()).not.toContain('ls');
     });
 });
+
+test.describe('Theme command', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+    });
+
+    test('should change the theme when using the theme command', async ({ page }) => {
+        const terminalBodyContainer = page.locator(SELECTORS.terminalBodyContainer);
+
+        // The initial theme is 'default', with background '#440a2b' -> rgb(68, 10, 43)
+        await expect(terminalBodyContainer).toHaveCSS('background-color', 'rgb(68, 10, 43)');
+
+        // Change theme to dracula
+        await page.keyboard.type('theme set dracula');
+        await page.keyboard.press('Enter');
+
+        // Assert that the new color matches the dracula theme's background
+        // The color value is '#282a36' -> rgb(40, 42, 54)
+        await expect(terminalBodyContainer).toHaveCSS('background-color', 'rgb(40, 42, 54)');
+    });
+
+    test('should show available themes when no subcommand is provided', async ({ page }) => {
+        await page.keyboard.type('theme');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Available themes:');
+        await expect(lastCommandOutput).toContainText('Usage: theme set {theme_name}');
+    });
+
+    test('should show usage message when "set" is used without a theme name', async ({ page }) => {
+        await page.keyboard.type('theme set');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Usage: theme set {theme_name}');
+        await expect(lastCommandOutput).toContainText('Available themes:');
+    });
+
+    test('should show error for non-existent theme', async ({ page }) => {
+        await page.keyboard.type('theme set non_existent_theme');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText("Theme 'non_existent_theme' not found.");
+        await expect(lastCommandOutput).toContainText('Available themes:');
+    });
+
+    test('should show error for unknown subcommand', async ({ page }) => {
+        await page.keyboard.type('theme invalid_subcommand');
+        await page.keyboard.press('Enter');
+
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText(
+            "theme: unknown subcommand 'invalid_subcommand'"
+        );
+        await expect(lastCommandOutput).toContainText('Usage: theme set {theme_name}');
+    });
+});
