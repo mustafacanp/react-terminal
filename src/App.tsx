@@ -187,9 +187,9 @@ const App: React.FC = () => {
 
     const handleCommandExecution = useCallback(
         (input: string) => {
-            executeCommand(input, commands, io, addToHistory);
+            executeCommand(input, commands, io, addToHistory, state);
         },
-        [commands, io, addToHistory]
+        [commands, io, addToHistory, state]
     );
 
     // Tab completion context

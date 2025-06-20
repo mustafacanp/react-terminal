@@ -23,6 +23,7 @@ export const SELECTORS = {
     // File types
     typeDirectory: '.type-directory',
     typeFile: '.type-file',
+    typeLink: '.type-link',
 
     // Command output types (based on actual HTML structure)
     commandInput: '.prompt-text', // cin input (without ml-0)

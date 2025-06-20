@@ -8,6 +8,7 @@ export interface FileSystemEntry {
     content?: string;
     src?: string;
     sudo?: boolean;
+    target?: string;
     children?: { [key: string]: FileSystemEntry };
 }
 
@@ -54,6 +55,8 @@ export const isDir = (obj: FileSystemEntry | null | undefined): boolean =>
     !!(obj && FSEntry.parse(obj.type) === FSEntry.DIRECTORY);
 export const isFile = (obj: FileSystemEntry | null | undefined): boolean =>
     !!(obj && FSEntry.parse(obj.type) === FSEntry.FILE);
+export const isLink = (obj: FileSystemEntry | null | undefined): boolean =>
+    !!(obj && FSEntry.parse(obj.type) === FSEntry.LINK);
 
 // Command parameter utilities
 export const getFirstParameter = (str: string): string => trim(str).split(' ')[0];

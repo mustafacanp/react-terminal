@@ -166,6 +166,10 @@ body {
     color: var(--cyan);
 }
 
+.type-link {
+    color: var(--magenta);
+}
+
 .ml-0 {
     margin-left: 0;
 }

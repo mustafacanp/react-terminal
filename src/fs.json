@@ -37,6 +37,15 @@
             "type": "directory",
             "children": {}
         },
+        "Links": {
+            "type": "directory",
+            "children": {
+                "github": {
+                    "type": "link",
+                    "target": "https://github.com/mustafacanp"
+                }
+            }
+        },
         "Pictures": {
             "type": "directory",
             "children": {

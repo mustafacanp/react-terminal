@@ -11,6 +11,7 @@ import {
     addFileToFileSystem,
     isDir,
     isFile,
+    isLink,
     getFirstParameter,
     validateCommand,
     validateFileName,
@@ -540,7 +541,8 @@ export const executeCommand = (
     input: string,
     commands: Record<string, CommandFunction>,
     io: TerminalOutput,
-    addToHistory: (command: string) => void
+    addToHistory: (command: string) => void,
+    state: AppState
 ): void => {
     const { cin, cout } = io;
     const command = getFirstParameter(input);
@@ -548,6 +550,16 @@ export const executeCommand = (
     // Update command history
     if (input !== '') {
         addToHistory(input);
+    }
+
+    // Check if command is a link in current directory
+    if (!commands[command] && state.cfs.children && state.cfs.children[command]) {
+        const entry = state.cfs.children[command];
+        if (isLink(entry) && entry.target) {
+            openExternalLink(entry.target);
+            cout('Opening external link...');
+            return;
+        }
     }
 
     if (commands[command]) {

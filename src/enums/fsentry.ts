@@ -14,6 +14,7 @@ const toEnum = (name: string): FSEntryType =>
 export const FSEntry = Object.freeze({
     DIRECTORY: toEnum('directory'),
     FILE: toEnum('file'),
+    LINK: toEnum('link'),
     parse(value: string | { name: string } | undefined): FSEntryType | undefined {
         if (!value) return;
         const key = typeof value === 'string' ? value : value.name;
@@ -21,6 +22,7 @@ export const FSEntry = Object.freeze({
 
         if (upperKey === 'DIRECTORY') return this.DIRECTORY;
         if (upperKey === 'FILE') return this.FILE;
+        if (upperKey === 'LINK') return this.LINK;
 
         return undefined;
     }

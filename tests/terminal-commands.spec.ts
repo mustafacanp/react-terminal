@@ -291,6 +291,57 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await expect(page.locator(SELECTORS.promptInput)).toBeAttached();
     });
 
+    test('should handle link entries in file system', async ({ page }) => {
+        // Mock window.open and capture calls to verify external links
+        await page.evaluate(() => {
+            // Store original window.open calls for verification
+            (window as any).openCalls = [];
+            window.open = (url?: string | URL, target?: string, features?: string) => {
+                if (url) (window as any).openCalls.push(url.toString());
+                return null;
+            };
+        });
+
+        // Navigate to Links directory
+        await page.keyboard.type('cd Links');
+        await page.keyboard.press('Enter');
+
+        // Verify we're in the Links directory
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~/Links');
+
+        // List the contents to see the links
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        // Verify links are shown with @ symbol
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('github');
+
+        // Test github link
+        await page.keyboard.type('github');
+        await page.keyboard.press('Enter');
+
+        // Verify that window.open was called with the correct GitHub URL
+        const openCalls = await page.evaluate(() => (window as any).openCalls);
+        expect(openCalls).toContain('https://github.com/mustafacanp');
+
+        // Clear the open calls array for next test
+        await page.evaluate(() => {
+            (window as any).openCalls = [];
+        });
+
+        // Verify terminal is still functional after link commands
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+        await expect(page.locator(SELECTORS.commandOutput).last()).toContainText(
+            'Opening external link...'
+        );
+
+        // Navigate back to home
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+        await expect(page.locator(SELECTORS.promptLocation).last()).toContainText('~');
+    });
+
     test('should validate command parameters correctly', async ({ page }) => {
         // Test ls with too many parameters
         await page.keyboard.type('ls extra parameter');
