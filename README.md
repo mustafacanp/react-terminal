@@ -112,7 +112,7 @@ This project uses [Playwright](https://playwright.dev/) for comprehensive end-to
 - Basic command execution (help, pwd, ls, clear)
 - Error handling for unknown commands
 - Focus management and keyboard interactions
-- Right-click context menu prevention (Chrome/Safari only)
+- Right-click context menu prevention
 
 #### 🧭 **Navigation Features** (`tests/terminal-navigation.spec.ts`)
 
