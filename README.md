@@ -37,7 +37,7 @@ root@ubuntu:~/$ ls
 Documents/  Downloads/  Music/  Pictures/  game_saves/  gta_sa_cheats.txt  .bashrc
 
 root@ubuntu:~/$ cd Pictures
-root@ubuntu:~/Pictures$ cat profile.png
+root@ubuntu:~/Pictures$ cat amazing_view.png
 [File contents displayed]
 ```
 

@@ -51,10 +51,6 @@
                 "magnificent_castle.png": {
                     "type": "file",
                     "src": "/files/images/magnificent_castle.txt"
-                },
-                "profile.png": {
-                    "type": "file",
-                    "src": "/files/images/profile.txt"
                 }
             }
         },
