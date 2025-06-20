@@ -34,6 +34,7 @@ export interface AppState {
     previousCommands: string[];
     currentLineFromLast: number;
     tabPressed: boolean;
+    unsubmittedInput: string;
 }
 
 export interface TerminalOutput {
@@ -302,7 +303,9 @@ export const getCommandFromHistory = (
             };
         }
     } else if (direction === 'down') {
-        if (currentLineFromLast > 1) {
+        if (currentLineFromLast === 1) {
+            return { command: '', newLineFromLast: 0 };
+        } else if (currentLineFromLast > 1) {
             const newCurrentLine = currentLineFromLast - 1;
             return {
                 command: commands[commands.length - newCurrentLine],

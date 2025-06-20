@@ -151,4 +151,27 @@ test.describe('React Terminal Emulator - Basic Functionality', () => {
         await terminal.typeCommand('pwd');
         await terminal.expectCommandInHistory('pwd');
     });
+
+    test('should preserve unsubmitted input when navigating history', async ({ page }) => {
+        // 1. Type a command and execute it to populate history
+        await terminal.typeCommand('ls');
+        await terminal.expectDirectoriesListed();
+
+        // 2. Type a new command without executing it
+        const unsubmittedCommand = 'echo "hello"';
+        await page.keyboard.type(unsubmittedCommand);
+        await expect(terminal.promptInput).toHaveValue(unsubmittedCommand);
+
+        // 3. Press Up Arrow and expect the previous command
+        await page.keyboard.press('ArrowUp');
+        await expect(terminal.promptInput).toHaveValue('ls');
+
+        // 4. Press Down Arrow and expect the unsubmitted command to be restored
+        await page.keyboard.press('ArrowDown');
+        await expect(terminal.promptInput).toHaveValue(unsubmittedCommand);
+
+        // 5. Execute the restored command
+        await page.keyboard.press('Enter');
+        await terminal.expectCommandOutput('hello');
+    });
 });

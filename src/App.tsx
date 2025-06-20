@@ -31,7 +31,8 @@ const initialState: AppState = {
     previousLines: [],
     previousCommands: [],
     currentLineFromLast: 0,
-    tabPressed: false
+    tabPressed: false,
+    unsubmittedInput: ''
 };
 
 const App: React.FC = () => {
@@ -155,14 +156,20 @@ const App: React.FC = () => {
                 'up'
             );
             if (result) {
-                setState(prev => ({
-                    ...prev,
-                    currentLineFromLast: result.newLineFromLast
-                }));
+                setState(prev => {
+                    const isFirstArrowUp = prev.currentLineFromLast === 0;
+                    return {
+                        ...prev,
+                        currentLineFromLast: result.newLineFromLast,
+                        unsubmittedInput: isFirstArrowUp
+                            ? getPromptContent()
+                            : prev.unsubmittedInput
+                    };
+                });
                 _prompt.current?.setValue(result.command);
             }
         },
-        [state.previousCommands, state.currentLineFromLast]
+        [state.previousCommands, state.currentLineFromLast, getPromptContent]
     );
 
     const handleDownArrow = useCallback(() => {
@@ -172,19 +179,23 @@ const App: React.FC = () => {
             'down'
         );
         if (result) {
+            const commandToSet =
+                result.newLineFromLast === 0 ? state.unsubmittedInput : result.command;
+
             setState(prev => ({
                 ...prev,
                 currentLineFromLast: result.newLineFromLast
             }));
-            _prompt.current?.setValue(result.command);
+            _prompt.current?.setValue(commandToSet);
         }
-    }, [state.previousCommands, state.currentLineFromLast]);
+    }, [state.previousCommands, state.currentLineFromLast, state.unsubmittedInput]);
 
     const handleEnter = useCallback(() => {
         setState(prev => ({
             ...prev,
             tabPressed: false,
-            currentLineFromLast: 0
+            currentLineFromLast: 0,
+            unsubmittedInput: ''
         }));
 
         const input = removeSpaces(getPromptContent());
