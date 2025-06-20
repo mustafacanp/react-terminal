@@ -193,21 +193,34 @@ const App: React.FC = () => {
     }, [getPromptContent, handleCommandExecution]);
 
     const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
+        async (e: KeyboardEvent) => {
             // Handle Ctrl+C for copying selected text
             if (e.ctrlKey && e.key === 'c') {
                 const selection = window.getSelection();
                 if (selection && selection.toString() !== '') {
                     copy(selection.toString());
                     e.preventDefault();
-                    return false;
+                    return;
+                }
+            }
+
+            if (e.ctrlKey && e.key === 'v') {
+                try {
+                    const clipboardText = await navigator.clipboard.readText();
+                    const currentContent = _prompt.current?.content || '';
+                    _prompt.current?.setValue(currentContent + clipboardText);
+                } catch (err) {
+                    console.warn('Failed to read clipboard contents: ', err);
+                } finally {
+                    e.preventDefault();
+                    return;
                 }
             }
 
             if (e.ctrlKey || e.altKey) {
                 _prompt.current?.blurPrompt();
                 e.preventDefault();
-                return false;
+                return;
             }
 
             switch (e.key) {
