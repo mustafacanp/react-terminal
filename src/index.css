@@ -20,6 +20,21 @@ body {
     width: 818px;
     height: 624px;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
+    color: var(--foreground);
+
+    --background: #1a1a1a;
+    --foreground: #e5e5e5;
+    --cursor: #e5e5e5;
+    --selection: #4a4a4a;
+    --black: #000000;
+    --red: #ff5555;
+    --green: #50fa7b;
+    --yellow: #f1fa8c;
+    --blue: #61afef;
+    --magenta: #ff79c6;
+    --cyan: #8be9fd;
+    --white: #e5e5e5;
+    --toolbar-user: #d5d0ce;
 
     position: absolute;
     bottom: auto;
@@ -79,7 +94,7 @@ body {
 }
 
 .toolbar-user {
-    color: #d5d0ce;
+    color: var(--toolbar-user);
     margin-left: 4px;
     margin-top: 0;
     font-size: 12px;
@@ -90,7 +105,7 @@ body {
 .terminal-body-container {
     height: 600px;
     overflow-y: scroll;
-    background: rgba(56, 4, 40, 0.9);
+    background: var(--background);
 }
 .terminal-body-container::-webkit-scrollbar {
     width: 12px;
@@ -111,17 +126,17 @@ body {
 
 .prompt-user {
     font-weight: 600;
-    color: #87d441;
+    color: var(--green);
 }
 .prompt-location {
     font-weight: 600;
-    color: #6d85a9;
+    color: var(--blue);
 }
 .prompt-dollar {
-    color: #ddd;
+    color: var(--white);
 }
 .prompt-text {
-    color: white;
+    color: var(--foreground);
     margin-left: 8px;
     word-break: break-all;
     white-space: pre-wrap;
@@ -137,9 +152,9 @@ body {
     height: 17px;
     line-height: 17px;
     text-align: center;
-    color: #420528;
+    color: var(--background);
     width: 8px;
-    background: white;
+    background: var(--cursor);
     display: block;
     animation: 600ms ease infinite alternate blink;
 }
@@ -148,7 +163,7 @@ body {
 }
 
 .type-directory {
-    color: #38b8e7;
+    color: var(--cyan);
 }
 
 .ml-0 {

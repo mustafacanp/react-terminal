@@ -54,7 +54,8 @@ export const AVAILABLE_COMMANDS = [
     'whoami',
     'textgame',
     'randomcolor',
-    'history'
+    'history',
+    'theme'
 ];
 
 // Command implementations
@@ -505,6 +506,39 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
         randomcolor: () => {
             openExternalLink('https://randomcolor2.netlify.app');
             cin(getPromptContent());
+        },
+
+        theme: (input?: string) => {
+            const subcommand = getSecondParameter(input || '');
+            const themeName = (input || '').split(' ')[2] || '';
+
+            if (!subcommand) {
+                const availableThemes = Object.keys(state.themes).join(', ');
+                cout(`Available themes: ${availableThemes}`);
+                cout(`Usage: theme set <theme_name>`);
+                return;
+            }
+
+            if (subcommand === 'set') {
+                if (!themeName) {
+                    cout('Usage: theme set <theme_name>');
+                    const availableThemes = Object.keys(state.themes).join(', ');
+                    cout(`Available themes: ${availableThemes}`);
+                    return;
+                }
+
+                if (state.themes[themeName]) {
+                    setState(prev => ({ ...prev, theme: themeName }));
+                    cout(`Theme set to ${themeName}`);
+                } else {
+                    cout(`Theme '${themeName}' not found.`);
+                    const availableThemes = Object.keys(state.themes).join(', ');
+                    cout(`Available themes: ${availableThemes}`);
+                }
+            } else {
+                cout(`theme: unknown subcommand '${subcommand}'`);
+                cout(`Usage: theme set <theme_name>`);
+            }
         }
     };
 };

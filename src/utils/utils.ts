@@ -1,4 +1,5 @@
 import { FSEntry } from '../enums';
+import { TerminalTheme } from '../themes';
 
 // File system type definitions
 export interface FileSystemEntry {
@@ -35,6 +36,8 @@ export interface AppState {
     currentLineFromLast: number;
     tabPressed: boolean;
     unsubmittedInput: string;
+    themes: Record<string, TerminalTheme>;
+    theme: string;
 }
 
 export interface TerminalOutput {
@@ -458,6 +461,24 @@ export const openExternalLink = (link: string): void => {
 // localStorage utilities for file system persistence
 const FILESYSTEM_STORAGE_KEY = 'react-terminal-filesystem';
 const COMMAND_HISTORY_KEY = 'react-terminal-command-history';
+const THEME_STORAGE_KEY = 'react-terminal-theme';
+
+export const saveThemeToStorage = (theme: string): void => {
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch (error) {
+        console.warn('Failed to save theme to localStorage:', error);
+    }
+};
+
+export const loadThemeFromStorage = (): string | null => {
+    try {
+        return localStorage.getItem(THEME_STORAGE_KEY);
+    } catch (error) {
+        console.warn('Failed to load theme from localStorage:', error);
+    }
+    return null;
+};
 
 export const saveCommandHistoryToStorage = (history: string[]): void => {
     try {

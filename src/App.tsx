@@ -14,11 +14,14 @@ import {
     loadFileSystemFromStorage,
     saveFileSystemToStorage,
     loadCommandHistoryFromStorage,
-    saveCommandHistoryToStorage
+    saveCommandHistoryToStorage,
+    loadThemeFromStorage,
+    saveThemeToStorage
 } from './utils/utils';
 import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
 import initialFsJson from './fs.json';
+import { themes } from './themes';
 
 const initialState: AppState = {
     settings: {
@@ -34,14 +37,24 @@ const initialState: AppState = {
     previousCommands: [],
     currentLineFromLast: 0,
     tabPressed: false,
-    unsubmittedInput: ''
+    unsubmittedInput: '',
+    themes: themes,
+    theme: 'default'
 };
 
 const App: React.FC = () => {
     const [state, setState] = useState<AppState>(initialState);
+    const terminalRef = useRef<HTMLDivElement>(null);
 
     // Initialize file system from localStorage on component mount
     useEffect(() => {
+        const initializeTheme = () => {
+            const storedTheme = loadThemeFromStorage();
+            if (storedTheme && themes[storedTheme]) {
+                setState(prev => ({ ...prev, theme: storedTheme }));
+            }
+        };
+
         const initializeFileSystem = () => {
             const storedFs = loadFileSystemFromStorage();
             if (storedFs) {
@@ -65,9 +78,37 @@ const App: React.FC = () => {
             }
         };
 
+        initializeTheme();
         initializeFileSystem();
         initializeHistory();
     }, []);
+
+    useEffect(() => {
+        if (terminalRef.current) {
+            const currentTheme = state.themes[state.theme];
+            if (currentTheme) {
+                for (const [key, value] of Object.entries(currentTheme)) {
+                    if (key === 'colors') {
+                        if (typeof value === 'object' && value !== null) {
+                            for (const [colorKey, colorValue] of Object.entries(value)) {
+                                if (typeof colorValue === 'string') {
+                                    terminalRef.current.style.setProperty(
+                                        `--${colorKey}`,
+                                        colorValue
+                                    );
+                                }
+                            }
+                        }
+                    } else {
+                        if (typeof value === 'string') {
+                            terminalRef.current.style.setProperty(`--${key}`, value);
+                        }
+                    }
+                }
+            }
+        }
+        saveThemeToStorage(state.theme);
+    }, [state.theme, state.themes]);
 
     const _prompt = useRef<PromptRef>(null);
     const commandIdCounter = useRef(0);
@@ -331,6 +372,7 @@ const App: React.FC = () => {
         <div className="App">
             <div className="container">
                 <div
+                    ref={terminalRef}
                     className="terminal"
                     onClick={handleMouseInteraction}
                     onMouseDown={handleMouseInteraction}

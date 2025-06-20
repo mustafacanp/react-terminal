@@ -65,6 +65,32 @@ VITE_USER_NAME=your-name
 VITE_BASE_PATH=home/user
 ```
 
+### Theming
+
+The terminal includes multiple themes to customize its appearance. You can change the active theme using the `theme` command.
+
+**Usage:**
+
+```bash
+# List available themes
+theme
+
+# Set a new theme
+theme set <theme_name>
+```
+
+**Available Themes:**
+
+- `default`
+- `matrix`
+- `dracula`
+- `dark`
+- `cyberpunk`
+- `monokai`
+- `solarized`
+
+The selected theme is automatically saved to your browser's local storage and will be remembered across sessions.
+
 ### Adding New Commands
 
 To add a new command, extend the commands object in the `useTerminal` hook at `src/hooks/useTerminal.tsx`:
