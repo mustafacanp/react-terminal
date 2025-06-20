@@ -134,7 +134,13 @@ test.describe('React Terminal Emulator - Basic Functionality', () => {
         await expect(terminal.promptInput).toHaveValue('pwd');
     });
 
-    test('should handle right-click context menu prevention', async ({ page }) => {
+    test('should handle right-click context menu prevention', async ({ page, browserName }) => {
+        // Skip this test on Firefox since we disabled right-click paste functionality
+        test.skip(
+            browserName === 'firefox',
+            'Right-click paste disabled on Firefox due to clipboard restrictions'
+        );
+
         await terminal.terminal.click({ button: 'right' });
         await page.waitForTimeout(100);
         await page.keyboard.type('pwd');
