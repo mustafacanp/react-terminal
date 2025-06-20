@@ -35,28 +35,19 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-            testIgnore: [
-                '**/terminal-mobile.spec.ts',
-                '**/terminal-tablet.spec.ts'
-            ]
+            testIgnore: ['**/terminal-mobile.spec.ts', '**/terminal-tablet.spec.ts']
         },
 
         {
             name: 'firefox',
             use: { ...devices['Desktop Firefox'] },
-            testIgnore: [
-                '**/terminal-mobile.spec.ts',
-                '**/terminal-tablet.spec.ts'
-            ]
+            testIgnore: ['**/terminal-mobile.spec.ts', '**/terminal-tablet.spec.ts']
         },
 
         {
             name: 'webkit',
             use: { ...devices['Desktop Safari'] },
-            testIgnore: [
-                '**/terminal-mobile.spec.ts',
-                '**/terminal-tablet.spec.ts'
-            ]
+            testIgnore: ['**/terminal-mobile.spec.ts', '**/terminal-tablet.spec.ts']
         },
 
         /* Test against mobile viewports. */
