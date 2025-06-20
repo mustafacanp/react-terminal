@@ -22,13 +22,13 @@ import initialFsJson from './fs.json';
 
 const initialState: AppState = {
     settings: {
-        computerName: 'ubuntu',
-        userName: 'root'
+        computerName: import.meta.env.VITE_COMPUTER_NAME || 'ubuntu',
+        userName: import.meta.env.VITE_USER_NAME || 'root'
     },
     fs: initialFsJson as FileSystemEntry,
     cfs: initialFsJson as FileSystemEntry,
     path: [],
-    basePath: 'home/user',
+    basePath: import.meta.env.VITE_BASE_PATH || 'home/user',
     promptText: '',
     previousLines: [],
     previousCommands: [],

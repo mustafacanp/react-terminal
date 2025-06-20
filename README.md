@@ -49,6 +49,22 @@ Use ↑/↓ arrows for command history, Tab for completion.
 
 ## 🎨 Customization
 
+### Environment Configuration
+
+You can configure the terminal's `userName` and `computerName` by creating a `.env` file in the root of the project. Copy the example file and customize the values:
+
+```bash
+cp .env.example .env
+```
+
+Now, you can edit the `.env` file:
+
+```
+VITE_COMPUTER_NAME=your-pc
+VITE_USER_NAME=your-name
+VITE_BASE_PATH=home/user
+```
+
 ### Adding New Commands
 
 To add a new command, extend the commands object in the `useTerminal` hook at `src/hooks/useTerminal.tsx`:
