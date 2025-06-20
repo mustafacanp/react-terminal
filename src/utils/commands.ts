@@ -20,7 +20,9 @@ import {
     formatDirectoryListing,
     calculateNewPath,
     buildPwdText,
-    openExternalLink
+    openExternalLink,
+    saveFileSystemToStorage,
+    clearFileSystemStorage
 } from './utils';
 
 export type CommandFunction = (input?: string, sudo?: boolean) => void | Promise<void>;
@@ -42,6 +44,7 @@ export const AVAILABLE_COMMANDS = [
     'cat',
     'mkdir',
     'rm',
+    'reset',
     'textgame',
     'randomcolor'
 ];
@@ -164,6 +167,9 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
                     }
                 };
 
+                // Save updated file system to localStorage
+                saveFileSystemToStorage(newFs);
+
                 return {
                     ...prev,
                     fs: newFs,
@@ -267,6 +273,9 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
                       }
                     : prev.cfs;
 
+                // Save updated file system to localStorage
+                saveFileSystemToStorage(newFs);
+
                 return {
                     ...prev,
                     fs: newFs,
@@ -274,6 +283,14 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
                 };
             });
             cin(getPromptContent());
+        },
+
+        reset: () => {
+            cout('Resetting file system to default state...');
+            clearFileSystemStorage();
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         },
 
         sudo: (input?: string) => {

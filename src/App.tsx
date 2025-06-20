@@ -10,20 +10,36 @@ import {
     buildPwdText,
     createCommandLine,
     createTerminalOutput,
-    getCommandFromHistory
+    getCommandFromHistory,
+    loadFileSystemFromStorage,
+    saveFileSystemToStorage
 } from './utils/utils';
 import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
 import initialFsJson from './fs.json';
 
+// Initialize file system from localStorage or default fs.json
+const initializeFileSystem = (): FileSystemEntry => {
+    const storedFs = loadFileSystemFromStorage();
+    if (storedFs) {
+        return storedFs;
+    }
+    // If no stored file system exists, save the default one to localStorage
+    const defaultFs = initialFsJson as FileSystemEntry;
+    saveFileSystemToStorage(defaultFs);
+    return defaultFs;
+};
+
 const App: React.FC = () => {
+    const initialFs = initializeFileSystem();
+
     const [state, setState] = useState<AppState>({
         settings: {
             computerName: 'ubuntu',
             userName: 'root'
         },
-        fs: initialFsJson as FileSystemEntry,
-        cfs: initialFsJson as FileSystemEntry,
+        fs: initialFs,
+        cfs: initialFs,
         path: [],
         basePath: 'home/user',
         promptText: '',

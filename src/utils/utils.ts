@@ -391,3 +391,35 @@ export const copy = (text: string): void => {
 export const openExternalLink = (link: string): void => {
     window.open(link, '_blank')?.focus();
 };
+
+// localStorage utilities for file system persistence
+const FILESYSTEM_STORAGE_KEY = 'react-terminal-filesystem';
+
+export const saveFileSystemToStorage = (fileSystem: FileSystemEntry): void => {
+    try {
+        const serialized = JSON.stringify(fileSystem);
+        localStorage.setItem(FILESYSTEM_STORAGE_KEY, serialized);
+    } catch (error) {
+        console.warn('Failed to save file system to localStorage:', error);
+    }
+};
+
+export const loadFileSystemFromStorage = (): FileSystemEntry | null => {
+    try {
+        const serialized = localStorage.getItem(FILESYSTEM_STORAGE_KEY);
+        if (serialized) {
+            return JSON.parse(serialized) as FileSystemEntry;
+        }
+    } catch (error) {
+        console.warn('Failed to load file system from localStorage:', error);
+    }
+    return null;
+};
+
+export const clearFileSystemStorage = (): void => {
+    try {
+        localStorage.removeItem(FILESYSTEM_STORAGE_KEY);
+    } catch (error) {
+        console.warn('Failed to clear file system storage:', error);
+    }
+};
