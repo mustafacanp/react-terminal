@@ -42,7 +42,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
             const terminalBody = document.querySelector('.terminal-body-container') as HTMLElement;
 
             if (terminal) {
-                terminal.style.height = '524px';
+                terminal.style.height = '624px';
                 terminal.style.width = '818px';
                 terminal.style.top = 'auto';
             }
@@ -91,7 +91,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                 ) as HTMLElement;
 
                 if (terminal) {
-                    terminal.style.height = '524px';
+                    terminal.style.height = '624px';
                     terminal.style.width = '818px';
                     terminal.style.top = 'auto';
                 }

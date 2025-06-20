@@ -18,7 +18,7 @@ body {
 }
 .terminal {
     width: 818px;
-    height: 625px;
+    height: 624px;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
 
     position: absolute;
@@ -102,7 +102,7 @@ body {
 .terminal-body {
     font-family: 'Ubuntu mono';
     padding: 5px 3px;
-    min-height: 491px;
+    min-height: 591px;
 }
 
 .terminal-prompt {
