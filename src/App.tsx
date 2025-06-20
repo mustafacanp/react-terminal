@@ -232,11 +232,16 @@ const App: React.FC = () => {
         [handleTabKey, handleEnter, handleUpArrow, handleDownArrow]
     );
 
-    const handleMouseInteraction = useCallback(async (e: React.MouseEvent) => {
-        e.preventDefault();
+    const handleMouseInteraction = useCallback(async (e: React.MouseEvent | React.TouchEvent) => {
+        // Prevent focus when text is selected
+        const selection = window.getSelection();
+        if (e.type === 'click' && selection?.toString()) {
+            return;
+        }
 
-        if (e.buttons === 2) {
-            // right click - paste
+        if ('buttons' in e && e.buttons === 2) {
+            // Right-click for paste
+            e.preventDefault();
             try {
                 if (navigator.clipboard) {
                     const clipboardText = await navigator.clipboard.readText();
@@ -248,12 +253,9 @@ const App: React.FC = () => {
             } catch (err) {
                 console.warn('Could not read from clipboard:', err);
             }
-
-            if (e.type === 'click') {
-                if ((window as any).isTouchDevice?.()) {
-                    _prompt.current?.focusPrompt();
-                }
-            }
+        } else if (e.type === 'click' || e.type === 'touchend') {
+            // Left-click/tap for focus
+            _prompt.current?.focusPrompt();
         }
     }, []);
 
@@ -284,9 +286,10 @@ const App: React.FC = () => {
             <div className="container">
                 <div
                     className="terminal"
-                    onMouseDown={handleMouseInteraction}
-                    onContextMenu={handleMouseInteraction}
                     onClick={handleMouseInteraction}
+                    onMouseDown={handleMouseInteraction}
+                    onTouchEnd={handleMouseInteraction}
+                    onContextMenu={e => e.preventDefault()}
                 >
                     <Toolbar settings={state.settings} pwd={pwdText()} onReset={resetTerminal} />
                     <div className="terminal-body-container">
