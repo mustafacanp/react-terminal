@@ -6,6 +6,7 @@ interface ToolbarProps {
         computerName: string;
     };
     pwd: string;
+    onReset: () => void;
 }
 
 // Extend Document interface for fullscreen API
@@ -28,7 +29,7 @@ declare global {
     }
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd, onReset }) => {
     const { userName, computerName } = settings;
 
     const exitFullscreen = useCallback(() => {
@@ -131,7 +132,9 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                 <button
                     className="toolbar-button toolbar-button--exit"
                     onClick={() => {
-                        alert('You shall not exit!');
+                        if (window.confirm('Are you sure you want to reset the terminal?')) {
+                            onReset();
+                        }
                     }}
                 >
                     &#10005;

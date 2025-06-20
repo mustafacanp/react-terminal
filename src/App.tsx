@@ -18,22 +18,24 @@ import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
 import initialFsJson from './fs.json';
 
+const initialState: AppState = {
+    settings: {
+        computerName: 'ubuntu',
+        userName: 'root'
+    },
+    fs: initialFsJson as FileSystemEntry,
+    cfs: initialFsJson as FileSystemEntry,
+    path: [],
+    basePath: 'home/user',
+    promptText: '',
+    previousLines: [],
+    previousCommands: [],
+    currentLineFromLast: 0,
+    tabPressed: false
+};
+
 const App: React.FC = () => {
-    const [state, setState] = useState<AppState>({
-        settings: {
-            computerName: 'ubuntu',
-            userName: 'root'
-        },
-        fs: initialFsJson as FileSystemEntry,
-        cfs: initialFsJson as FileSystemEntry,
-        path: [],
-        basePath: 'home/user',
-        promptText: '',
-        previousLines: [],
-        previousCommands: [],
-        currentLineFromLast: 0,
-        tabPressed: false
-    });
+    const [state, setState] = useState<AppState>(initialState);
 
     // Initialize file system from localStorage on component mount
     useEffect(() => {
@@ -60,6 +62,11 @@ const App: React.FC = () => {
     const commandIdCounter = useRef(0);
     const _terminalBodyContainer = useRef<HTMLElement | null>(null);
     const _terminalBody = useRef<HTMLElement | null>(null);
+
+    const resetTerminal = useCallback(() => {
+        setState(initialState);
+        _prompt.current?.clear();
+    }, []);
 
     // Helper functions
     const pwdText = useCallback(() => {
@@ -281,7 +288,7 @@ const App: React.FC = () => {
                     onContextMenu={handleMouseInteraction}
                     onClick={handleMouseInteraction}
                 >
-                    <Toolbar settings={state.settings} pwd={pwdText()} />
+                    <Toolbar settings={state.settings} pwd={pwdText()} onReset={resetTerminal} />
                     <div className="terminal-body-container">
                         <div className="terminal-body">
                             {renderPreviousLines()}
