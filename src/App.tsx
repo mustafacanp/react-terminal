@@ -127,6 +127,9 @@ const App: React.FC = () => {
 
     const addToHistory = useCallback((command: string) => {
         setState(prev => {
+            if (prev.previousCommands[prev.previousCommands.length - 1] === command) {
+                return prev;
+            }
             const newHistory = [...prev.previousCommands, command];
             saveCommandHistoryToStorage(newHistory);
             return {
