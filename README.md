@@ -13,7 +13,7 @@ A web-based terminal simulator built with React that provides an interactive Lin
 - Interactive terminal with command history and tab completion
 - File system navigation (`ls`, `cd`, `pwd`, `cat`, `rm`, `clear`, `help`, `sudo`)
 - File operations (`mkdir`, `rmdir`, `touch`, `echo`)
-- System commands (`whoami`, `reset`)
+- System commands (`whoami`, `reset`, `history`)
 - External utilities (`textgame`, `randomcolor`)
 - **Persistent file system** - Changes saved to localStorage across sessions
 - **Command history** - Navigate with ↑/↓ arrow keys
