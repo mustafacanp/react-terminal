@@ -516,7 +516,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await expect(lastCommandOutput).toContainText('Resetting file system to default state...');
 
         // Wait for page reload (reset command reloads the page after 1000ms)
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(2000);
 
         // Test 3: Verify file system was reset to default state
         await page.keyboard.type('ls');
