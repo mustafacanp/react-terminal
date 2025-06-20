@@ -18,28 +18,14 @@ import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
 import initialFsJson from './fs.json';
 
-// Initialize file system from localStorage or default fs.json
-const initializeFileSystem = (): FileSystemEntry => {
-    const storedFs = loadFileSystemFromStorage();
-    if (storedFs) {
-        return storedFs;
-    }
-    // If no stored file system exists, save the default one to localStorage
-    const defaultFs = initialFsJson as FileSystemEntry;
-    saveFileSystemToStorage(defaultFs);
-    return defaultFs;
-};
-
 const App: React.FC = () => {
-    const initialFs = initializeFileSystem();
-
     const [state, setState] = useState<AppState>({
         settings: {
             computerName: 'ubuntu',
             userName: 'root'
         },
-        fs: initialFs,
-        cfs: initialFs,
+        fs: initialFsJson as FileSystemEntry,
+        cfs: initialFsJson as FileSystemEntry,
         path: [],
         basePath: 'home/user',
         promptText: '',
@@ -48,6 +34,27 @@ const App: React.FC = () => {
         currentLineFromLast: 0,
         tabPressed: false
     });
+
+    // Initialize file system from localStorage on component mount
+    useEffect(() => {
+        const initializeFileSystem = () => {
+            const storedFs = loadFileSystemFromStorage();
+            if (storedFs) {
+                setState(prev => ({
+                    ...prev,
+                    fs: storedFs,
+                    cfs: storedFs,
+                    path: [] // Reset to root when loading from localStorage
+                }));
+            } else {
+                // If no stored file system exists, save the default one to localStorage
+                const defaultFs = initialFsJson as FileSystemEntry;
+                saveFileSystemToStorage(defaultFs);
+            }
+        };
+
+        initializeFileSystem();
+    }, []);
 
     const _prompt = useRef<PromptRef>(null);
     const commandIdCounter = useRef(0);
@@ -219,23 +226,30 @@ const App: React.FC = () => {
     );
 
     const handleMouseInteraction = useCallback(async (e: React.MouseEvent) => {
+        console.log({ buttons: e.buttons, button: e.button });
+
         if (e.buttons === 2) {
             // right click - paste
             e.preventDefault();
-            try {
-                if (navigator.clipboard) {
-                    const clipboardText = await navigator.clipboard.readText();
-                    if (clipboardText) {
-                        const currentContent = _prompt.current?.content || '';
-                        _prompt.current?.setValue(currentContent + clipboardText);
+
+            // Firefox blocks clipboard.readText() in async contexts - disable paste for Firefox
+            const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+            if (!isFirefox) {
+                try {
+                    if (navigator.clipboard) {
+                        const clipboardText = await navigator.clipboard.readText();
+                        if (clipboardText) {
+                            const currentContent = _prompt.current?.content || '';
+                            _prompt.current?.setValue(currentContent + clipboardText);
+                        }
                     }
+                } catch (err) {
+                    console.warn('Could not read from clipboard:', err);
                 }
-            } catch (err) {
-                console.warn('Could not read from clipboard:', err);
-            }
-        } else if (e.type === 'click') {
-            if ((window as any).isTouchDevice?.()) {
-                _prompt.current?.focusPrompt();
+            } else if (e.type === 'click') {
+                if ((window as any).isTouchDevice?.()) {
+                    _prompt.current?.focusPrompt();
+                }
             }
         }
     }, []);
@@ -268,7 +282,7 @@ const App: React.FC = () => {
                 <div
                     className="terminal"
                     onMouseDown={handleMouseInteraction}
-                    onContextMenu={e => e.preventDefault()}
+                    onContextMenu={handleMouseInteraction}
                     onClick={handleMouseInteraction}
                 >
                     <Toolbar settings={state.settings} pwd={pwdText()} />
