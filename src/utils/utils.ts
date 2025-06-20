@@ -480,6 +480,14 @@ export const loadCommandHistoryFromStorage = (): string[] | null => {
     return null;
 };
 
+export const clearCommandHistoryStorage = (): void => {
+    try {
+        localStorage.removeItem(COMMAND_HISTORY_KEY);
+    } catch (error) {
+        console.warn('Failed to clear command history from localStorage:', error);
+    }
+};
+
 export const saveFileSystemToStorage = (fileSystem: FileSystemEntry): void => {
     try {
         const serialized = JSON.stringify(fileSystem);

@@ -24,7 +24,8 @@ import {
     openExternalLink,
     saveFileSystemToStorage,
     clearFileSystemStorage,
-    removeDirectoryFromFileSystem
+    removeDirectoryFromFileSystem,
+    clearCommandHistoryStorage
 } from './utils';
 
 export type CommandFunction = (input?: string, sudo?: boolean) => void | Promise<void>;
@@ -401,15 +402,27 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
             cout(processedText, true);
         },
 
-        history: () => {
-            const history = state.previousCommands;
-            if (history.length === 0) {
-                cout('No commands in history.');
-                return;
-            }
+        history: (input?: string) => {
+            const param = getSecondParameter(input || '');
 
-            const historyOutput = history.map((cmd, i) => `${i + 1}: ${cmd}`).join('<br/>');
-            cout(historyOutput, false);
+            if (param === '-c') {
+                setState(prev => ({ ...prev, previousCommands: [] }));
+                clearCommandHistoryStorage();
+            } else if (param) {
+                cout(`history: invalid option -- '${param}'`);
+                cout(`history: usage: history [-c]`);
+            } else {
+                const history = state.previousCommands;
+                if (history.length === 0) {
+                    cout('No commands in history.');
+                    return;
+                }
+
+                const historyOutput = history
+                    .map((cmd, i) => `&nbsp;&nbsp;&nbsp;${i + 1}  ${cmd}`)
+                    .join('<br/>');
+                cout(historyOutput, false);
+            }
         },
 
         touch: (input?: string) => {
@@ -506,16 +519,16 @@ export const executeCommand = (
     const { cin, cout } = io;
     const command = getFirstParameter(input);
 
+    // Update command history
+    if (input !== '') {
+        addToHistory(input);
+    }
+
     if (commands[command]) {
         commands[command](input);
     } else if (input === '') {
         cin();
     } else {
         cout(`${command}: command not found`);
-    }
-
-    // Update command history
-    if (input !== '') {
-        addToHistory(input);
     }
 };

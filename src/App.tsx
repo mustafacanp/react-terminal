@@ -127,7 +127,12 @@ const App: React.FC = () => {
 
     const addToHistory = useCallback((command: string) => {
         setState(prev => {
-            if (prev.previousCommands[prev.previousCommands.length - 1] === command) {
+            if (
+                // don't add history -c
+                command === 'history -c' ||
+                // don't add duplicate commands
+                prev.previousCommands[prev.previousCommands.length - 1] === command
+            ) {
                 return prev;
             }
             const newHistory = [...prev.previousCommands, command];
