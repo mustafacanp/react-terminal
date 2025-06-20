@@ -18,7 +18,7 @@ body {
 }
 .terminal {
     width: 818px;
-    height: 524px;
+    height: 625px;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
 
     position: absolute;
@@ -88,7 +88,7 @@ body {
 }
 
 .terminal-body-container {
-    height: 500px;
+    height: 600px;
     overflow-y: scroll;
     background: rgba(56, 4, 40, 0.9);
 }

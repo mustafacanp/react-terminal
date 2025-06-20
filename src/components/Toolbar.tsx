@@ -47,7 +47,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                 terminal.style.top = 'auto';
             }
             if (terminalBody) {
-                terminalBody.style.height = '500px';
+                terminalBody.style.height = '600px';
             }
         }
     }, []);
@@ -96,7 +96,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd }) => {
                     terminal.style.top = 'auto';
                 }
                 if (terminalBody) {
-                    terminalBody.style.height = '500px';
+                    terminalBody.style.height = '600px';
                 }
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
