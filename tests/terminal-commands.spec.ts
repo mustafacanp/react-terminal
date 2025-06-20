@@ -15,9 +15,14 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
             'pwd',
             'ls',
             'cd',
+            'echo',
             'cat',
+            'touch',
             'mkdir',
             'rm',
+            'rmdir',
+            'whoami',
+            'reset',
             'textgame',
             'randomcolor'
         ];
@@ -90,6 +95,43 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
     });
 
+    test('should handle echo command with text and variables', async ({ page }) => {
+        // Test 1: Basic echo with text
+        await page.keyboard.type('echo Hello World');
+        await page.keyboard.press('Enter');
+
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Hello World');
+
+        // Test 2: Echo with variable substitution
+        await page.keyboard.type('echo Current user: $USER');
+        await page.keyboard.press('Enter');
+
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Current user: root');
+
+        // Test 3: Echo with hostname variable
+        await page.keyboard.type('echo Host: $HOSTNAME');
+        await page.keyboard.press('Enter');
+
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Host: ubuntu');
+
+        // Test 4: Echo with path variable
+        await page.keyboard.type('echo Current path: $PWD');
+        await page.keyboard.press('Enter');
+
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Current path: ~');
+
+        // Test 5: Echo without text (should do nothing)
+        await page.keyboard.type('echo');
+        await page.keyboard.press('Enter');
+
+        // Verify terminal remains functional
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
     test('should handle cat command with all scenarios', async ({ page }) => {
         // Test 1: cat command without parameters (missing operand)
         await page.keyboard.type('cat');
@@ -150,6 +192,40 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         expect(lines.length).toBeGreaterThan(10); // Should have multiple lines
 
         // Verify terminal remains functional after ASCII art display
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
+    test('should handle touch command for file creation', async ({ page }) => {
+        // Test 1: Create a new file
+        await page.keyboard.type('touch newfile.txt');
+        await page.keyboard.press('Enter');
+
+        // Verify file was created by listing directory
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('newfile.txt');
+
+        // Test 2: Touch existing file (should succeed silently)
+        await page.keyboard.type('touch newfile.txt');
+        await page.keyboard.press('Enter');
+
+        // Test 3: Touch without filename (should show error)
+        await page.keyboard.type('touch');
+        await page.keyboard.press('Enter');
+
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('touch: missing operand');
+
+        // Test 4: Touch with too many parameters
+        await page.keyboard.type('touch file1 file2');
+        await page.keyboard.press('Enter');
+
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
+
+        // Verify terminal remains functional
         await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
     });
 
@@ -313,6 +389,71 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
         await page.keyboard.press('Enter');
     });
 
+    test('should handle rmdir command for directory removal', async ({ page }) => {
+        // Test 1: Create a directory to test with
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify directory was created
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('testdir/');
+
+        // Test 2: Remove empty directory
+        await page.keyboard.type('rmdir testdir');
+        await page.keyboard.press('Enter');
+
+        // Verify directory was removed
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).not.toContainText('testdir/');
+
+        // Test 3: rmdir without parameters (missing operand)
+        await page.keyboard.type('rmdir');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('rmdir: missing operand');
+
+        // Test 4: rmdir with too many parameters
+        await page.keyboard.type('rmdir dir1 dir2');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('too many arguments');
+
+        // Test 5: rmdir on non-existent directory
+        await page.keyboard.type('rmdir nonexistent');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('No such file or directory');
+
+        // Test 6: rmdir on file (not directory)
+        await page.keyboard.type('touch testfile.txt');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('rmdir testfile.txt');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Not a directory');
+
+        // Test 7: rmdir on non-empty directory
+        await page.keyboard.type('mkdir parentdir');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('cd parentdir');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('touch childfile.txt');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('rmdir parentdir');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Directory not empty');
+
+        // Verify terminal remains functional
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
     test('should maintain file system state after rm operations across navigation', async ({
         page
     }) => {
@@ -334,6 +475,65 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
         await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
+    });
+
+    test('should handle whoami command correctly', async ({ page }) => {
+        // Execute whoami command
+        await page.keyboard.type('whoami');
+        await page.keyboard.press('Enter');
+
+        // Should display the current username
+        const lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('root');
+
+        // Verify terminal remains functional after whoami
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
+    });
+
+    test('should handle reset command to restore file system', async ({ page }) => {
+        // Test 1: Make some changes to file system first
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('touch testfile.txt');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('rm gta_sa_cheats.txt');
+        await page.keyboard.press('Enter');
+
+        // Verify changes were made
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        let lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('testdir/');
+        await expect(lastCommandOutput).toContainText('testfile.txt');
+        await expect(lastCommandOutput).not.toContainText('gta_sa_cheats.txt');
+
+        // Test 2: Execute reset command
+        await page.keyboard.type('reset');
+        await page.keyboard.press('Enter');
+
+        // Should show reset message
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+        await expect(lastCommandOutput).toContainText('Resetting file system to default state...');
+
+        // Wait for page reload (reset command reloads the page after 1000ms)
+        await page.waitForTimeout(1500);
+
+        // Test 3: Verify file system was reset to default state
+        await page.keyboard.type('ls');
+        await page.keyboard.press('Enter');
+        lastCommandOutput = page.locator(SELECTORS.commandOutput).last();
+
+        // Should have original files back
+        await expect(lastCommandOutput).toContainText('gta_sa_cheats.txt');
+        await expect(lastCommandOutput).toContainText('Documents/');
+        await expect(lastCommandOutput).toContainText('Downloads/');
+
+        // Should not have the test files we created
+        await expect(lastCommandOutput).not.toContainText('testdir/');
+        await expect(lastCommandOutput).not.toContainText('testfile.txt');
+
+        // Verify terminal is functional after reset
+        await expect(page.locator(SELECTORS.promptInput)).toBeFocused();
     });
 
     test('should handle complex file paths correctly', async ({ page }) => {

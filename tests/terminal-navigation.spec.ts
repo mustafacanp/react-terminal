@@ -122,12 +122,61 @@ test.describe('React Terminal Emulator - Navigation Features', () => {
 
     test('should handle tab completion for files', async ({ page }) => {
         const promptInput = page.locator(SELECTORS.promptInput);
-        // Try tab completion for cat command
+
+        // Test 1: Tab completion for cat command with files
         await page.keyboard.type('cat .ba');
         await page.keyboard.press('Tab');
-
-        // Should complete to .bashrc
         await expect(promptInput).toHaveValue('cat .bashrc');
+
+        // Clear input
+        await page.keyboard.press('Enter');
+
+        // Test 2: Tab completion for cd command with directories
+        await page.keyboard.type('cd Doc');
+        await page.keyboard.press('Tab');
+        await expect(promptInput).toHaveValue('cd Documents/');
+
+        // Go to the root directory
+        await page.keyboard.type('cd ..');
+        await page.keyboard.press('Enter');
+
+        // Test 3: Tab completion for rm command
+        await page.keyboard.type('rm gta');
+        await page.keyboard.press('Tab');
+        await expect(promptInput).toHaveValue('rm gta_sa_cheats.txt');
+
+        // Clear input
+        await page.keyboard.press('Enter');
+
+        // Test 4: Create test directory for rmdir test
+        await page.keyboard.type('mkdir testdir');
+        await page.keyboard.press('Enter');
+
+        // Test 5: Tab completion for rmdir command
+        await page.keyboard.type('rmdir test');
+        await page.keyboard.press('Tab');
+        await expect(promptInput).toHaveValue('rmdir testdir/');
+
+        // Clear input
+        await page.keyboard.press('Enter');
+
+        // Test 6: Tab completion for touch command
+        await page.keyboard.type('touch Pic');
+        await page.keyboard.press('Tab');
+        await expect(promptInput).toHaveValue('touch Pictures/');
+
+        // Clear input
+        await page.keyboard.press('Enter');
+
+        // Test 7: Tab completion for mkdir command
+        await page.keyboard.type('mkdir Doc');
+        await page.keyboard.press('Tab');
+        await expect(promptInput).toHaveValue('mkdir Documents/');
+
+        // Clean up - remove test directory
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('rmdir testdir');
+        await page.keyboard.press('Enter');
     });
 
     test('should handle tab completion for inner directories', async ({ page }) => {
