@@ -131,6 +131,7 @@ body {
     height: 0;
     border: 0;
     padding: 0;
+    opacity: 0;
 }
 .prompt-cursor {
     height: 17px;
