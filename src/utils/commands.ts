@@ -382,12 +382,20 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
             }
 
             // Handle special characters and basic variable substitution
-            const processedText = text
+            let processedText = text
                 .replace(/\\n/g, '\n')
                 .replace(/\\t/g, '\t')
                 .replace(/\$USER/g, state.settings.userName)
                 .replace(/\$HOSTNAME/g, state.settings.computerName)
                 .replace(/\$PWD/g, buildPwdText(state.path, state.basePath));
+
+            // Remove matching quotes
+            if (
+                (processedText.startsWith('"') && processedText.endsWith('"')) ||
+                (processedText.startsWith("'") && processedText.endsWith("'"))
+            ) {
+                processedText = processedText.slice(1, -1);
+            }
 
             cout(processedText, true);
         },
