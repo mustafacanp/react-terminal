@@ -44,7 +44,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd, onReset }) => {
 
             if (terminal) {
                 terminal.style.height = '624px';
-                terminal.style.width = '818px';
+                terminal.style.width = '830px';
                 terminal.style.top = 'auto';
             }
             if (terminalBody) {
@@ -93,7 +93,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd, onReset }) => {
 
                 if (terminal) {
                     terminal.style.height = '624px';
-                    terminal.style.width = '818px';
+                    terminal.style.width = '830px';
                     terminal.style.top = 'auto';
                 }
                 if (terminalBody) {
