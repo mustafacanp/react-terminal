@@ -273,7 +273,7 @@ const App: React.FC = () => {
             if (e.ctrlKey && e.key === 'c') {
                 const selection = window.getSelection();
                 if (selection && selection.toString() !== '') {
-                    copy(selection.toString().trimEnd());
+                    copy(selection.toString());
                     e.preventDefault();
                     return;
                 }

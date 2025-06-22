@@ -4,7 +4,7 @@ interface Props {
     promptText: string;
 }
 
-const Cursor: React.FC<Props> = ({ promptText }) => {
+const CursorWithText: React.FC<Props> = ({ promptText }) => {
     const [isBlinking, setIsBlinking] = useState(false);
     const [cursorLetter, setCursorLetter] = useState('');
     const [cursorFromTheRight, setCursorFromTheRight] = useState(0);
@@ -83,16 +83,17 @@ const Cursor: React.FC<Props> = ({ promptText }) => {
         }
     }, [promptText.length, cursorFromTheRight, resetState]);
 
-    const formattedCursorLetter = cursorLetter === ' ' ? ' ' : cursorLetter || ' ';
+    const userSelectStyle = cursorFromTheRight === 0 ? { userSelect: 'none' as const } : {};
+
     return (
         <>
             {promptText.slice(0, promptText.length - cursorFromTheRight)}
-            <span className={`prompt-cursor ${isBlinking ? 'blink' : ''}`}>
-                {formattedCursorLetter}
+            <span className={`prompt-cursor ${isBlinking ? 'blink' : ''}`} style={userSelectStyle}>
+                {cursorLetter || ' '}
             </span>
             {promptText.slice(promptText.length - cursorFromTheRight + 1)}
         </>
     );
 };
 
-export default Cursor;
+export default CursorWithText;

@@ -6,7 +6,7 @@ import React, {
     forwardRef,
     useLayoutEffect
 } from 'react';
-import Cursor from './Cursor';
+import CursorWithText from './CursorWithText';
 import PromptLabel from './PromptLabel';
 
 interface PromptProps {
@@ -121,7 +121,7 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
                     onChange={handleInputChange}
                 />
                 <span className="prompt-text">
-                    <Cursor promptText={promptText} />
+                    <CursorWithText promptText={promptText} />
                 </span>
             </div>
         );
