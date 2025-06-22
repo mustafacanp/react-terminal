@@ -42,6 +42,7 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
             'Downloads/',
             'game_saves/',
             'gta_sa_cheats.txt',
+            'Links/',
             'Music/',
             'Pictures/'
         ];

@@ -38,10 +38,6 @@
             "type": "file",
             "src": "/files/texts/gta_sa_cheats.txt"
         },
-        "Music": {
-            "type": "directory",
-            "children": {}
-        },
         "Links": {
             "type": "directory",
             "children": {
@@ -50,6 +46,10 @@
                     "target": "https://github.com/mustafacanp"
                 }
             }
+        },
+        "Music": {
+            "type": "directory",
+            "children": {}
         },
         "Pictures": {
             "type": "directory",
