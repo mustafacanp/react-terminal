@@ -52,7 +52,7 @@ body {
     height: 100vh;
 }
 .terminal {
-    width: 818px;
+    width: 830px;
     height: 624px;
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.5);
     color: var(--foreground);
