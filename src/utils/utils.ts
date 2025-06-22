@@ -1,4 +1,5 @@
 import { FSEntry } from '../enums';
+import { PromptRef } from '../components/Prompt';
 import { TerminalTheme } from '../themes';
 
 // File system type definitions
@@ -273,9 +274,10 @@ export const getMatchingItems = (
 export const formatDirectoryListing = (children: { [key: string]: FileSystemEntry }): string => {
     const dirs = Object.keys(children).map(key => {
         const slash = isDir(children[key]) ? '/' : '';
-        return `<span class="type-${children[key]?.type}">${key}${slash}</span>`;
+        const fullName = `${key}${slash}`;
+        return `<span class="type-${children[key]?.type}">${fullName}</span>`;
     });
-    return dirs.join('&#09;');
+    return `<div class="directory-listing">${dirs.join('')}</div>`;
 };
 
 // Path calculation for navigation
@@ -455,6 +457,38 @@ export const copy = (text: string): void => {
     } else {
         console.warn('Clipboard API not available');
     }
+};
+
+export const pasteFromClipboard = async (ref: React.RefObject<PromptRef | null>): Promise<void> => {
+    if (!navigator.clipboard) {
+        console.warn('Clipboard API not available');
+        return;
+    }
+
+    try {
+        const clipboardText = await navigator.clipboard.readText();
+        handlePaste(ref, clipboardText);
+    } catch (err) {
+        console.warn('Failed to read clipboard contents:', err);
+    }
+};
+
+const handlePaste = (ref: React.RefObject<PromptRef | null>, clipboardText: string) => {
+    if (!ref.current || !clipboardText) {
+        return;
+    }
+
+    const currentContent = ref.current.content || '';
+    const selectionStart = ref.current.getSelectionStart() ?? currentContent.length;
+
+    // Split content at cursor position and insert clipboard text
+    const firstPart = currentContent.slice(0, selectionStart);
+    const secondPart = currentContent.slice(selectionStart);
+    const newValue = firstPart + clipboardText + secondPart;
+    const newCursorPosition = selectionStart + clipboardText.length;
+
+    // Set value and cursor position together
+    ref.current.setValueWithCursor(newValue, newCursorPosition);
 };
 
 export const openExternalLink = (link: string): void => {

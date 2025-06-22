@@ -31,6 +31,10 @@
                 }
             }
         },
+        "Music": {
+            "type": "directory",
+            "children": {}
+        },
         "Pictures": {
             "type": "directory",
             "children": {

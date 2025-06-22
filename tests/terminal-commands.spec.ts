@@ -37,13 +37,14 @@ test.describe('React Terminal Emulator - File Operations & Commands', () => {
 
         // Type ls command
         const expectedFiles = [
+            '.bashrc',
             'Documents/',
             'Downloads/',
             'game_saves/',
             'gta_sa_cheats.txt',
+            'Links/',
             'Music/',
-            'Pictures/',
-            '.bashrc'
+            'Pictures/'
         ];
 
         await page.keyboard.type('ls');
