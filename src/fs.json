@@ -1,6 +1,11 @@
 {
     "type": "directory",
     "children": {
+        ".bashrc": {
+            "type": "file",
+            "src": "/files/bashrc.txt",
+            "sudo": true
+        },
         "Documents": {
             "type": "directory",
             "children": {}
@@ -62,11 +67,6 @@
                     "src": "/files/images/magnificent_castle.txt"
                 }
             }
-        },
-        ".bashrc": {
-            "type": "file",
-            "src": "/files/bashrc.txt",
-            "sudo": true
         }
     }
 }

@@ -30,7 +30,7 @@ A web-based terminal simulator built with React that provides an interactive Lin
 git clone https://github.com/mustafacanp/react-terminal.git
 cd react-terminal
 npm install
-npm start
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -39,7 +39,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```bash
 root@ubuntu:~/$ ls
-Documents/  Downloads/  Music/  Pictures/  game_saves/  gta_sa_cheats.txt  .bashrc
+.bashrc Documents/  Downloads/  Music/  Pictures/  game_saves/  gta_sa_cheats.txt
 
 root@ubuntu:~/$ cd Pictures
 root@ubuntu:~/Pictures$ cat amazing_view.png
@@ -52,19 +52,22 @@ Use ↑/↓ arrows for command history, Tab for completion.
 
 ### Environment Configuration
 
-You can configure the terminal's `userName` and `computerName` by creating a `.env` file in the root of the project. Copy the example file and customize the values:
+You can configure the terminal's `userName`, `computerName`, and initial path by creating a `.env` file in the root of the project.
 
-```bash
-cp .env.example .env
-```
-
-Now, you can edit the `.env` file:
+Create a `.env` file with the following content:
 
 ```
+# Terminal Configuration
 VITE_COMPUTER_NAME=your-pc
 VITE_USER_NAME=your-name
 VITE_BASE_PATH=home/user
 ```
+
+**Default values if not set:**
+
+- `VITE_COMPUTER_NAME`: ubuntu
+- `VITE_USER_NAME`: root
+- `VITE_BASE_PATH`: home/user
 
 ### Theming
 
@@ -94,25 +97,29 @@ The selected theme is automatically saved to your browser's local storage and wi
 
 ### Adding New Commands
 
-To add a new command, extend the commands object in the `useTerminal` hook at `src/hooks/useTerminal.tsx`:
+To add a new command, extend the commands object in `src/utils/commands.ts`:
 
 ```typescript
-// Inside the useTerminal hook
-const commands = {
-    // ... existing commands
-    yourcommand: (input?: string) => {
-        if (validateAndShowError(hasTooManyParameters(input || ''), 'yourcommand')) return;
+// Inside the createCommands function
+export const createCommands = (context: CommandContext): Record<string, CommandFunction> => {
+    const { cin, cout, state, setState, validateAndShowError, helpers } = context;
 
-        const param = getSecondParameter(input || '');
-        // Command implementation using hook's state and helper functions
-        cout('Your command output');
+    return {
+        // ... existing commands
+        yourcommand: (input?: string) => {
+            if (validateAndShowError(hasTooManyParameters(input || ''), 'yourcommand')) return;
 
-        // Update state if needed using functional setState
-        setState(prev => ({
-            ...prev
-            // ... your state updates
-        }));
-    }
+            const param = getSecondParameter(input || '');
+            // Command implementation using context functions
+            cout('Your command output');
+
+            // Update state if needed using functional setState
+            setState(prev => ({
+                ...prev
+                // ... your state updates
+            }));
+        }
+    };
 };
 ```
 
@@ -131,6 +138,10 @@ Edit `src/fs.json` to customize the virtual file system structure:
         "your_file.txt": {
             "type": "file",
             "src": "/path/to/file/content.txt"
+        },
+        "your_link": {
+            "type": "link",
+            "target": "https://example.com"
         }
     }
 }
