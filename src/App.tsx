@@ -16,7 +16,8 @@ import {
     loadCommandHistoryFromStorage,
     saveCommandHistoryToStorage,
     loadThemeFromStorage,
-    saveThemeToStorage
+    saveThemeToStorage,
+    pasteFromClipboard
 } from './utils/utils';
 import { createCommands, executeCommand } from './utils/commands';
 import { handleTab, TabCompletionContext } from './utils/tabCompletion';
@@ -272,23 +273,16 @@ const App: React.FC = () => {
             if (e.ctrlKey && e.key === 'c') {
                 const selection = window.getSelection();
                 if (selection && selection.toString() !== '') {
-                    copy(selection.toString());
+                    copy(selection.toString().trimEnd());
                     e.preventDefault();
                     return;
                 }
             }
 
             if (e.ctrlKey && e.key === 'v') {
-                try {
-                    const clipboardText = await navigator.clipboard.readText();
-                    const currentContent = _prompt.current?.content || '';
-                    _prompt.current?.setValue(currentContent + clipboardText);
-                } catch (err) {
-                    console.warn('Failed to read clipboard contents: ', err);
-                } finally {
-                    e.preventDefault();
-                    return;
-                }
+                e.preventDefault();
+                await pasteFromClipboard(_prompt);
+                return;
             }
 
             if (e.ctrlKey || e.altKey) {
@@ -329,17 +323,7 @@ const App: React.FC = () => {
         if ('buttons' in e && e.buttons === 2) {
             // Right-click for paste
             e.preventDefault();
-            try {
-                if (navigator.clipboard) {
-                    const clipboardText = await navigator.clipboard.readText();
-                    if (clipboardText) {
-                        const currentContent = _prompt.current?.content || '';
-                        _prompt.current?.setValue(currentContent + clipboardText);
-                    }
-                }
-            } catch (err) {
-                console.warn('Could not read from clipboard:', err);
-            }
+            await pasteFromClipboard(_prompt);
         } else if (e.type === 'click' || e.type === 'touchend') {
             // Left-click/tap for focus
             _prompt.current?.focusPrompt();

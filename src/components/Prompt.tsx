@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, {
+    useState,
+    useEffect,
+    useRef,
+    useImperativeHandle,
+    forwardRef,
+    useLayoutEffect
+} from 'react';
 import Cursor from './Cursor';
 import PromptLabel from './PromptLabel';
 
@@ -16,11 +23,15 @@ export interface PromptRef {
     focusPrompt: () => void;
     blurPrompt: () => void;
     setValue: (value: string) => void;
+    getSelectionStart: () => number | null | undefined;
+    setCursorPosition: (position: number) => void;
+    setValueWithCursor: (value: string, cursorPosition: number) => void;
 }
 
 const Prompt = forwardRef<PromptRef, PromptProps>(
     ({ username, computerName, currentPath, value, onChange }, ref) => {
         const [internalPromptText, setInternalPromptText] = useState('');
+        const [pendingCursorPosition, setPendingCursorPosition] = useState<number | null>(null);
         const promptInputRef = useRef<HTMLInputElement>(null);
 
         // Use controlled value if provided, otherwise use internal state
@@ -47,6 +58,23 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
             setPromptText(newValue);
         };
 
+        const setValueWithCursor = (newValue: string, cursorPosition: number) => {
+            setPromptText(newValue);
+            setPendingCursorPosition(cursorPosition);
+        };
+
+        // Apply pending cursor position after render
+        useLayoutEffect(() => {
+            if (pendingCursorPosition !== null && promptInputRef.current) {
+                promptInputRef.current.focus();
+                promptInputRef.current.setSelectionRange(
+                    pendingCursorPosition,
+                    pendingCursorPosition
+                );
+                setPendingCursorPosition(null);
+            }
+        }, [pendingCursorPosition, promptText]);
+
         useImperativeHandle(ref, () => ({
             get content() {
                 return promptText;
@@ -57,7 +85,19 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
             clear,
             focusPrompt,
             blurPrompt,
-            setValue
+            setValue,
+            getSelectionStart: () => promptInputRef.current?.selectionStart,
+            setCursorPosition: (position: number) => {
+                if (promptInputRef.current) {
+                    promptInputRef.current.focus();
+                    requestAnimationFrame(() => {
+                        if (promptInputRef.current) {
+                            promptInputRef.current.setSelectionRange(position, position);
+                        }
+                    });
+                }
+            },
+            setValueWithCursor
         }));
 
         useEffect(() => {
@@ -80,8 +120,9 @@ const Prompt = forwardRef<PromptRef, PromptProps>(
                     value={promptText}
                     onChange={handleInputChange}
                 />
-                <span className="prompt-text">{promptText}</span>
-                <Cursor promptText={promptText} />
+                <span className="prompt-text">
+                    <Cursor promptText={promptText} />
+                </span>
             </div>
         );
     }

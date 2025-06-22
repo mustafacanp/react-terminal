@@ -68,11 +68,6 @@ body {
     position: absolute;
     bottom: auto;
     left: auto;
-    -webkit-transition: all 0.4s ease;
-    -moz-transition: all 0.4s ease;
-    -ms-transition: all 0.4s ease;
-    -o-transition: all 0.4s ease;
-    transition: all 0.4s ease;
 }
 
 .terminal-toolbar {
@@ -149,7 +144,8 @@ body {
 }
 
 .terminal-prompt {
-    display: flex;
+    position: relative;
+    line-height: 16px;
 }
 
 .prompt-user {
@@ -175,15 +171,21 @@ body {
     border: 0;
     padding: 0;
     opacity: 0;
+    color: transparent;
+    outline: none;
 }
 .prompt-cursor {
-    height: 17px;
-    line-height: 17px;
+    height: 16px;
+    margin-top: -2px;
+    line-height: 16px;
     text-align: center;
     color: var(--background);
     width: 8px;
     background: var(--cursor);
-    display: block;
+    display: inline-block;
+}
+
+.prompt-cursor.blink {
     animation: 600ms ease infinite alternate blink;
 }
 
@@ -236,16 +238,20 @@ body {
 
 @keyframes blink {
     0% {
-        opacity: 0;
+        color: var(--background);
+        background-color: var(--cursor);
     }
     49% {
-        opacity: 0;
+        color: var(--background);
+        background-color: var(--cursor);
     }
     50% {
-        opacity: 1;
+        color: var(--cursor);
+        background-color: var(--background);
     }
     100% {
-        opacity: 1;
+        color: var(--cursor);
+        background-color: var(--background);
     }
 }
 

@@ -1,26 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-interface CursorProps {
+interface Props {
     promptText: string;
 }
 
-const Cursor: React.FC<CursorProps> = ({ promptText }) => {
-    const [style, setStyle] = useState({});
+const Cursor: React.FC<Props> = ({ promptText }) => {
+    const [isBlinking, setIsBlinking] = useState(false);
     const [cursorLetter, setCursorLetter] = useState('');
     const [cursorFromTheRight, setCursorFromTheRight] = useState(0);
 
     const resetState = useCallback(() => {
-        setStyle({});
         setCursorLetter('');
         setCursorFromTheRight(0);
     }, []);
 
     const updateCursor = useCallback(
-        (newValue: number) => {
-            setStyle({
-                marginLeft: -8 * newValue + 'px'
-            });
-            setCursorLetter(promptText[promptText.length - newValue]);
+        (newIndex: number) => {
+            setCursorLetter(promptText[promptText.length - newIndex]);
         },
         [promptText]
     );
@@ -28,9 +24,9 @@ const Cursor: React.FC<CursorProps> = ({ promptText }) => {
     const handleLeftArrow = useCallback(() => {
         if (cursorFromTheRight < promptText.length) {
             setCursorFromTheRight(prev => {
-                const newValue = prev + 1;
-                setTimeout(() => updateCursor(newValue), 0);
-                return newValue;
+                const newIndex = prev + 1;
+                setTimeout(() => updateCursor(newIndex), 0);
+                return newIndex;
             });
         }
     }, [cursorFromTheRight, promptText, updateCursor]);
@@ -38,15 +34,23 @@ const Cursor: React.FC<CursorProps> = ({ promptText }) => {
     const handleRightArrow = useCallback(() => {
         if (cursorFromTheRight > 0) {
             setCursorFromTheRight(prev => {
-                const newValue = prev - 1;
-                setTimeout(() => updateCursor(newValue), 0);
-                return newValue;
+                const newIndex = prev - 1;
+                setTimeout(() => updateCursor(newIndex), 0);
+                return newIndex;
             });
         }
     }, [cursorFromTheRight, updateCursor]);
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.altKey) {
+                e.preventDefault();
+                return;
+            }
+            setIsBlinking(false);
+            setTimeout(() => {
+                setIsBlinking(true);
+            }, 600);
             // Handles non-printable chars.
             switch (e.key) {
                 case 'ArrowLeft':
@@ -79,10 +83,15 @@ const Cursor: React.FC<CursorProps> = ({ promptText }) => {
         }
     }, [promptText.length, cursorFromTheRight, resetState]);
 
+    const formattedCursorLetter = cursorLetter === ' ' ? ' ' : cursorLetter || ' ';
     return (
-        <span style={style} className="prompt-cursor">
-            {cursorLetter}
-        </span>
+        <>
+            {promptText.slice(0, promptText.length - cursorFromTheRight)}
+            <span className={`prompt-cursor ${isBlinking ? 'blink' : ''}`}>
+                {formattedCursorLetter}
+            </span>
+            {promptText.slice(promptText.length - cursorFromTheRight + 1)}
+        </>
     );
 };
 
