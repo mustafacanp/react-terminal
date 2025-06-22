@@ -128,7 +128,14 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd, onReset }) => {
 
     return (
         <div className="terminal-toolbar" onDoubleClick={requestFullScreen}>
+            <p className="toolbar-user">
+                {userName}@{computerName}:{pwd}
+            </p>
             <div className="toolbar-buttons">
+                <button className="toolbar-button">—</button>
+                <button className="toolbar-button" onClick={requestFullScreen}>
+                    ❐
+                </button>
                 <button
                     className="toolbar-button toolbar-button--exit"
                     onClick={() => {
@@ -139,14 +146,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ settings, pwd, onReset }) => {
                 >
                     &#10005;
                 </button>
-                <button className="toolbar-button">&#9472;</button>
-                <button className="toolbar-button" onClick={requestFullScreen}>
-                    &#9723;
-                </button>
             </div>
-            <p className="toolbar-user">
-                {userName}@{computerName}:{pwd}
-            </p>
         </div>
     );
 };
