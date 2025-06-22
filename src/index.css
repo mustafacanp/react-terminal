@@ -159,7 +159,39 @@ body {
     animation: 600ms ease infinite alternate blink;
 }
 
+.directory-listing {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px 20px;
+    width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+    .directory-listing {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .directory-listing {
+        grid-template-columns: 1fr;
+    }
+}
+
+.prompt-text.ml-0 {
+    width: 100%;
+    display: block;
+}
+
+.type-file,
+.type-directory,
+.type-link {
+    white-space: nowrap;
+    display: block;
+}
+
 .type-file {
+    color: var(--white);
 }
 
 .type-directory {
@@ -196,5 +228,10 @@ body {
     }
     .terminal-body-container {
         height: calc(100% - 25px);
+    }
+    .type-file,
+    .type-directory,
+    .type-link {
+        white-space: normal;
     }
 }

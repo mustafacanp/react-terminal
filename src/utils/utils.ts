@@ -273,9 +273,10 @@ export const getMatchingItems = (
 export const formatDirectoryListing = (children: { [key: string]: FileSystemEntry }): string => {
     const dirs = Object.keys(children).map(key => {
         const slash = isDir(children[key]) ? '/' : '';
-        return `<span class="type-${children[key]?.type}">${key}${slash}</span>`;
+        const fullName = `${key}${slash}`;
+        return `<span class="type-${children[key]?.type}">${fullName}</span>`;
     });
-    return dirs.join('&#09;');
+    return `<div class="directory-listing">${dirs.join('')}</div>`;
 };
 
 // Path calculation for navigation
