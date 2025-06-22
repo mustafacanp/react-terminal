@@ -67,7 +67,7 @@ export const createCommands = (context: CommandContext): Record<string, CommandF
 
     return {
         help: async () => {
-            cout(['Usable Commands:', ...AVAILABLE_COMMANDS].join('&#09;'), false);
+            cout(`Usable Commands: ${AVAILABLE_COMMANDS.join('&#09;')}`, false);
         },
 
         clear: () => {
