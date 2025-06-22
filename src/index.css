@@ -190,7 +190,7 @@ body {
 .directory-listing {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px 20px;
+    gap: 0 10px;
     width: 100%;
 }
 
