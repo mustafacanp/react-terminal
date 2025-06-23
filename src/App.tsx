@@ -285,6 +285,18 @@ const App: React.FC = () => {
                 return;
             }
 
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                handleCommandExecution('clear');
+                return;
+            }
+
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                handleCommandExecution('reset');
+                return;
+            }
+
             if (e.ctrlKey || e.altKey) {
                 _prompt.current?.blurPrompt();
                 e.preventDefault();
